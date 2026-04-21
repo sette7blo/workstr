@@ -11,11 +11,27 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
-## [v1.0.0] — YYYY-MM-DD
 ### Added
-- Initial release
+- Exercise library: browse, filter by category/muscle/difficulty, difficulty badges, source badges (AI/seed/camera/manual)
+- Favorites: heart toggle on any active exercise
+- AI exercise generation via PPQ.ai — generates exercise JSON + fitness photo, lands in Staging
+- Camera/image import — upload 1–8 images, vision model extracts exercise details, lands in Staging
+- Seed browser — browse and multi-select import from free-exercise-db (800+ exercises)
+- Staging tab with approve/discard/approve-all/discard-all workflow
+- Trash tab — soft delete with restore and permanent delete
+- Equipment table with owned/not-owned toggle; "My Equipment" filter in exercises tab
+- Weekly planner — 7-day grid with Morning/Afternoon/Evening slots, week navigation
+- Exercise picker modal for adding exercises to plan slots
+- Workout template builder — named templates with exercises and rep targets
+- Active workout overlay — fullscreen dark mode, set-by-set logging, rest timer with skip
+- Workout log history — grouped by date with set/weight pills
+- AI workout plan generator — goal, days/week, muscle focus, equipment filter; preview before accepting
+- Exercise progress tracking — estimated 1RM (Epley formula) and volume trend bars in exercise drawer
+- Nostr Kind 30078 backup — sign all active exercises server-side, publish via WebSocket relay
+- Nostr restore — import exercises from pasted Nostr event JSON array (lands in Staging)
+- Export workout log as JSON or CSV download
+- Version endpoint (`GET /api/version`) — reads VERSION file baked in by CI
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/workstr/compare/v1.0.0...HEAD
-[v1.0.0]: https://github.com/sette7blo/workstr/releases/tag/v1.0.0
+[Unreleased]: https://github.com/sette7blo/workstr/compare/main...HEAD
