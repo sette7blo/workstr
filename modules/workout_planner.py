@@ -15,11 +15,11 @@ def get_week(start_date: str) -> list:
 
 
 def add_to_plan(date: str, slot: str, exercise_slug: str = None,
-                template_id: int = None, notes: str = None) -> dict:
+                template_id: int = None, workout_id: int = None, notes: str = None) -> dict:
     with db() as conn:
         conn.execute(
-            "INSERT INTO workout_plan (date, slot, exercise_slug, template_id, notes) VALUES (?, ?, ?, ?, ?)",
-            (date, slot, exercise_slug, template_id, notes)
+            "INSERT INTO workout_plan (date, slot, exercise_slug, template_id, workout_id, notes) VALUES (?, ?, ?, ?, ?, ?)",
+            (date, slot, exercise_slug, template_id, workout_id, notes)
         )
         row = conn.execute("SELECT * FROM workout_plan ORDER BY id DESC LIMIT 1").fetchone()
     return row_to_dict(row)

@@ -12,7 +12,7 @@ from flask import Flask, jsonify, request, send_from_directory, Response
 
 import core.config as config
 from core.schema import init_db
-from modules import importer, equipment, workout_log, workout_planner
+from modules import importer, equipment, workout_log, workout_planner, workouts
 from modules import ai_generator, ai_planner, camera, seed_browser, nostr_backup
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
@@ -140,14 +140,6 @@ def api_permanent_delete(slug):
     return jsonify({"ok": ok}), 200 if ok else 404
 
 
-@app.route("/api/exercises/favorite/<slug>", methods=["POST"])
-def api_toggle_favorite(slug):
-    result = importer.toggle_favorite(slug)
-    if result is None:
-        return jsonify({"error": "not found"}), 404
-    return jsonify(result)
-
-
 @app.route("/api/exercises/sync", methods=["POST"])
 def api_sync():
     result = importer.sync_all()
@@ -244,6 +236,7 @@ def api_add_to_plan():
         slot=data["slot"],
         exercise_slug=data.get("exercise_slug"),
         template_id=data.get("template_id"),
+        workout_id=data.get("workout_id"),
         notes=data.get("notes"),
     )
     return jsonify(result), 201
@@ -253,6 +246,137 @@ def api_add_to_plan():
 def api_remove_from_plan(plan_id):
     ok = workout_planner.remove_from_plan(plan_id)
     return jsonify({"ok": ok}), 200 if ok else 404
+
+# ── Workouts ──────────────────────────────────────────────────────────────────
+
+@app.route("/api/workouts")
+def api_list_workouts():
+    return jsonify(workouts.list_workouts())
+
+
+@app.route("/api/workouts", methods=["POST"])
+def api_create_workout():
+    data = request.get_json(force=True)
+    result = workouts.create_workout(name=data["name"], description=data.get("description"))
+    return jsonify(result), 201
+
+
+@app.route("/api/workouts/<int:wid>")
+def api_get_workout(wid):
+    w = workouts.get_workout(wid)
+    if not w:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(w)
+
+
+@app.route("/api/workouts/<int:wid>", methods=["PUT"])
+def api_update_workout(wid):
+    data = request.get_json(force=True)
+    w = workouts.update_workout(wid, data)
+    if not w:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(w)
+
+
+@app.route("/api/workouts/<int:wid>", methods=["DELETE"])
+def api_delete_workout(wid):
+    ok = workouts.delete_workout(wid)
+    return jsonify({"ok": ok}), 200 if ok else 404
+
+
+@app.route("/api/workouts/<int:wid>/exercises", methods=["POST"])
+def api_add_exercise_to_workout(wid):
+    data = request.get_json(force=True)
+    result = workouts.add_exercise(
+        workout_id=wid,
+        exercise_slug=data["exercise_slug"],
+        sets=int(data.get("sets", 3)),
+        reps=str(data.get("reps", "8-12")),
+        weight=data.get("weight"),
+        rest_sec=int(data.get("rest_sec", 90)),
+        notes=data.get("notes"),
+    )
+    return jsonify(result), 201
+
+
+@app.route("/api/workouts/<int:wid>/exercises/<int:ex_id>", methods=["PUT"])
+def api_update_workout_exercise(wid, ex_id):
+    data = request.get_json(force=True)
+    result = workouts.update_exercise(ex_id, data)
+    if not result:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(result)
+
+
+@app.route("/api/workouts/<int:wid>/exercises/<int:ex_id>", methods=["DELETE"])
+def api_remove_workout_exercise(wid, ex_id):
+    ok = workouts.remove_exercise(ex_id)
+    return jsonify({"ok": ok}), 200 if ok else 404
+
+
+@app.route("/api/workouts/<int:wid>/reorder", methods=["POST"])
+def api_reorder_workout_exercises(wid):
+    data = request.get_json(force=True)
+    workouts.reorder_exercises(wid, data.get("ordered_ids", []))
+    return jsonify({"ok": True})
+
+# ── Sessions ───────────────────────────────────────────────────────────────────
+
+@app.route("/api/sessions", methods=["POST"])
+def api_start_session():
+    data = request.get_json(force=True)
+    result = workouts.start_session(workout_id=data.get("workout_id"))
+    return jsonify(result), 201
+
+
+@app.route("/api/sessions")
+def api_list_sessions():
+    limit = int(request.args.get("limit", 50))
+    return jsonify(workouts.list_sessions(limit))
+
+
+@app.route("/api/sessions/<int:sid>")
+def api_get_session(sid):
+    s = workouts.get_session(sid)
+    if not s:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(s)
+
+
+@app.route("/api/sessions/<int:sid>", methods=["PUT"])
+def api_finish_session(sid):
+    data = request.get_json(force=True)
+    result = workouts.finish_session(sid, notes=data.get("notes"))
+    if not result:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(result)
+
+
+@app.route("/api/sessions/<int:sid>", methods=["DELETE"])
+def api_cancel_session(sid):
+    ok = workouts.cancel_session(sid)
+    return jsonify({"ok": ok}), 200 if ok else 404
+
+
+@app.route("/api/sessions/<int:sid>/sets", methods=["POST"])
+def api_log_set(sid):
+    data = request.get_json(force=True)
+    result = workouts.log_set(
+        session_id=sid,
+        exercise_slug=data["exercise_slug"],
+        set_number=int(data["set_number"]),
+        actual_reps=data.get("actual_reps"),
+        actual_weight=data.get("actual_weight"),
+        prescribed_reps=data.get("prescribed_reps"),
+        prescribed_weight=data.get("prescribed_weight"),
+    )
+    return jsonify(result), 201
+
+
+@app.route("/api/exercises/<slug>/last-sets")
+def api_last_sets(slug):
+    before = request.args.get("before_session")
+    return jsonify(workouts.get_last_sets(slug, int(before) if before else None))
 
 # ── Templates ─────────────────────────────────────────────────────────────────
 

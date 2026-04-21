@@ -44,7 +44,8 @@ a{color:inherit;text-decoration:none}
 .nav-item span{font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;text-align:center}
 .nav-badge{position:absolute;top:6px;right:6px;min-width:16px;height:16px;border-radius:8px;background:var(--amber);color:#fff;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 3px}
 .nav-badge.visible{display:flex}
-.nav-divider{height:1px;background:var(--border-soft);margin:6px 12px;flex-shrink:0}
+.nav-divider{height:1px;background:var(--border-soft);margin:4px 12px;flex-shrink:0}
+.nav-section-label{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);text-align:center;padding:8px 4px 2px;flex-shrink:0}
 .nav-bottom{margin-top:auto;padding-bottom:12px}
 
 /* Content */
@@ -323,6 +324,77 @@ a{color:inherit;text-decoration:none}
 /* Equipment filter toggle */
 .eq-filter-toggle{display:inline-flex;align-items:center;gap:6px;padding:0 10px;height:32px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border-soft);color:var(--text-mid);background:var(--white);user-select:none}
 .eq-filter-toggle.active{border-color:var(--sage);color:var(--sage);background:rgba(122,144,104,.06)}
+
+/* Workout cards */
+.workout-card{background:var(--white);border:1px solid var(--border-soft);border-radius:12px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.workout-card-icon{width:44px;height:44px;border-radius:10px;background:rgba(232,130,12,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--amber)}
+.workout-card-info{flex:1}
+.workout-card-name{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:18px;margin-bottom:2px}
+.workout-card-meta{font-size:12px;color:var(--text-muted)}
+.workout-card-actions{display:flex;gap:6px}
+
+/* Workout builder exercise row */
+.wex-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border-soft)}
+.wex-row:last-child{border-bottom:none}
+.wex-info{flex:1}
+.wex-name{font-size:13px;font-weight:600;color:var(--brown-dark)}
+.wex-muscle{font-size:11px;color:var(--text-muted)}
+.wex-params{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.wex-param-group{display:flex;flex-direction:column;align-items:center;min-width:52px}
+.wex-param-label{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.wex-param-input{width:52px;height:28px;border:1px solid var(--border-soft);border-radius:6px;text-align:center;font-size:12px;outline:none}
+.wex-param-input:focus{border-color:var(--amber)}
+.wex-move-btns{display:flex;flex-direction:column;gap:2px}
+.wex-move-btn{width:22px;height:22px;border:1px solid var(--border-soft);border-radius:4px;background:var(--white);color:var(--text-muted);font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.wex-move-btn:hover{border-color:var(--amber);color:var(--amber)}
+.wex-remove{width:26px;height:26px;border-radius:50%;background:var(--cream);color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0}
+.wex-remove:hover{background:#fee;color:#c44}
+
+/* Session overlay (new) */
+.session-overlay{display:none;position:fixed;inset:0;background:#1a0e04;z-index:300;flex-direction:column}
+.session-overlay.open{display:flex}
+.session-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.08)}
+.session-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:20px;color:#fff}
+.session-meta{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
+.session-close-btn{color:rgba(255,255,255,.5);font-size:12px;padding:5px 12px;border:1px solid rgba(255,255,255,.15);border-radius:6px;cursor:pointer}
+.session-close-btn:hover{color:#fff;border-color:rgba(255,255,255,.35)}
+.session-ex-nav{display:flex;gap:6px;padding:10px 20px;overflow-x:auto;border-bottom:1px solid rgba(255,255,255,.06)}
+.session-ex-dot{width:32px;height:32px;border-radius:8px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .15s}
+.session-ex-dot.current{background:var(--amber);border-color:var(--amber);color:#fff}
+.session-ex-dot.done{background:rgba(122,144,104,.4);border-color:var(--sage);color:#fff}
+.session-body{flex:1;overflow-y:auto;padding:20px}
+.session-ex-name{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:26px;color:#fff;margin-bottom:4px}
+.session-ex-target{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:6px}
+.session-last{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:20px;font-style:italic}
+.session-sets{max-width:440px}
+.session-set-row{display:grid;grid-template-columns:28px 1fr 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.session-set-num{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.session-set-num.done{background:var(--sage);border-color:var(--sage);color:#fff}
+.session-set-input{height:38px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:0 10px;color:#fff;font-size:14px;font-family:'Jost',sans-serif;outline:none;width:100%;text-align:center}
+.session-set-input:focus{border-color:var(--amber)}
+.session-set-input::placeholder{color:rgba(255,255,255,.25)}
+.session-log-btn{height:38px;padding:0 14px;background:var(--amber);color:#fff;font-size:12px;font-weight:700;border-radius:8px;white-space:nowrap}
+.session-log-btn.done{background:var(--sage)}
+.session-add-set{margin-top:10px;color:rgba(255,255,255,.35);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.session-add-set:hover{color:var(--amber)}
+.session-footer{padding:16px 20px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:10px;align-items:center}
+.session-next-btn{flex:1;height:44px;background:var(--amber);color:#fff;font-weight:700;font-size:14px;border-radius:10px}
+.session-finish-btn{flex:1;height:44px;background:var(--sage);color:#fff;font-weight:700;font-size:14px;border-radius:10px}
+.session-prev-btn{height:44px;padding:0 16px;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);border-radius:10px;font-size:13px}
+.session-prev-btn:hover{border-color:rgba(255,255,255,.3);color:#fff}
+.session-rest-overlay{display:none;position:fixed;inset:0;background:rgba(20,10,0,.92);align-items:center;justify-content:center;flex-direction:column;z-index:310}
+.session-rest-overlay.show{display:flex}
+
+/* Sessions history */
+.session-history-card{background:var(--white);border:1px solid var(--border-soft);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:box-shadow .15s}
+.session-history-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.07)}
+.session-history-name{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:18px;margin-bottom:4px}
+.session-history-meta{display:flex;gap:12px;font-size:12px;color:var(--text-muted)}
+
+/* Picker tabs */
+.picker-tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid var(--border-soft)}
+.picker-tab{padding:6px 14px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.picker-tab.active{color:var(--amber);border-bottom-color:var(--amber)}
 </style>
 </head>
 <body>
@@ -348,13 +420,10 @@ a{color:inherit;text-decoration:none}
 <!-- Sidebar -->
 <nav class="sidebar" id="sidebar">
   <div class="nav-items">
+    <div class="nav-section-label">Library</div>
     <div class="nav-item active" data-tab="exercises" onclick="switchTab('exercises')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
       <span>Exercises</span>
-    </div>
-    <div class="nav-item" data-tab="favorites" onclick="switchTab('favorites')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-      <span>Favorites</span>
     </div>
     <div class="nav-item" data-tab="generate" onclick="switchTab('generate')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -370,6 +439,11 @@ a{color:inherit;text-decoration:none}
       <div class="nav-badge" id="staging-badge"></div>
     </div>
     <div class="nav-divider"></div>
+    <div class="nav-section-label">Training</div>
+    <div class="nav-item" data-tab="workouts" onclick="switchTab('workouts')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      <span>Workouts</span>
+    </div>
     <div class="nav-item" data-tab="planner" onclick="switchTab('planner')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span>Planner</span>
@@ -378,11 +452,12 @@ a{color:inherit;text-decoration:none}
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       <span>History</span>
     </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section-label">System</div>
     <div class="nav-item" data-tab="equipment" onclick="switchTab('equipment')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
       <span>Equipment</span>
     </div>
-    <div class="nav-divider"></div>
     <div class="nav-bottom">
       <div class="nav-item" data-tab="trash" onclick="switchTab('trash')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
@@ -434,14 +509,15 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
-  <!-- Favorites -->
-  <div class="page" id="page-favorites">
-    <div class="page-title">Favorites</div>
-    <div class="exercise-grid" id="favorites-grid"></div>
-    <div class="empty-state" id="favorites-empty" style="display:none">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-      <h3>No favorites yet</h3>
-      <p>Open an exercise and tap the heart to save it here.</p>
+  <!-- Workouts -->
+  <div class="page" id="page-workouts">
+    <div class="page-title">Workouts</div>
+    <div style="margin-bottom:16px"><button class="btn-primary" onclick="openWorkoutBuilder()">+ New Workout</button></div>
+    <div id="workouts-list"></div>
+    <div class="empty-state" id="workouts-empty" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      <h3>No workouts yet</h3>
+      <p>Build your first workout to get started.</p>
     </div>
   </div>
 
@@ -590,8 +666,8 @@ a{color:inherit;text-decoration:none}
     <div id="history-content"></div>
     <div class="empty-state" id="history-empty" style="display:none">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      <h3>No workouts logged yet</h3>
-      <p>Complete a workout to see your history here.</p>
+      <h3>No sessions yet</h3>
+      <p>Finish a workout session to see your history here.</p>
     </div>
   </div>
 
@@ -673,20 +749,25 @@ a{color:inherit;text-decoration:none}
   </div>
 </main>
 
-<!-- Active Workout Overlay -->
-<div class="workout-overlay" id="workout-overlay">
-  <div class="workout-header">
-    <div class="workout-title">Active Workout</div>
-    <button class="workout-close" onclick="closeWorkout()">End Workout</button>
-  </div>
-  <div id="workout-content" style="position:relative">
-    <!-- rest overlay -->
-    <div class="workout-rest-overlay" id="rest-overlay">
-      <div class="rest-timer" id="rest-timer-val">90</div>
-      <div class="rest-label">Rest</div>
-      <div class="rest-skip-btn" onclick="skipRest()">Skip Rest</div>
+<!-- Session Overlay -->
+<div class="session-overlay" id="session-overlay">
+  <div class="session-header">
+    <div>
+      <div class="session-title" id="session-title">Workout</div>
+      <div class="session-meta" id="session-meta"></div>
     </div>
+    <button class="session-close-btn" onclick="confirmCancelSession()">Cancel</button>
   </div>
+  <div class="session-ex-nav" id="session-ex-nav"></div>
+  <div class="session-body" id="session-body"></div>
+  <div class="session-footer" id="session-footer"></div>
+</div>
+
+<!-- Session Rest Overlay -->
+<div class="session-rest-overlay" id="session-rest-overlay">
+  <div class="rest-timer" id="session-rest-val">90</div>
+  <div class="rest-label">Rest</div>
+  <div class="rest-skip-btn" onclick="skipSessionRest()">Skip</div>
 </div>
 
 <!-- Template Builder Modal -->
@@ -720,6 +801,36 @@ a{color:inherit;text-decoration:none}
       </div>
       <div class="template-ex-list" id="tmpl-ex-list"></div>
       <button class="btn-primary" onclick="saveTemplate()" style="width:100%">Save Template</button>
+    </div>
+  </div>
+</div>
+
+<!-- Workout Builder Modal -->
+<div class="modal-overlay" id="workout-builder-modal" onclick="if(event.target===this)closeWorkoutBuilder()">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-header">
+      <div class="modal-title" id="workout-builder-title">New Workout</div>
+      <button class="modal-close" onclick="closeWorkoutBuilder()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="wb-id">
+      <div class="modal-field">
+        <label>Name</label>
+        <input type="text" id="wb-name" placeholder="e.g. Push Day A, Full Body">
+      </div>
+      <div class="modal-field">
+        <label>Description <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="text" id="wb-desc" placeholder="e.g. Focus on chest and shoulders">
+      </div>
+      <div class="modal-field">
+        <label>Add Exercises</label>
+        <input type="text" id="wb-ex-search" placeholder="Search catalogue..." oninput="searchWbExercises(this.value)">
+        <div class="ex-search-results" id="wb-search-results"></div>
+      </div>
+      <div id="wb-ex-list" style="margin-bottom:12px"></div>
+      <button class="btn-primary" onclick="saveWorkout()" style="width:100%">Save Workout</button>
     </div>
   </div>
 </div>
@@ -770,7 +881,7 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
-<!-- Exercise Picker Modal (for planner) -->
+<!-- Planner Picker Modal -->
 <div class="modal-overlay" id="picker-modal" onclick="if(event.target===this)closePicker()">
   <div class="modal">
     <div class="modal-header">
@@ -779,7 +890,13 @@ a{color:inherit;text-decoration:none}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
-    <div class="modal-body" id="picker-modal-content"></div>
+    <div class="modal-body">
+      <div class="picker-tabs">
+        <div class="picker-tab active" onclick="switchPickerTab('workout')">Workout</div>
+        <div class="picker-tab" onclick="switchPickerTab('exercise')">Single Exercise</div>
+      </div>
+      <div id="picker-modal-content"></div>
+    </div>
   </div>
 </div>
 
@@ -804,6 +921,7 @@ let filterDifficulty = '';
 let seedSelected = new Set();
 let cameraFiles = [];
 let seedDebounceTimer = null;
+let wbExercises = []; // workout builder exercise list
 let seedOffset = 0;
 let seedTotal = 0;
 
@@ -816,15 +934,15 @@ function switchTab(tab) {
   const page = document.getElementById('page-' + tab);
   if (page) page.classList.add('active');
 
-  const searchTabs = ['exercises', 'favorites', 'staging', 'trash'];
+  const searchTabs = ['exercises', 'staging', 'trash'];
   document.getElementById('topbar-search').style.display = searchTabs.includes(tab) ? '' : 'none';
   document.getElementById('search-input').value = '';
   searchQuery = '';
 
   if (tab === 'exercises') loadExercises('active');
-  else if (tab === 'favorites') loadExercises('favorited');
   else if (tab === 'staging') loadExercises('staged');
   else if (tab === 'trash') loadExercises('trashed');
+  else if (tab === 'workouts') loadWorkouts();
   else if (tab === 'equipment') loadEquipment();
   else if (tab === 'settings') loadSettings();
   else if (tab === 'generate') loadAiStatus();
@@ -1003,7 +1121,7 @@ async function openDrawer(slug) {
   let actions = '';
   if (ex.status === 'active') {
     actions = `
-      <button class="btn-sage" onclick="toggleFav('${slug}')">${ex.favorited ? 'Unfavorite' : 'Favorite'}</button>
+      <button class="btn-primary" onclick="startQuickSession('${slug}')">Start Session</button>
       <button class="btn-danger" onclick="trashExercise('${slug}')">Delete</button>`;
   } else if (ex.status === 'staged') {
     actions = `
@@ -1041,10 +1159,6 @@ function closeDrawer() { document.getElementById('drawer-overlay').classList.rem
 function closeDrawerIfOverlay(e) { if (e.target === document.getElementById('drawer-overlay')) closeDrawer(); }
 
 // ── Exercise actions ──────────────────────────────────────────────────────────
-async function toggleFav(slug) {
-  await fetch('/api/exercises/favorite/'+slug, {method:'POST'});
-  closeDrawer(); refreshCounts(); switchTab(currentTab);
-}
 async function trashExercise(slug) {
   await fetch('/api/exercises/'+slug, {method:'DELETE'});
   closeDrawer(); refreshCounts(); switchTab(currentTab);
@@ -1730,172 +1844,457 @@ async function deleteTemplate(id) {
 
 function closeTemplateModal() { document.getElementById('template-modal').classList.remove('open'); }
 
-// ── Active workout mode ───────────────────────────────────────────────────────
-let workoutExercises = [];
-let workoutIdx = 0;
-let workoutSets = {};
-let restTimer = null;
-
-async function launchWorkout(slug, planId) {
-  if (!slug) return;
-  const res = await fetch('/api/exercises/'+slug);
-  const ex = await res.json();
-  workoutExercises = [ex];
-  workoutIdx = 0;
-  workoutSets = {};
-  renderWorkoutExercise();
-  document.getElementById('workout-overlay').classList.add('open');
-}
-
-async function launchTemplateWorkout(templateId) {
-  const res = await fetch('/api/templates');
+// ── Workouts (builder) ────────────────────────────────────────────────────────
+async function loadWorkouts() {
+  const res = await fetch('/api/workouts');
   const list = await res.json();
-  const t = list.find(x => x.id === templateId);
-  if (!t || !t.exercises?.length) return;
-
-  const exercises = await Promise.all(
-    t.exercises.map(e => fetch('/api/exercises/'+e.slug).then(r => r.json()))
-  );
-  workoutExercises = exercises.filter(e => !e.error);
-  workoutIdx = 0;
-  workoutSets = {};
-  renderWorkoutExercise();
-  document.getElementById('workout-overlay').classList.add('open');
+  const container = document.getElementById('workouts-list');
+  const empty = document.getElementById('workouts-empty');
+  if (!list.length) { container.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  container.innerHTML = list.map(w => `
+    <div class="workout-card">
+      <div class="workout-card-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      </div>
+      <div class="workout-card-info">
+        <div class="workout-card-name">${esc(w.name)}</div>
+        <div class="workout-card-meta">${w.exercise_count||0} exercise${w.exercise_count!==1?'s':''}${w.description?' · '+esc(w.description):''}</div>
+      </div>
+      <div class="workout-card-actions">
+        <button class="btn-primary" style="height:32px;padding:0 14px;font-size:12px" onclick="startWorkoutSession(${w.id})">Start</button>
+        <button class="btn-outline" style="height:32px;padding:0 12px;font-size:12px" onclick="editWorkout(${w.id})">Edit</button>
+        <button class="btn-danger" style="height:32px;padding:0 12px;font-size:12px" onclick="deleteWorkout(${w.id})">Delete</button>
+      </div>
+    </div>`).join('');
 }
 
-function renderWorkoutExercise() {
-  const ex = workoutExercises[workoutIdx];
-  const full = ex?.full || {};
-  const targetSets = full.default_sets || 3;
-  const targetReps = full.default_reps || '8-12';
-
-  const imgUrl = ex.image_url ? (ex.image_url.startsWith('http') ? ex.image_url : '/'+ex.image_url) : null;
-
-  const dots = workoutExercises.map((_,i) =>
-    `<div class="workout-dot ${i < workoutIdx ? 'done' : i === workoutIdx ? 'current' : ''}"></div>`
-  ).join('');
-
-  const loggedSets = workoutSets[ex.slug] || [];
-  const setRows = Array.from({length: targetSets}, (_,i) => {
-    const logged = loggedSets[i];
-    return `<div class="workout-set-row">
-      <div class="workout-set-num ${logged ? 'logged' : ''}">${i+1}</div>
-      <input class="workout-input" id="reps-${i}" type="number" placeholder="${targetReps} reps" value="${logged?.reps||''}">
-      <span class="workout-input-label">reps</span>
-      <input class="workout-input" id="weight-${i}" type="number" placeholder="kg" value="${logged?.weight||''}">
-      <span class="workout-input-label">kg</span>
-      <button class="workout-log-btn" onclick="logSet(${i})">Log</button>
-    </div>`;
-  }).join('');
-
-  document.getElementById('workout-content').innerHTML = `
-    <div class="workout-progress">${dots}</div>
-    ${imgUrl ? `<img class="workout-ex-img" src="${imgUrl}" alt="">` : `<div class="workout-ex-img"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`}
-    <div class="workout-ex-name">${esc(ex.name)}</div>
-    <div class="workout-ex-meta">${workoutIdx+1} of ${workoutExercises.length} · ${targetSets} sets × ${targetReps}</div>
-    <div class="workout-sets-area">${setRows}</div>
-    <div class="workout-footer">
-      <button class="workout-next-btn" onclick="nextWorkoutExercise()">${workoutIdx+1 < workoutExercises.length ? 'Next Exercise' : 'Finish'}</button>
-      <button class="workout-skip" onclick="nextWorkoutExercise()">Skip</button>
-    </div>`;
+function openWorkoutBuilder(id) {
+  wbExercises = [];
+  document.getElementById('wb-id').value = id || '';
+  document.getElementById('wb-name').value = '';
+  document.getElementById('wb-desc').value = '';
+  document.getElementById('wb-ex-search').value = '';
+  document.getElementById('wb-search-results').style.display = 'none';
+  document.getElementById('wb-ex-list').innerHTML = '';
+  document.getElementById('workout-builder-title').textContent = 'New Workout';
+  document.getElementById('workout-builder-modal').classList.add('open');
 }
 
-function logSet(setIndex) {
-  const ex = workoutExercises[workoutIdx];
-  const reps = document.getElementById('reps-'+setIndex)?.value;
-  const weight = document.getElementById('weight-'+setIndex)?.value;
-  if (!workoutSets[ex.slug]) workoutSets[ex.slug] = [];
-  workoutSets[ex.slug][setIndex] = {reps: parseInt(reps)||null, weight: parseFloat(weight)||null};
-  document.querySelectorAll('.workout-set-num')[setIndex]?.classList.add('logged');
-
-  const full = ex.full || {};
-  const restSec = full.default_rest_sec || 90;
-  startRestTimer(restSec);
+async function editWorkout(id) {
+  const res = await fetch('/api/workouts/' + id);
+  const w = await res.json();
+  wbExercises = (w.exercises || []).map(e => ({
+    id: e.id, slug: e.exercise_slug, name: e.exercise_name || e.exercise_slug,
+    sets: e.sets, reps: e.reps, weight: e.weight, rest_sec: e.rest_sec,
+  }));
+  document.getElementById('wb-id').value = id;
+  document.getElementById('wb-name').value = w.name;
+  document.getElementById('wb-desc').value = w.description || '';
+  document.getElementById('wb-ex-search').value = '';
+  document.getElementById('wb-search-results').style.display = 'none';
+  document.getElementById('workout-builder-title').textContent = 'Edit Workout';
+  renderWbExList();
+  document.getElementById('workout-builder-modal').classList.add('open');
 }
 
-function startRestTimer(sec) {
-  const overlay = document.getElementById('rest-overlay');
-  overlay.classList.add('show');
-  let remaining = sec;
-  document.getElementById('rest-timer-val').textContent = remaining;
-  clearInterval(restTimer);
-  restTimer = setInterval(() => {
-    remaining--;
-    document.getElementById('rest-timer-val').textContent = remaining;
-    if (remaining <= 0) { clearInterval(restTimer); overlay.classList.remove('show'); }
-  }, 1000);
+function closeWorkoutBuilder() { document.getElementById('workout-builder-modal').classList.remove('open'); }
+
+function renderWbExList() {
+  const container = document.getElementById('wb-ex-list');
+  if (!wbExercises.length) { container.innerHTML = '<p style="font-size:12px;color:var(--text-muted);padding:8px 0">No exercises yet. Search above to add.</p>'; return; }
+  container.innerHTML = wbExercises.map((e, i) => `
+    <div class="wex-row">
+      <div class="wex-move-btns">
+        <div class="wex-move-btn" onclick="moveWbEx(${i},-1)">&#8593;</div>
+        <div class="wex-move-btn" onclick="moveWbEx(${i},1)">&#8595;</div>
+      </div>
+      <div class="wex-info">
+        <div class="wex-name">${esc(e.name)}</div>
+        <div class="wex-params">
+          <div class="wex-param-group">
+            <div class="wex-param-label">Sets</div>
+            <input class="wex-param-input" type="number" value="${e.sets||3}" min="1" max="20" onchange="wbExercises[${i}].sets=parseInt(this.value)||3">
+          </div>
+          <div class="wex-param-group">
+            <div class="wex-param-label">Reps</div>
+            <input class="wex-param-input" type="text" value="${e.reps||'8-12'}" style="width:64px" onchange="wbExercises[${i}].reps=this.value">
+          </div>
+          <div class="wex-param-group">
+            <div class="wex-param-label">kg</div>
+            <input class="wex-param-input" type="number" value="${e.weight||''}" placeholder="—" min="0" onchange="wbExercises[${i}].weight=parseFloat(this.value)||null">
+          </div>
+          <div class="wex-param-group">
+            <div class="wex-param-label">Rest</div>
+            <input class="wex-param-input" type="number" value="${e.rest_sec||90}" min="0" step="5" onchange="wbExercises[${i}].rest_sec=parseInt(this.value)||90">
+          </div>
+        </div>
+      </div>
+      <div class="wex-remove" onclick="removeWbEx(${i})">&#x2715;</div>
+    </div>`).join('');
 }
 
-function skipRest() { clearInterval(restTimer); document.getElementById('rest-overlay').classList.remove('show'); }
+function moveWbEx(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= wbExercises.length) return;
+  [wbExercises[i], wbExercises[j]] = [wbExercises[j], wbExercises[i]];
+  renderWbExList();
+}
 
-async function nextWorkoutExercise() {
-  const ex = workoutExercises[workoutIdx];
-  const sets = (workoutSets[ex.slug] || []).filter(Boolean);
-  if (sets.length) {
-    await fetch('/api/log', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({exercise_slug: ex.slug, sets}),
+function removeWbEx(i) { wbExercises.splice(i, 1); renderWbExList(); }
+
+async function searchWbExercises(q) {
+  const results = document.getElementById('wb-search-results');
+  if (!q) { results.style.display = 'none'; return; }
+  const res = await fetch('/api/exercises?per_page=200');
+  const data = await res.json();
+  const filtered = (data.exercises||[]).filter(e => e.name.toLowerCase().includes(q.toLowerCase())).slice(0, 8);
+  if (!filtered.length) { results.style.display = 'none'; return; }
+  results.style.display = '';
+  results.innerHTML = filtered.map(e =>
+    `<div class="ex-search-result-item" onclick="addWbExercise('${e.slug}','${esc(e.name)}')">
+      ${esc(e.name)} <span style="font-size:11px;color:var(--text-muted)">${esc(e.muscle_group||'')}</span>
+    </div>`).join('');
+}
+
+function addWbExercise(slug, name) {
+  const existing = wbExercises.find(e => e.slug === slug);
+  if (!existing) wbExercises.push({slug, name, sets:3, reps:'8-12', weight:null, rest_sec:90});
+  renderWbExList();
+  document.getElementById('wb-ex-search').value = '';
+  document.getElementById('wb-search-results').style.display = 'none';
+}
+
+async function saveWorkout() {
+  const id = document.getElementById('wb-id').value;
+  const name = document.getElementById('wb-name').value.trim();
+  if (!name) { alert('Name is required'); return; }
+  const description = document.getElementById('wb-desc').value.trim() || null;
+
+  let wid;
+  if (id) {
+    const res = await fetch('/api/workouts/'+id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description})});
+    const w = await res.json();
+    wid = w.id;
+    // Remove all old exercises and re-add in order
+    const oldRes = await fetch('/api/workouts/'+wid);
+    const oldW = await oldRes.json();
+    await Promise.all((oldW.exercises||[]).map(e => fetch(`/api/workouts/${wid}/exercises/${e.id}`,{method:'DELETE'})));
+  } else {
+    const res = await fetch('/api/workouts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description})});
+    const w = await res.json();
+    wid = w.id;
+  }
+
+  for (const e of wbExercises) {
+    await fetch(`/api/workouts/${wid}/exercises`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({exercise_slug:e.slug,sets:e.sets,reps:e.reps,weight:e.weight,rest_sec:e.rest_sec}),
     });
   }
 
-  workoutIdx++;
-  if (workoutIdx >= workoutExercises.length) {
-    closeWorkout();
-    refreshCounts();
-    return;
+  closeWorkoutBuilder();
+  loadWorkouts();
+}
+
+async function deleteWorkout(id) {
+  if (!confirm('Delete this workout?')) return;
+  await fetch('/api/workouts/'+id,{method:'DELETE'});
+  loadWorkouts();
+}
+
+// ── Session logging ────────────────────────────────────────────────────────────
+let _session = null;        // {id, workout_id, exercises:[{slug,name,sets,reps,weight,rest_sec}], ...}
+let _sessionExIdx = 0;      // current exercise index
+let _sessionSetCounts = {}; // slug -> number of sets shown
+let _sessionRestTimer = null;
+
+async function startWorkoutSession(workoutId) {
+  const wRes = await fetch('/api/workouts/' + workoutId);
+  const w = await wRes.json();
+  if (!w.exercises?.length) { alert('This workout has no exercises yet. Edit it first.'); return; }
+
+  const sRes = await fetch('/api/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({workout_id:workoutId})});
+  const s = await sRes.json();
+  _session = {id:s.id, workout_id:workoutId, workoutName:w.name, exercises:w.exercises};
+  _sessionExIdx = 0;
+  _sessionSetCounts = {};
+  _openSessionOverlay();
+}
+
+async function startQuickSession(slug) {
+  const exRes = await fetch('/api/exercises/' + slug);
+  const ex = await exRes.json();
+  const full = ex.full || {};
+  const sRes = await fetch('/api/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({workout_id:null})});
+  const s = await sRes.json();
+  _session = {
+    id: s.id, workout_id: null, workoutName: ex.name,
+    exercises:[{
+      exercise_slug:slug, exercise_name:ex.name, image_url:ex.image_url,
+      sets:full.default_sets||3, reps:full.default_reps||'8-12',
+      weight:null, rest_sec:full.default_rest_sec||90,
+    }],
+  };
+  _sessionExIdx = 0;
+  _sessionSetCounts = {};
+  closeDrawer();
+  _openSessionOverlay();
+}
+
+async function launchWorkout(slug) {
+  // Called from planner slot — treat as quick session
+  if (slug) startQuickSession(slug);
+}
+
+function _openSessionOverlay() {
+  document.getElementById('session-overlay').classList.add('open');
+  _renderSessionEx();
+}
+
+function _renderSessionNav() {
+  const nav = document.getElementById('session-ex-nav');
+  nav.innerHTML = _session.exercises.map((e,i) => {
+    const cls = i < _sessionExIdx ? 'done' : i === _sessionExIdx ? 'current' : '';
+    return `<div class="session-ex-dot ${cls}" onclick="jumpSessionEx(${i})">${i+1}</div>`;
+  }).join('');
+}
+
+async function _renderSessionEx() {
+  const ex = _session.exercises[_sessionExIdx];
+  if (!ex) return;
+  const slug = ex.exercise_slug;
+  const targetSets = ex.sets || 3;
+  const targetReps = ex.reps || '8-12';
+  const restSec = ex.rest_sec || 90;
+
+  document.getElementById('session-title').textContent = _session.workoutName || 'Session';
+  document.getElementById('session-meta').textContent = `Exercise ${_sessionExIdx+1} of ${_session.exercises.length}`;
+  _renderSessionNav();
+
+  // Fetch last session sets for pre-fill
+  const lastRes = await fetch(`/api/exercises/${slug}/last-sets?before_session_id=${_session.id}`);
+  const lastSets = await lastRes.json();
+  const lastText = lastSets.length
+    ? 'Last session: ' + lastSets.map(s => `${s.actual_reps||'?'}${s.actual_weight?' @ '+s.actual_weight+'kg':''}`).join(', ')
+    : '';
+
+  if (!_sessionSetCounts[slug]) _sessionSetCounts[slug] = targetSets;
+  const numSets = _sessionSetCounts[slug];
+
+  const imgUrl = ex.image_url ? (ex.image_url.startsWith('http') ? ex.image_url : '/'+ex.image_url) : null;
+
+  const setRows = Array.from({length:numSets}, (_,i) => {
+    const last = lastSets[i];
+    return `<div class="session-set-row">
+      <div class="session-set-num" id="snum-${i}">${i+1}</div>
+      <input class="session-set-input" id="sreps-${i}" type="number" placeholder="${targetReps}" value="${last?.actual_reps||''}" min="0">
+      <input class="session-set-input" id="sweight-${i}" type="number" placeholder="${ex.weight||'kg'}" value="${last?.actual_weight||''}" min="0" step="0.5">
+      <button class="session-log-btn" id="slog-${i}" onclick="logSessionSet(${i},${restSec},'${slug}','${targetReps}',${ex.weight||'null'})">Log</button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('session-body').innerHTML = `
+    ${imgUrl ? `<img src="${imgUrl}" alt="" style="width:100%;max-width:400px;aspect-ratio:16/9;object-fit:cover;border-radius:10px;margin-bottom:16px;display:block">` : ''}
+    <div class="session-ex-name">${esc(ex.exercise_name||slug)}</div>
+    <div class="session-ex-target">${targetSets} sets × ${targetReps}${ex.weight ? ' @ '+ex.weight+'kg' : ''} · ${restSec}s rest</div>
+    ${lastText ? `<div class="session-last">${esc(lastText)}</div>` : '<div style="margin-bottom:20px"></div>'}
+    <div class="session-sets">${setRows}</div>
+    <div class="session-add-set" onclick="addSessionSet('${slug}')">+ Add set</div>`;
+
+  const isLast = _sessionExIdx >= _session.exercises.length - 1;
+  document.getElementById('session-footer').innerHTML = `
+    ${_sessionExIdx > 0 ? `<button class="session-prev-btn" onclick="jumpSessionEx(${_sessionExIdx-1})">Back</button>` : ''}
+    ${isLast
+      ? `<button class="session-finish-btn" onclick="finishSession()">Finish Workout</button>`
+      : `<button class="session-next-btn" onclick="jumpSessionEx(${_sessionExIdx+1})">Next</button>`}`;
+}
+
+async function logSessionSet(setIdx, restSec, slug, prescReps, prescWeight) {
+  const reps = parseInt(document.getElementById('sreps-'+setIdx)?.value) || null;
+  const weight = parseFloat(document.getElementById('sweight-'+setIdx)?.value) || null;
+
+  await fetch(`/api/sessions/${_session.id}/sets`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      exercise_slug:slug, set_number:setIdx+1,
+      actual_reps:reps, actual_weight:weight,
+      prescribed_reps:prescReps, prescribed_weight:prescWeight,
+    }),
+  });
+
+  const numEl = document.getElementById('snum-'+setIdx);
+  const logBtn = document.getElementById('slog-'+setIdx);
+  if (numEl) numEl.classList.add('done');
+  if (logBtn) { logBtn.textContent='Done'; logBtn.classList.add('done'); }
+
+  startSessionRest(restSec);
+}
+
+function addSessionSet(slug) {
+  _sessionSetCounts[slug] = (_sessionSetCounts[slug] || 0) + 1;
+  _renderSessionEx();
+}
+
+function jumpSessionEx(i) {
+  if (i < 0 || i >= _session.exercises.length) return;
+  _sessionExIdx = i;
+  _renderSessionEx();
+}
+
+function startSessionRest(sec) {
+  const overlay = document.getElementById('session-rest-overlay');
+  overlay.classList.add('show');
+  let remaining = sec;
+  document.getElementById('session-rest-val').textContent = remaining;
+  clearInterval(_sessionRestTimer);
+  _sessionRestTimer = setInterval(() => {
+    remaining--;
+    document.getElementById('session-rest-val').textContent = remaining;
+    if (remaining <= 0) { clearInterval(_sessionRestTimer); overlay.classList.remove('show'); }
+  }, 1000);
+}
+
+function skipSessionRest() {
+  clearInterval(_sessionRestTimer);
+  document.getElementById('session-rest-overlay').classList.remove('show');
+}
+
+async function finishSession() {
+  if (!_session) return;
+  await fetch(`/api/sessions/${_session.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+  _closeSessionOverlay();
+  switchTab('history');
+}
+
+async function confirmCancelSession() {
+  if (!_session) { _closeSessionOverlay(); return; }
+  if (!confirm('Cancel this session? Logged sets will be discarded.')) return;
+  await fetch(`/api/sessions/${_session.id}`,{method:'DELETE'});
+  _closeSessionOverlay();
+}
+
+function _closeSessionOverlay() {
+  clearInterval(_sessionRestTimer);
+  document.getElementById('session-rest-overlay').classList.remove('show');
+  document.getElementById('session-overlay').classList.remove('open');
+  _session = null;
+}
+
+// ── Planner picker (with workout tab) ─────────────────────────────────────────
+let _pickerTab = 'workout';
+
+function switchPickerTab(tab) {
+  _pickerTab = tab;
+  document.querySelectorAll('.picker-tab').forEach((t,i) => t.classList.toggle('active', ['workout','exercise'][i] === tab));
+  renderPickerContent();
+}
+
+async function renderPickerContent() {
+  const container = document.getElementById('picker-modal-content');
+  if (_pickerTab === 'workout') {
+    const res = await fetch('/api/workouts');
+    const list = await res.json();
+    if (!list.length) {
+      container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No workouts yet. Create one in the Workouts tab.</p>';
+      return;
+    }
+    container.innerHTML = list.map(w =>
+      `<div class="picker-item" onclick="pickWorkout(${w.id},'${esc(w.name)}')">
+        ${esc(w.name)}<div class="meta">${w.exercise_count||0} exercises</div>
+      </div>`).join('');
+  } else {
+    const res = await fetch('/api/exercises?per_page=200');
+    const data = await res.json();
+    const exercises = data.exercises || [];
+    container.innerHTML = `
+      <input type="text" class="filter-select" placeholder="Search..." style="width:100%;margin-bottom:10px" oninput="filterPickerItems(this.value)" id="picker-search">
+      <div class="picker-modal-grid" id="picker-grid">
+        ${exercises.map(e => `<div class="picker-item" onclick="pickExercise('${e.slug}')">
+          ${esc(e.name)}<div class="meta">${esc(e.muscle_group||'')}</div>
+        </div>`).join('')}
+      </div>`;
   }
-  renderWorkoutExercise();
 }
 
-function closeWorkout() {
-  clearInterval(restTimer);
-  document.getElementById('rest-overlay').classList.remove('show');
-  document.getElementById('workout-overlay').classList.remove('open');
+async function openExercisePicker(date, slot) {
+  _pickerDate = date; _pickerSlot = slot;
+  _pickerTab = 'workout';
+  document.querySelectorAll('.picker-tab').forEach((t,i) => t.classList.toggle('active', i===0));
+  document.getElementById('picker-modal').classList.add('open');
+  renderPickerContent();
 }
 
-// ── History ───────────────────────────────────────────────────────────────────
+async function pickWorkout(workoutId, name) {
+  await fetch('/api/plan',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({date:_pickerDate,slot:_pickerSlot,workout_id:workoutId,notes:name}),
+  });
+  closePicker();
+  loadPlanner();
+}
+
+// ── History (sessions) ────────────────────────────────────────────────────────
 async function loadHistory() {
-  const res = await fetch('/api/log/history?limit=100');
-  const entries = await res.json();
+  const res = await fetch('/api/sessions?limit=50');
+  const sessions = await res.json();
   const container = document.getElementById('history-content');
   const empty = document.getElementById('history-empty');
 
-  if (!entries.length) {
-    container.innerHTML = '';
-    empty.style.display = '';
-    return;
-  }
+  if (!sessions.length) { container.innerHTML = ''; empty.style.display = ''; return; }
   empty.style.display = 'none';
 
-  // Group by date
-  const groups = {};
-  entries.forEach(e => {
-    const date = (e.logged_at||'').slice(0,10);
-    if (!groups[date]) groups[date] = [];
-    groups[date].push(e);
-  });
-
-  container.innerHTML = Object.keys(groups).sort().reverse().map(date => {
-    const rows = groups[date].map(e => {
-      const sets = (e.sets||[]).filter(s => s && (s.reps || s.weight));
-      const pills = sets.map(s => `<span class="set-pill">${s.reps||'?'} reps${s.weight ? ' @ '+s.weight+'kg' : ''}</span>`).join('');
-      const imgUrl = e.image_url ? (e.image_url.startsWith('http') ? e.image_url : '/'+e.image_url) : null;
-      return `<div class="history-exercise-row">
-        <div class="history-exercise-img">
-          ${imgUrl ? `<img src="${imgUrl}" alt="">` : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>'}
-        </div>
-        <div class="history-exercise-info">
-          <div class="history-exercise-name">${esc(e.exercise_name||e.exercise_slug)}</div>
-          <div class="log-entry-sets">${pills||'<span style="font-size:11px;color:var(--text-muted)">No set data</span>'}</div>
-        </div>
-      </div>`;
-    }).join('');
-    const d = new Date(date+'T00:00:00');
-    return `<div class="history-date-group">
-      <div class="history-date-header">${d.toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</div>
-      ${rows}
+  container.innerHTML = sessions.map(s => {
+    const startDate = new Date(s.started_at);
+    const duration = s.finished_at
+      ? Math.round((new Date(s.finished_at) - startDate) / 60000) + ' min'
+      : '';
+    const vol = s.total_volume > 0 ? `${s.total_volume} kg` : '';
+    return `<div class="session-history-card" onclick="openSessionDetail(${s.id})">
+      <div class="session-history-name">${esc(s.workout_name||'Quick Session')}</div>
+      <div class="session-history-meta">
+        <span>${startDate.toLocaleDateString('en',{weekday:'short',month:'short',day:'numeric'})}</span>
+        ${duration ? `<span>${duration}</span>` : ''}
+        ${s.exercise_count ? `<span>${s.exercise_count} exercise${s.exercise_count!==1?'s':''}</span>` : ''}
+        ${vol ? `<span>${vol} volume</span>` : ''}
+      </div>
     </div>`;
   }).join('');
+}
+
+async function openSessionDetail(sid) {
+  const res = await fetch('/api/sessions/' + sid);
+  const s = await res.json();
+
+  // Group sets by exercise
+  const byEx = {};
+  (s.sets||[]).forEach(set => {
+    if (!byEx[set.exercise_slug]) byEx[set.exercise_slug] = [];
+    byEx[set.exercise_slug].push(set);
+  });
+
+  const rows = Object.entries(byEx).map(([slug, sets]) => {
+    const name = sets[0].exercise_name || slug;
+    const pills = sets.map(s =>
+      `<span class="set-pill">${s.actual_reps||'?'} reps${s.actual_weight ? ' @ '+s.actual_weight+'kg' : ''}</span>`
+    ).join('');
+    return `<div class="history-exercise-row">
+      <div class="history-exercise-info">
+        <div class="history-exercise-name">${esc(name)}</div>
+        <div class="log-entry-sets">${pills||'<span style="font-size:11px;color:var(--text-muted)">No sets logged</span>'}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const startDate = new Date(s.started_at);
+  document.getElementById('drawer-content').innerHTML = `
+    <div class="drawer-body">
+      <div class="drawer-title">${esc(s.workout_name||'Quick Session')}</div>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">${startDate.toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</p>
+      <div class="drawer-section">Exercises</div>
+      ${rows || '<p style="font-size:13px;color:var(--text-muted)">No data logged.</p>'}
+    </div>`;
+  document.getElementById('drawer-overlay').classList.add('open');
 }
 
 // ── Equipment filter ──────────────────────────────────────────────────────────
