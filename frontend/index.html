@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Workstr</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Tokens ───────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --amber:#E8820C;
+  --cream:#faf7f2;
+  --white:#ffffff;
+  --brown-dark:#2c1a06;
+  --text-mid:#6a4a28;
+  --text-muted:#c0a880;
+  --text-dim:#9a8060;
+  --border-soft:#ede7dc;
+  --sage:#7a9068;
+  --sidebar-w:52px;
+  --sidebar-expanded:220px;
+  --topbar-h:68px;
+}
+html{height:100%;height:-webkit-fill-available}
+body{
+  font-family:'Jost',sans-serif;font-size:14px;color:var(--brown-dark);
+  background:var(--cream);min-height:100vh;min-height:-webkit-fill-available;
+  overflow:hidden;
+}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+input,select,textarea{font-family:inherit;font-size:inherit}
+
+/* ── Topbar ───────────────────────────────────────────────────────────────── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:var(--topbar-h);
+  background:var(--white);border-bottom:1px solid var(--border-soft);
+  display:flex;align-items:center;padding:0 20px;z-index:100;gap:12px;
+}
+.logo-zone{width:230px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center}
+.logo-mark{
+  font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;
+  color:var(--brown-dark);line-height:1;
+}
+.logo-mark span{color:var(--amber)}
+.logo-tagline{
+  font-family:'Jost',sans-serif;font-weight:500;font-size:9px;
+  letter-spacing:2.5px;text-transform:uppercase;color:var(--text-muted);
+  margin-top:2px;
+}
+.topbar-search{
+  flex:1;max-width:420px;position:relative;
+}
+.topbar-search input{
+  width:100%;height:36px;border:1px solid var(--border-soft);border-radius:8px;
+  padding:0 12px 0 36px;font-size:13px;background:var(--cream);
+  outline:none;transition:border .2s;
+}
+.topbar-search input:focus{border-color:var(--amber)}
+.topbar-search svg{position:absolute;left:10px;top:8px;color:var(--text-muted)}
+.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.btn-add{
+  height:36px;padding:0 16px;border-radius:8px;
+  background:var(--amber);color:#fff;font-weight:600;font-size:13px;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+}
+.btn-add:hover{filter:brightness(1.1)}
+
+/* ── Sidebar ──────────────────────────────────────────────────────────────── */
+.sidebar{
+  position:fixed;top:var(--topbar-h);left:0;bottom:0;
+  width:var(--sidebar-w);background:var(--white);
+  border-right:1px solid var(--border-soft);
+  display:flex;flex-direction:column;z-index:90;
+  transition:width .2s ease;overflow:hidden;
+}
+.sidebar.expanded{width:var(--sidebar-expanded)}
+.sidebar-toggle{
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+  color:var(--text-mid);cursor:pointer;
+}
+.sidebar-toggle svg{flex-shrink:0}
+.sidebar-toggle span{
+  font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  opacity:0;white-space:nowrap;transition:opacity .15s;
+}
+.sidebar.expanded .sidebar-toggle span{opacity:1}
+.nav-items{flex:1;display:flex;flex-direction:column;padding:4px 0}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:10px 16px;
+  color:var(--text-dim);text-decoration:none;cursor:pointer;
+  transition:color .15s,background .15s;position:relative;
+}
+.nav-item:hover{color:var(--brown-dark);background:rgba(232,130,12,.04)}
+.nav-item.active{color:var(--amber)}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;
+  background:var(--amber);border-radius:0 3px 3px 0;
+}
+.nav-item svg{flex-shrink:0;width:20px;height:20px}
+.nav-item span{
+  font-size:13px;font-weight:500;opacity:0;white-space:nowrap;transition:opacity .15s;
+}
+.sidebar.expanded .nav-item span{opacity:1}
+.nav-divider{
+  height:1px;background:var(--border-soft);margin:6px 12px;
+}
+.nav-bottom{margin-top:auto;padding-bottom:12px}
+
+/* ── Content ──────────────────────────────────────────────────────────────── */
+.content{
+  position:fixed;top:var(--topbar-h);left:var(--sidebar-w);right:0;bottom:0;
+  overflow-y:auto;padding:24px;transition:left .2s ease;
+  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
+}
+.sidebar.expanded ~ .content{left:var(--sidebar-expanded)}
+
+.page{display:none}
+.page.active{display:block}
+
+.page-title{
+  font-family:'Cormorant Garamond',serif;font-weight:700;font-style:italic;
+  font-size:26px;color:var(--brown-dark);margin-bottom:20px;
+}
+
+/* ── Exercise Grid ────────────────────────────────────────────────────────── */
+.exercise-grid{
+  display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+  gap:16px;
+}
+.exercise-card{
+  background:var(--white);border:1px solid var(--border-soft);border-radius:12px;
+  overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .15s;
+}
+.exercise-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-2px)}
+.card-img{
+  width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--cream);
+  display:flex;align-items:center;justify-content:center;position:relative;
+}
+.card-img img{width:100%;height:100%;object-fit:cover}
+.card-placeholder{color:var(--text-muted);font-size:40px}
+.card-body{padding:12px}
+.card-name{
+  font-family:'Cormorant Garamond',serif;font-weight:600;font-size:17px;
+  color:var(--brown-dark);line-height:1.2;margin-bottom:6px;
+}
+.card-meta{
+  display:flex;gap:10px;font-size:11px;color:var(--text-muted);align-items:center;
+}
+.card-meta svg{width:12px;height:12px;vertical-align:-1px}
+.source-badge{
+  position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:10px;
+  font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
+}
+.badge-ai{background:rgba(70,100,200,.85);color:#e0ecff}
+.badge-manual{background:rgba(160,100,20,.85);color:#fff4e0}
+.badge-seed{background:rgba(40,130,80,.85);color:#e0ffe8}
+.badge-camera{background:rgba(20,130,150,.85);color:#e0f7fa}
+
+/* ── Drawer ───────────────────────────────────────────────────────────────── */
+.drawer-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;
+}
+.drawer-overlay.open{display:block}
+.drawer{
+  position:fixed;top:0;right:-520px;width:500px;max-width:90vw;height:100%;
+  background:var(--white);z-index:201;overflow-y:auto;
+  transition:right .3s ease;box-shadow:-4px 0 20px rgba(0,0,0,.1);
+}
+.drawer-overlay.open .drawer{right:0}
+.drawer-close{
+  position:absolute;top:12px;right:12px;width:32px;height:32px;
+  background:rgba(0,0,0,.4);border-radius:50%;color:#fff;
+  display:flex;align-items:center;justify-content:center;z-index:5;
+}
+.drawer-img{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--cream)}
+.drawer-body{padding:20px}
+.drawer-title{
+  font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;
+  color:var(--brown-dark);margin-bottom:12px;
+}
+.drawer-section{
+  font-family:'Jost',sans-serif;font-weight:600;font-size:10px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);
+  margin:16px 0 8px;
+}
+.drawer-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.drawer-tag{
+  padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;
+  background:var(--cream);color:var(--text-mid);border:1px solid var(--border-soft);
+}
+.instruction-list{list-style:none;counter-reset:step}
+.instruction-list li{
+  counter-increment:step;padding:8px 0;border-bottom:1px solid var(--border-soft);
+  font-size:13px;line-height:1.5;color:var(--text-mid);
+}
+.instruction-list li::before{
+  content:counter(step);display:inline-flex;width:22px;height:22px;
+  border-radius:50%;background:var(--amber);color:#fff;
+  align-items:center;justify-content:center;font-size:11px;font-weight:600;
+  margin-right:10px;flex-shrink:0;
+}
+
+/* ── Empty state ──────────────────────────────────────────────────────────── */
+.empty-state{
+  text-align:center;padding:60px 20px;color:var(--text-muted);
+}
+.empty-state svg{width:48px;height:48px;margin-bottom:12px;color:var(--text-muted)}
+.empty-state h3{
+  font-family:'Cormorant Garamond',serif;font-weight:700;font-size:20px;
+  color:var(--text-mid);margin-bottom:8px;
+}
+.empty-state p{font-size:13px;max-width:340px;margin:0 auto}
+
+/* ── Equipment list ───────────────────────────────────────────────────────── */
+.eq-list{max-width:600px}
+.eq-item{
+  display:flex;align-items:center;gap:12px;padding:10px 0;
+  border-bottom:1px solid var(--border-soft);
+}
+.eq-item .eq-name{flex:1;font-weight:500}
+.eq-item .eq-cat{font-size:12px;color:var(--text-muted)}
+.eq-owned{
+  width:20px;height:20px;border-radius:4px;border:2px solid var(--border-soft);
+  display:flex;align-items:center;justify-content:center;
+}
+.eq-owned.yes{background:var(--sage);border-color:var(--sage);color:#fff}
+
+/* ── Settings ─────────────────────────────────────────────────────────────── */
+.settings-group{max-width:480px;margin-bottom:24px}
+.settings-group label{
+  display:block;font-size:11px;font-weight:600;letter-spacing:1px;
+  text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;
+}
+.settings-group input{
+  width:100%;height:38px;border:1px solid var(--border-soft);border-radius:8px;
+  padding:0 12px;font-size:13px;outline:none;
+}
+.settings-group input:focus{border-color:var(--amber)}
+.btn-save{
+  height:38px;padding:0 24px;border-radius:8px;
+  background:var(--amber);color:#fff;font-weight:600;font-size:13px;
+  margin-top:12px;
+}
+.btn-save:hover{filter:brightness(1.1)}
+
+/* ── Utility ──────────────────────────────────────────────────────────────── */
+.btn-outline{
+  height:32px;padding:0 14px;border-radius:8px;font-size:12px;font-weight:600;
+  border:1px solid var(--border-soft);color:var(--text-mid);background:var(--white);
+}
+.btn-outline:hover{border-color:var(--amber);color:var(--amber)}
+</style>
+</head>
+<body>
+
+<!-- ── Topbar ─────────────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="logo-zone">
+    <div class="logo-mark">Work<span>str</span></div>
+    <div class="logo-tagline">exercise intelligence</div>
+  </div>
+  <div class="topbar-search" id="topbar-search">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" placeholder="Search exercises..." id="search-input" oninput="onSearch()">
+  </div>
+  <div class="topbar-actions">
+    <button class="btn-add" onclick="openAddModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Exercise
+    </button>
+  </div>
+</header>
+
+<!-- ── Sidebar ────────────────────────────────────────────────────────────── -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-toggle" onclick="toggleSidebar()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <span>Menu</span>
+  </div>
+  <div class="nav-items">
+    <div class="nav-item active" data-tab="exercises" onclick="switchTab('exercises')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
+      <span>Exercises</span>
+    </div>
+    <div class="nav-item" data-tab="favorites" onclick="switchTab('favorites')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <span>Favorites</span>
+    </div>
+    <div class="nav-item" data-tab="staging" onclick="switchTab('staging')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
+      <span>Staging</span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-item" data-tab="planner" onclick="switchTab('planner')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Planner</span>
+    </div>
+    <div class="nav-item" data-tab="equipment" onclick="switchTab('equipment')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/></svg>
+      <span>Equipment</span>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-bottom">
+      <div class="nav-item" data-tab="trash" onclick="switchTab('trash')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        <span>Trash</span>
+      </div>
+      <div class="nav-item" data-tab="settings" onclick="switchTab('settings')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <span>Settings</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Content ────────────────────────────────────────────────────────────── -->
+<main class="content" id="content">
+
+  <!-- Exercises -->
+  <div class="page active" id="page-exercises">
+    <div class="page-title">Exercises</div>
+    <div class="exercise-grid" id="exercise-grid"></div>
+    <div class="empty-state" id="exercises-empty" style="display:none">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
+      <h3>No exercises yet</h3>
+      <p>Add your first exercise to get started.</p>
+    </div>
+  </div>
+
+  <!-- Favorites -->
+  <div class="page" id="page-favorites">
+    <div class="page-title">Favorites</div>
+    <div class="exercise-grid" id="favorites-grid"></div>
+    <div class="empty-state" id="favorites-empty" style="display:none">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <h3>No favorites yet</h3>
+      <p>Heart an exercise to save it here.</p>
+    </div>
+  </div>
+
+  <!-- Staging -->
+  <div class="page" id="page-staging">
+    <div class="page-title">Staging</div>
+    <div class="exercise-grid" id="staging-grid"></div>
+    <div class="empty-state" id="staging-empty" style="display:none">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
+      <h3>Staging is empty</h3>
+      <p>Imported exercises will appear here for review.</p>
+    </div>
+  </div>
+
+  <!-- Planner -->
+  <div class="page" id="page-planner">
+    <div class="page-title">Workout Planner</div>
+    <p style="color:var(--text-muted);font-size:13px">Weekly workout planner coming soon.</p>
+  </div>
+
+  <!-- Equipment -->
+  <div class="page" id="page-equipment">
+    <div class="page-title">Equipment</div>
+    <div style="margin-bottom:16px">
+      <button class="btn-outline" onclick="promptAddEquipment()">+ Add Equipment</button>
+    </div>
+    <div class="eq-list" id="equipment-list"></div>
+    <div class="empty-state" id="equipment-empty" style="display:none">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+      <h3>No equipment</h3>
+      <p>Track which gym equipment you have access to.</p>
+    </div>
+  </div>
+
+  <!-- Trash -->
+  <div class="page" id="page-trash">
+    <div class="page-title">Trash</div>
+    <div class="exercise-grid" id="trash-grid"></div>
+    <div class="empty-state" id="trash-empty" style="display:none">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+      <h3>Trash is empty</h3>
+      <p>Deleted exercises will appear here.</p>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="page" id="page-settings">
+    <div class="page-title">Settings</div>
+    <div class="settings-group">
+      <label>PPQ API Key</label>
+      <input type="password" id="set-ppq-key" placeholder="sk-...">
+    </div>
+    <div class="settings-group">
+      <label>PPQ Base URL</label>
+      <input type="text" id="set-ppq-url" placeholder="https://api.ppq.ai/v1">
+    </div>
+    <div class="settings-group">
+      <label>Recipe Model</label>
+      <input type="text" id="set-ppq-model" placeholder="gpt-4o-mini">
+    </div>
+    <div class="settings-group">
+      <label>Image Model</label>
+      <input type="text" id="set-ppq-img-model" placeholder="dall-e-3">
+    </div>
+    <div class="settings-group">
+      <label>Vision Model</label>
+      <input type="text" id="set-ppq-vis-model" placeholder="gpt-4o">
+    </div>
+    <button class="btn-save" onclick="saveSettings()">Save Settings</button>
+  </div>
+</main>
+
+<!-- ── Drawer Overlay ─────────────────────────────────────────────────────── -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer(event)">
+  <div class="drawer" id="drawer">
+    <button class="drawer-close" onclick="closeDrawer()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div id="drawer-content"></div>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let exercisesData = [];
+let currentTab = 'exercises';
+let searchQuery = '';
+
+// ── Tab switching ────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.tab === tab);
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + tab);
+  if (page) page.classList.add('active');
+
+  // Show/hide search
+  const search = document.getElementById('topbar-search');
+  search.style.display = ['exercises','favorites','staging','trash'].includes(tab) ? '' : 'none';
+
+  if (tab === 'exercises') loadExercises('active');
+  else if (tab === 'favorites') loadExercises('favorited');
+  else if (tab === 'staging') loadExercises('staged');
+  else if (tab === 'trash') loadExercises('trashed');
+  else if (tab === 'equipment') loadEquipment();
+  else if (tab === 'settings') loadSettings();
+}
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('expanded');
+}
+
+// ── Exercises ────────────────────────────────────────────────────────────────
+async function loadExercises(status) {
+  const res = await fetch('/api/exercises?status=' + status + '&per_page=200');
+  const data = await res.json();
+  exercisesData = data.exercises || [];
+  renderExercises(status);
+}
+
+function renderExercises(status) {
+  let gridId, emptyId;
+  if (status === 'favorited') { gridId = 'favorites-grid'; emptyId = 'favorites-empty'; }
+  else if (status === 'staged') { gridId = 'staging-grid'; emptyId = 'staging-empty'; }
+  else if (status === 'trashed') { gridId = 'trash-grid'; emptyId = 'trash-empty'; }
+  else { gridId = 'exercise-grid'; emptyId = 'exercises-empty'; }
+
+  const grid = document.getElementById(gridId);
+  const empty = document.getElementById(emptyId);
+  let list = exercisesData;
+
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(e =>
+      (e.name || '').toLowerCase().includes(q) ||
+      (e.category || '').toLowerCase().includes(q) ||
+      (e.muscle_group || '').toLowerCase().includes(q)
+    );
+  }
+
+  if (!list.length) {
+    grid.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = list.map(e => {
+    const img = e.image_url
+      ? `<img src="/${e.image_url}" alt="" loading="lazy">`
+      : `<div class="card-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
+    const badgeClass = e.source_type === 'ai' ? 'badge-ai' : e.source_type === 'seed' ? 'badge-seed' : e.source_type === 'camera' ? 'badge-camera' : 'badge-manual';
+    const badge = `<div class="source-badge ${badgeClass}">${e.source_type || 'manual'}</div>`;
+    const muscleIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`;
+    return `<div class="exercise-card" onclick="openDrawer('${e.slug}')">
+      <div class="card-img">${img}${badge}</div>
+      <div class="card-body">
+        <div class="card-name">${esc(e.name)}</div>
+        <div class="card-meta">
+          ${e.muscle_group ? muscleIcon + ' ' + esc(e.muscle_group) : ''}
+          ${e.category ? '<span>' + esc(e.category) + '</span>' : ''}
+          ${e.difficulty ? '<span>' + esc(e.difficulty) + '</span>' : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function onSearch() {
+  searchQuery = document.getElementById('search-input').value.trim();
+  renderExercises(currentTab === 'favorites' ? 'favorited' : currentTab === 'staging' ? 'staged' : currentTab === 'trash' ? 'trashed' : 'active');
+}
+
+// ── Drawer ───────────────────────────────────────────────────────────────────
+async function openDrawer(slug) {
+  const res = await fetch('/api/exercises/' + slug);
+  const ex = await res.json();
+  const full = ex.full || {};
+
+  const img = ex.image_url
+    ? `<img class="drawer-img" src="/${ex.image_url}" alt="">`
+    : `<div class="drawer-img" style="display:flex;align-items:center;justify-content:center"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
+
+  const tags = (ex.tags || []).map(t => `<span class="drawer-tag">${esc(t)}</span>`).join('');
+  const muscles = (ex.muscles || []).map(m => `<span class="drawer-tag">${esc(m)}</span>`).join('');
+  const equip = (ex.equipment_list || []).map(e => `<span class="drawer-tag">${esc(e)}</span>`).join('');
+
+  const instructions = full.instructions || [];
+  const steps = instructions.map(s => {
+    const text = typeof s === 'string' ? s : (s.text || s.description || '');
+    return `<li>${esc(text)}</li>`;
+  }).join('');
+
+  let actions = '';
+  if (ex.status === 'active') {
+    actions = `<button class="btn-outline" style="margin-right:8px;color:var(--sage);border-color:var(--sage)" onclick="toggleFav('${slug}')">
+      ${ex.favorited ? 'Unfavorite' : 'Favorite'}
+    </button>
+    <button class="btn-outline" style="color:#c44;border-color:#c44" onclick="trashExercise('${slug}')">Delete</button>`;
+  } else if (ex.status === 'staged') {
+    actions = `<button class="btn-outline" style="margin-right:8px;color:var(--sage);border-color:var(--sage)" onclick="approveExercise('${slug}')">Approve</button>
+    <button class="btn-outline" style="color:#c44;border-color:#c44" onclick="trashExercise('${slug}')">Discard</button>`;
+  } else if (ex.status === 'trashed') {
+    actions = `<button class="btn-outline" style="margin-right:8px;color:var(--sage);border-color:var(--sage)" onclick="restoreExercise('${slug}')">Restore</button>
+    <button class="btn-outline" style="color:#c44;border-color:#c44" onclick="permDelete('${slug}')">Delete Forever</button>`;
+  }
+
+  document.getElementById('drawer-content').innerHTML = `
+    ${img}
+    <div class="drawer-body">
+      <div class="drawer-title">${esc(ex.name)}</div>
+      ${ex.description ? `<p style="font-size:13px;color:var(--text-mid);margin-bottom:12px">${esc(ex.description)}</p>` : ''}
+      ${muscles ? `<div class="drawer-section">Target Muscles</div><div class="drawer-tags">${muscles}</div>` : ''}
+      ${equip ? `<div class="drawer-section">Equipment</div><div class="drawer-tags">${equip}</div>` : ''}
+      ${tags ? `<div class="drawer-section">Tags</div><div class="drawer-tags">${tags}</div>` : ''}
+      ${steps ? `<div class="drawer-section">Instructions</div><ol class="instruction-list">${steps}</ol>` : ''}
+      <div style="margin-top:20px;display:flex;gap:8px">${actions}</div>
+    </div>`;
+
+  document.getElementById('drawer-overlay').classList.add('open');
+}
+
+function closeDrawer(e) {
+  if (e && e.target !== document.getElementById('drawer-overlay')) return;
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+// ── Actions ──────────────────────────────────────────────────────────────────
+async function toggleFav(slug) {
+  await fetch('/api/exercises/favorite/' + slug, {method: 'POST'});
+  closeDrawer();
+  switchTab(currentTab);
+}
+
+async function trashExercise(slug) {
+  await fetch('/api/exercises/' + slug, {method: 'DELETE'});
+  closeDrawer();
+  switchTab(currentTab);
+}
+
+async function approveExercise(slug) {
+  await fetch('/api/exercises/approve/' + slug, {method: 'POST'});
+  closeDrawer();
+  switchTab(currentTab);
+}
+
+async function restoreExercise(slug) {
+  await fetch('/api/exercises/restore/' + slug, {method: 'POST'});
+  closeDrawer();
+  switchTab(currentTab);
+}
+
+async function permDelete(slug) {
+  if (!confirm('Permanently delete this exercise?')) return;
+  await fetch('/api/exercises/permanent/' + slug, {method: 'DELETE'});
+  closeDrawer();
+  switchTab(currentTab);
+}
+
+// ── Equipment ────────────────────────────────────────────────────────────────
+async function loadEquipment() {
+  const res = await fetch('/api/equipment');
+  const list = await res.json();
+  const container = document.getElementById('equipment-list');
+  const empty = document.getElementById('equipment-empty');
+
+  if (!list.length) {
+    container.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  container.innerHTML = list.map(eq => `
+    <div class="eq-item">
+      <div class="eq-owned ${eq.owned ? 'yes' : ''}">
+        ${eq.owned ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      </div>
+      <div class="eq-name">${esc(eq.name)}</div>
+      <div class="eq-cat">${esc(eq.category || '')}</div>
+      <button class="btn-outline" style="font-size:11px;height:26px;padding:0 10px;color:#c44;border-color:#c44" onclick="deleteEquipment(${eq.id})">Remove</button>
+    </div>
+  `).join('');
+}
+
+function promptAddEquipment() {
+  const name = prompt('Equipment name:');
+  if (!name) return;
+  const category = prompt('Category (optional):');
+  fetch('/api/equipment', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name, category: category || null, owned: true}),
+  }).then(() => loadEquipment());
+}
+
+async function deleteEquipment(id) {
+  await fetch('/api/equipment/' + id, {method: 'DELETE'});
+  loadEquipment();
+}
+
+// ── Settings ─────────────────────────────────────────────────────────────────
+async function loadSettings() {
+  const res = await fetch('/api/settings');
+  const s = await res.json();
+  document.getElementById('set-ppq-key').value = s.PPQ_API_KEY || '';
+  document.getElementById('set-ppq-url').value = s.PPQ_BASE_URL || '';
+  document.getElementById('set-ppq-model').value = s.PPQ_MODEL || '';
+  document.getElementById('set-ppq-img-model').value = s.PPQ_IMAGE_MODEL || '';
+  document.getElementById('set-ppq-vis-model').value = s.PPQ_VISION_MODEL || '';
+}
+
+async function saveSettings() {
+  await fetch('/api/settings', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      PPQ_API_KEY: document.getElementById('set-ppq-key').value,
+      PPQ_BASE_URL: document.getElementById('set-ppq-url').value,
+      PPQ_MODEL: document.getElementById('set-ppq-model').value,
+      PPQ_IMAGE_MODEL: document.getElementById('set-ppq-img-model').value,
+      PPQ_VISION_MODEL: document.getElementById('set-ppq-vis-model').value,
+    }),
+  });
+  alert('Settings saved');
+}
+
+// ── Add exercise (placeholder — manual for now) ─────────────────────────────
+function openAddModal() {
+  const name = prompt('Exercise name:');
+  if (!name) return;
+  const category = prompt('Category (e.g. Chest, Back, Legs):') || '';
+  const muscle = prompt('Primary muscle group:') || '';
+  fetch('/api/import/manual', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({name, category, muscle_group: muscle}),
+  }).then(() => switchTab('exercises'));
+}
+
+// ── Util ─────────────────────────────────────────────────────────────────────
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+switchTab('exercises');
+</script>
+</body>
+</html>

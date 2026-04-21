@@ -1,0 +1,25 @@
+# Claude Code — internal files, never publish
+CLAUDE.md
+.claude/
+
+# Runtime data
+data/
+*.db
+*.backup.*
+VERSION
+
+# Exercise data — never publish
+exercises/*.json
+images/*.jpg
+images/*.jpeg
+images/*.png
+images/*.webp
+
+# Environment / secrets
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/

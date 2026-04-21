@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  workstr:
+    build: .
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./exercises:/app/exercises
+      - ./images:/app/images
+      - ./data:/app/data
+      - ./.env:/app/.env
+      - ./frontend:/app/frontend
+      - ./server.py:/app/server.py
+      - ./modules:/app/modules
+      - ./core:/app/core
+    restart: unless-stopped
