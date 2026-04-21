@@ -135,7 +135,7 @@ def save_exercise_json(data: dict, status: str = "staged") -> Path | None:
                      :source_type, :status, :nostr_event_id)
                 ON CONFLICT(slug) DO UPDATE SET
                     name=excluded.name,
-                    description=excluded.image_url,
+                    description=excluded.description,
                     category=excluded.category,
                     muscle_group=excluded.muscle_group,
                     muscles=excluded.muscles,

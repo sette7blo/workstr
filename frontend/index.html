@@ -7,273 +7,223 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-/* ── Reset & Tokens ───────────────────────────────────────────────────────── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --amber:#E8820C;
-  --cream:#faf7f2;
-  --white:#ffffff;
-  --brown-dark:#2c1a06;
-  --text-mid:#6a4a28;
-  --text-muted:#c0a880;
-  --text-dim:#9a8060;
-  --border-soft:#ede7dc;
-  --sage:#7a9068;
-  --sidebar-w:52px;
-  --sidebar-expanded:220px;
-  --topbar-h:68px;
+  --amber:#E8820C;--cream:#faf7f2;--white:#ffffff;--brown-dark:#2c1a06;
+  --text-mid:#6a4a28;--text-muted:#c0a880;--text-dim:#9a8060;
+  --border-soft:#ede7dc;--sage:#7a9068;--sidebar-w:52px;--sidebar-expanded:220px;--topbar-h:68px;
 }
 html{height:100%;height:-webkit-fill-available}
-body{
-  font-family:'Jost',sans-serif;font-size:14px;color:var(--brown-dark);
-  background:var(--cream);min-height:100vh;min-height:-webkit-fill-available;
-  overflow:hidden;
-}
+body{font-family:'Jost',sans-serif;font-size:14px;color:var(--brown-dark);background:var(--cream);min-height:100vh;min-height:-webkit-fill-available;overflow:hidden}
 button{cursor:pointer;font-family:inherit;border:none;background:none}
 input,select,textarea{font-family:inherit;font-size:inherit}
+a{color:inherit;text-decoration:none}
 
-/* ── Topbar ───────────────────────────────────────────────────────────────── */
-.topbar{
-  position:fixed;top:0;left:0;right:0;height:var(--topbar-h);
-  background:var(--white);border-bottom:1px solid var(--border-soft);
-  display:flex;align-items:center;padding:0 20px;z-index:100;gap:12px;
-}
+/* Topbar */
+.topbar{position:fixed;top:0;left:0;right:0;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border-soft);display:flex;align-items:center;padding:0 20px;z-index:100;gap:12px}
 .logo-zone{width:230px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center}
-.logo-mark{
-  font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;
-  color:var(--brown-dark);line-height:1;
-}
+.logo-mark{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;color:var(--brown-dark);line-height:1}
 .logo-mark span{color:var(--amber)}
-.logo-tagline{
-  font-family:'Jost',sans-serif;font-weight:500;font-size:9px;
-  letter-spacing:2.5px;text-transform:uppercase;color:var(--text-muted);
-  margin-top:2px;
-}
-.topbar-search{
-  flex:1;max-width:420px;position:relative;
-}
-.topbar-search input{
-  width:100%;height:36px;border:1px solid var(--border-soft);border-radius:8px;
-  padding:0 12px 0 36px;font-size:13px;background:var(--cream);
-  outline:none;transition:border .2s;
-}
+.logo-tagline{font-family:'Jost',sans-serif;font-weight:500;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-muted);margin-top:2px}
+.topbar-search{flex:1;max-width:420px;position:relative}
+.topbar-search input{width:100%;height:36px;border:1px solid var(--border-soft);border-radius:8px;padding:0 12px 0 36px;font-size:13px;background:var(--cream);outline:none;transition:border .2s}
 .topbar-search input:focus{border-color:var(--amber)}
 .topbar-search svg{position:absolute;left:10px;top:8px;color:var(--text-muted)}
 .topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
-.btn-add{
-  height:36px;padding:0 16px;border-radius:8px;
-  background:var(--amber);color:#fff;font-weight:600;font-size:13px;
-  display:flex;align-items:center;gap:6px;white-space:nowrap;
-}
+.btn-add{height:36px;padding:0 16px;border-radius:8px;background:var(--amber);color:#fff;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap}
 .btn-add:hover{filter:brightness(1.1)}
 
-/* ── Sidebar ──────────────────────────────────────────────────────────────── */
-.sidebar{
-  position:fixed;top:var(--topbar-h);left:0;bottom:0;
-  width:var(--sidebar-w);background:var(--white);
-  border-right:1px solid var(--border-soft);
-  display:flex;flex-direction:column;z-index:90;
-  transition:width .2s ease;overflow:hidden;
-}
+/* Sidebar */
+.sidebar{position:fixed;top:var(--topbar-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;z-index:90;transition:width .2s ease;overflow:hidden}
 .sidebar.expanded{width:var(--sidebar-expanded)}
-.sidebar-toggle{
-  padding:14px 16px;display:flex;align-items:center;gap:12px;
-  color:var(--text-mid);cursor:pointer;
-}
+.sidebar-toggle{padding:14px 16px;display:flex;align-items:center;gap:12px;color:var(--text-mid);cursor:pointer}
 .sidebar-toggle svg{flex-shrink:0}
-.sidebar-toggle span{
-  font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
-  opacity:0;white-space:nowrap;transition:opacity .15s;
-}
+.sidebar-toggle span{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;opacity:0;white-space:nowrap;transition:opacity .15s}
 .sidebar.expanded .sidebar-toggle span{opacity:1}
-.nav-items{flex:1;display:flex;flex-direction:column;padding:4px 0}
-.nav-item{
-  display:flex;align-items:center;gap:12px;padding:10px 16px;
-  color:var(--text-dim);text-decoration:none;cursor:pointer;
-  transition:color .15s,background .15s;position:relative;
-}
+.nav-items{flex:1;display:flex;flex-direction:column;padding:4px 0;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;color:var(--text-dim);cursor:pointer;transition:color .15s,background .15s;position:relative;flex-shrink:0}
 .nav-item:hover{color:var(--brown-dark);background:rgba(232,130,12,.04)}
 .nav-item.active{color:var(--amber)}
-.nav-item.active::before{
-  content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;
-  background:var(--amber);border-radius:0 3px 3px 0;
-}
+.nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--amber);border-radius:0 3px 3px 0}
 .nav-item svg{flex-shrink:0;width:20px;height:20px}
-.nav-item span{
-  font-size:13px;font-weight:500;opacity:0;white-space:nowrap;transition:opacity .15s;
-}
+.nav-item span{font-size:13px;font-weight:500;opacity:0;white-space:nowrap;transition:opacity .15s;flex:1}
 .sidebar.expanded .nav-item span{opacity:1}
-.nav-divider{
-  height:1px;background:var(--border-soft);margin:6px 12px;
-}
+.nav-badge{min-width:18px;height:18px;border-radius:9px;background:var(--amber);color:#fff;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0}
+.nav-badge.visible{display:flex}
+.sidebar.expanded .nav-badge{opacity:1}
+.nav-divider{height:1px;background:var(--border-soft);margin:6px 12px;flex-shrink:0}
 .nav-bottom{margin-top:auto;padding-bottom:12px}
 
-/* ── Content ──────────────────────────────────────────────────────────────── */
-.content{
-  position:fixed;top:var(--topbar-h);left:var(--sidebar-w);right:0;bottom:0;
-  overflow-y:auto;padding:24px;transition:left .2s ease;
-  padding-bottom:calc(24px + env(safe-area-inset-bottom, 0px));
-}
+/* Content */
+.content{position:fixed;top:var(--topbar-h);left:var(--sidebar-w);right:0;bottom:0;overflow-y:auto;padding:24px;transition:left .2s ease;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 .sidebar.expanded ~ .content{left:var(--sidebar-expanded)}
-
 .page{display:none}
 .page.active{display:block}
+.page-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-style:italic;font-size:26px;color:var(--brown-dark);margin-bottom:20px}
 
-.page-title{
-  font-family:'Cormorant Garamond',serif;font-weight:700;font-style:italic;
-  font-size:26px;color:var(--brown-dark);margin-bottom:20px;
-}
+/* Filter bar */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.filter-select{height:32px;border:1px solid var(--border-soft);border-radius:8px;padding:0 10px;font-size:12px;background:var(--white);color:var(--text-mid);outline:none;cursor:pointer}
+.filter-select:focus{border-color:var(--amber)}
+.filter-clear{font-size:12px;color:var(--text-muted);cursor:pointer;padding:0 4px}
+.filter-clear:hover{color:var(--amber)}
+.recipe-count{font-size:12px;color:var(--text-muted);margin-left:auto}
 
-/* ── Exercise Grid ────────────────────────────────────────────────────────── */
-.exercise-grid{
-  display:grid;grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
-  gap:16px;
-}
-.exercise-card{
-  background:var(--white);border:1px solid var(--border-soft);border-radius:12px;
-  overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .15s;
-}
+/* Exercise grid */
+.exercise-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.exercise-card{background:var(--white);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .15s}
 .exercise-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-2px)}
-.card-img{
-  width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--cream);
-  display:flex;align-items:center;justify-content:center;position:relative;
-}
+.card-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--cream);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .card-img img{width:100%;height:100%;object-fit:cover}
-.card-placeholder{color:var(--text-muted);font-size:40px}
+.card-placeholder{color:var(--text-muted)}
 .card-body{padding:12px}
-.card-name{
-  font-family:'Cormorant Garamond',serif;font-weight:600;font-size:17px;
-  color:var(--brown-dark);line-height:1.2;margin-bottom:6px;
-}
-.card-meta{
-  display:flex;gap:10px;font-size:11px;color:var(--text-muted);align-items:center;
-}
-.card-meta svg{width:12px;height:12px;vertical-align:-1px}
-.source-badge{
-  position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:10px;
-  font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;
-}
+.card-name{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:17px;color:var(--brown-dark);line-height:1.2;margin-bottom:6px}
+.card-meta{display:flex;gap:8px;font-size:11px;color:var(--text-muted);align-items:center;flex-wrap:wrap}
+.card-tag{padding:2px 8px;border-radius:10px;background:var(--cream);border:1px solid var(--border-soft);font-size:10px;font-weight:500;color:var(--text-mid)}
+.source-badge{position:absolute;top:8px;left:8px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
 .badge-ai{background:rgba(70,100,200,.85);color:#e0ecff}
 .badge-manual{background:rgba(160,100,20,.85);color:#fff4e0}
 .badge-seed{background:rgba(40,130,80,.85);color:#e0ffe8}
 .badge-camera{background:rgba(20,130,150,.85);color:#e0f7fa}
+.diff-badge{position:absolute;top:8px;right:8px;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600;text-transform:uppercase}
+.diff-beginner{background:rgba(40,160,80,.8);color:#e0ffe8}
+.diff-intermediate{background:rgba(200,140,20,.8);color:#fff4e0}
+.diff-advanced{background:rgba(200,50,50,.8);color:#ffe0e0}
 
-/* ── Drawer ───────────────────────────────────────────────────────────────── */
-.drawer-overlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200;
-}
+/* Drawer */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:200}
 .drawer-overlay.open{display:block}
-.drawer{
-  position:fixed;top:0;right:-520px;width:500px;max-width:90vw;height:100%;
-  background:var(--white);z-index:201;overflow-y:auto;
-  transition:right .3s ease;box-shadow:-4px 0 20px rgba(0,0,0,.1);
-}
+.drawer{position:fixed;top:0;right:-520px;width:500px;max-width:90vw;height:100%;background:var(--white);z-index:201;overflow-y:auto;transition:right .3s ease;box-shadow:-4px 0 20px rgba(0,0,0,.1)}
 .drawer-overlay.open .drawer{right:0}
-.drawer-close{
-  position:absolute;top:12px;right:12px;width:32px;height:32px;
-  background:rgba(0,0,0,.4);border-radius:50%;color:#fff;
-  display:flex;align-items:center;justify-content:center;z-index:5;
-}
-.drawer-img{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--cream)}
+.drawer-close{position:absolute;top:12px;right:12px;width:32px;height:32px;background:rgba(0,0,0,.4);border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;z-index:5}
+.drawer-img{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--cream);display:flex;align-items:center;justify-content:center}
 .drawer-body{padding:20px}
-.drawer-title{
-  font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;
-  color:var(--brown-dark);margin-bottom:12px;
-}
-.drawer-section{
-  font-family:'Jost',sans-serif;font-weight:600;font-size:10px;
-  letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);
-  margin:16px 0 8px;
-}
-.drawer-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.drawer-tag{
-  padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;
-  background:var(--cream);color:var(--text-mid);border:1px solid var(--border-soft);
-}
+.drawer-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;color:var(--brown-dark);margin-bottom:8px}
+.drawer-section{font-weight:600;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin:16px 0 8px}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.tag-pill{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:var(--cream);color:var(--text-mid);border:1px solid var(--border-soft)}
+.sets-info{display:flex;gap:20px;padding:12px;background:var(--cream);border-radius:10px;margin-bottom:12px}
+.sets-item{text-align:center}
+.sets-item .val{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:22px;color:var(--brown-dark)}
+.sets-item .lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px}
 .instruction-list{list-style:none;counter-reset:step}
-.instruction-list li{
-  counter-increment:step;padding:8px 0;border-bottom:1px solid var(--border-soft);
-  font-size:13px;line-height:1.5;color:var(--text-mid);
-}
-.instruction-list li::before{
-  content:counter(step);display:inline-flex;width:22px;height:22px;
-  border-radius:50%;background:var(--amber);color:#fff;
-  align-items:center;justify-content:center;font-size:11px;font-weight:600;
-  margin-right:10px;flex-shrink:0;
-}
+.instruction-list li{counter-increment:step;padding:8px 0 8px 32px;border-bottom:1px solid var(--border-soft);font-size:13px;line-height:1.6;color:var(--text-mid);position:relative}
+.instruction-list li::before{content:counter(step);position:absolute;left:0;top:9px;width:22px;height:22px;border-radius:50%;background:var(--amber);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.drawer-actions{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
 
-/* ── Empty state ──────────────────────────────────────────────────────────── */
-.empty-state{
-  text-align:center;padding:60px 20px;color:var(--text-muted);
-}
-.empty-state svg{width:48px;height:48px;margin-bottom:12px;color:var(--text-muted)}
-.empty-state h3{
-  font-family:'Cormorant Garamond',serif;font-weight:700;font-size:20px;
-  color:var(--text-mid);margin-bottom:8px;
-}
+/* Buttons */
+.btn-primary{height:36px;padding:0 18px;border-radius:8px;background:var(--amber);color:#fff;font-weight:600;font-size:13px}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-outline{height:32px;padding:0 14px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--border-soft);color:var(--text-mid);background:var(--white)}
+.btn-outline:hover{border-color:var(--amber);color:var(--amber)}
+.btn-sage{height:32px;padding:0 14px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--sage);color:var(--sage);background:var(--white)}
+.btn-sage:hover{background:var(--sage);color:#fff}
+.btn-danger{height:32px;padding:0 14px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid #c44;color:#c44;background:var(--white)}
+.btn-danger:hover{background:#c44;color:#fff}
+
+/* Empty state */
+.empty-state{text-align:center;padding:60px 20px;color:var(--text-muted)}
+.empty-state svg{width:48px;height:48px;margin:0 auto 12px;display:block;color:var(--text-muted)}
+.empty-state h3{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:20px;color:var(--text-mid);margin-bottom:8px}
 .empty-state p{font-size:13px;max-width:340px;margin:0 auto}
 
-/* ── Equipment list ───────────────────────────────────────────────────────── */
+/* Generate tab */
+.gen-form{max-width:560px}
+.gen-prompt{width:100%;border:1px solid var(--border-soft);border-radius:10px;padding:14px;font-size:14px;resize:vertical;min-height:80px;outline:none;background:var(--white)}
+.gen-prompt:focus{border-color:var(--amber)}
+.gen-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.gen-field label{display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+.gen-field select,.gen-field input{width:100%;height:36px;border:1px solid var(--border-soft);border-radius:8px;padding:0 10px;font-size:13px;outline:none;background:var(--white)}
+.gen-field select:focus,.gen-field input:focus{border-color:var(--amber)}
+.gen-result{margin-top:20px;background:var(--white);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden}
+.gen-result-img{width:100%;aspect-ratio:16/9;object-fit:cover;background:var(--cream);display:flex;align-items:center;justify-content:center}
+.gen-result-body{padding:16px}
+.gen-loading{display:flex;align-items:center;gap:12px;padding:20px;color:var(--text-muted);font-size:13px}
+.spinner{width:20px;height:20px;border:2px solid var(--border-soft);border-top-color:var(--amber);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:12px;margin-bottom:16px}
+.ai-status.ok{background:#e0ffe8;color:#2a6a3a}
+.ai-status.err{background:#ffe0e0;color:#8a2a2a}
+.ai-status.unknown{background:var(--cream);color:var(--text-muted)}
+
+/* Import tab */
+.import-tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:1px solid var(--border-soft)}
+.import-tab{padding:8px 16px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.import-tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+.import-panel{display:none}
+.import-panel.active{display:block}
+
+/* Seed browser */
+.seed-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.seed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-height:calc(100vh - 320px);overflow-y:auto}
+.seed-card{background:var(--white);border:1px solid var(--border-soft);border-radius:10px;overflow:hidden;cursor:pointer;transition:box-shadow .15s;position:relative}
+.seed-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.seed-card.selected{border-color:var(--amber);box-shadow:0 0 0 2px rgba(232,130,12,.2)}
+.seed-card-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--cream);display:flex;align-items:center;justify-content:center}
+.seed-card-img img{width:100%;height:100%;object-fit:cover}
+.seed-card-body{padding:10px}
+.seed-card-name{font-family:'Cormorant Garamond',serif;font-weight:600;font-size:15px;margin-bottom:4px;line-height:1.2}
+.seed-card-meta{font-size:11px;color:var(--text-muted)}
+.seed-import-bar{margin-top:12px;padding-top:12px;border-top:1px solid var(--border-soft);display:flex;align-items:center;gap:12px}
+.seed-selected-count{font-size:12px;color:var(--text-mid);flex:1}
+
+/* Camera upload */
+.upload-zone{border:2px dashed var(--border-soft);border-radius:12px;padding:40px 20px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--amber);background:rgba(232,130,12,.03)}
+.upload-zone p{font-size:13px;color:var(--text-muted);margin-top:8px}
+.upload-zone svg{color:var(--text-muted);margin:0 auto}
+.thumb-strip{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.thumb{position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;border:1px solid var(--border-soft)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb-remove{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer}
+
+/* Staging */
+.staging-actions{display:flex;gap:8px;align-items:center;margin-bottom:16px}
+.staging-count-info{font-size:13px;color:var(--text-muted);flex:1}
+
+/* Equipment */
 .eq-list{max-width:600px}
-.eq-item{
-  display:flex;align-items:center;gap:12px;padding:10px 0;
-  border-bottom:1px solid var(--border-soft);
-}
-.eq-item .eq-name{flex:1;font-weight:500}
-.eq-item .eq-cat{font-size:12px;color:var(--text-muted)}
-.eq-owned{
-  width:20px;height:20px;border-radius:4px;border:2px solid var(--border-soft);
-  display:flex;align-items:center;justify-content:center;
-}
+.eq-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-soft)}
+.eq-name{flex:1;font-weight:500}
+.eq-cat{font-size:12px;color:var(--text-muted)}
+.eq-owned{width:20px;height:20px;border-radius:4px;border:2px solid var(--border-soft);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .eq-owned.yes{background:var(--sage);border-color:var(--sage);color:#fff}
 
-/* ── Settings ─────────────────────────────────────────────────────────────── */
-.settings-group{max-width:480px;margin-bottom:24px}
-.settings-group label{
-  display:block;font-size:11px;font-weight:600;letter-spacing:1px;
-  text-transform:uppercase;color:var(--text-muted);margin-bottom:4px;
-}
-.settings-group input{
-  width:100%;height:38px;border:1px solid var(--border-soft);border-radius:8px;
-  padding:0 12px;font-size:13px;outline:none;
-}
+/* Settings */
+.settings-group{max-width:480px;margin-bottom:20px}
+.settings-group label{display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+.settings-group input{width:100%;height:38px;border:1px solid var(--border-soft);border-radius:8px;padding:0 12px;font-size:13px;outline:none}
 .settings-group input:focus{border-color:var(--amber)}
-.btn-save{
-  height:38px;padding:0 24px;border-radius:8px;
-  background:var(--amber);color:#fff;font-weight:600;font-size:13px;
-  margin-top:12px;
-}
-.btn-save:hover{filter:brightness(1.1)}
+.settings-group .hint{font-size:11px;color:var(--text-muted);margin-top:3px}
 
-/* ── Utility ──────────────────────────────────────────────────────────────── */
-.btn-outline{
-  height:32px;padding:0 14px;border-radius:8px;font-size:12px;font-weight:600;
-  border:1px solid var(--border-soft);color:var(--text-mid);background:var(--white);
-}
-.btn-outline:hover{border-color:var(--amber);color:var(--amber)}
+/* Log history */
+.log-entry{padding:10px 0;border-bottom:1px solid var(--border-soft)}
+.log-entry-date{font-size:11px;color:var(--text-muted);margin-bottom:4px}
+.log-entry-sets{display:flex;gap:8px;flex-wrap:wrap}
+.set-pill{padding:3px 8px;border-radius:8px;background:var(--cream);font-size:11px;font-weight:500;color:var(--text-mid);border:1px solid var(--border-soft)}
 </style>
 </head>
 <body>
 
-<!-- ── Topbar ─────────────────────────────────────────────────────────────── -->
+<!-- Topbar -->
 <header class="topbar">
   <div class="logo-zone">
     <div class="logo-mark">Work<span>str</span></div>
     <div class="logo-tagline">exercise intelligence</div>
   </div>
   <div class="topbar-search" id="topbar-search">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input type="text" placeholder="Search exercises..." id="search-input" oninput="onSearch()">
   </div>
   <div class="topbar-actions">
-    <button class="btn-add" onclick="openAddModal()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Exercise
+    <button class="btn-add" onclick="switchTab('generate')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Generate
     </button>
   </div>
 </header>
 
-<!-- ── Sidebar ────────────────────────────────────────────────────────────── -->
+<!-- Sidebar -->
 <nav class="sidebar" id="sidebar">
   <div class="sidebar-toggle" onclick="toggleSidebar()">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -281,51 +231,83 @@ input,select,textarea{font-family:inherit;font-size:inherit}
   </div>
   <div class="nav-items">
     <div class="nav-item active" data-tab="exercises" onclick="switchTab('exercises')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
       <span>Exercises</span>
     </div>
     <div class="nav-item" data-tab="favorites" onclick="switchTab('favorites')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
       <span>Favorites</span>
     </div>
+    <div class="nav-item" data-tab="generate" onclick="switchTab('generate')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <span>Generate</span>
+    </div>
+    <div class="nav-item" data-tab="import" onclick="switchTab('import')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Import</span>
+    </div>
     <div class="nav-item" data-tab="staging" onclick="switchTab('staging')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
       <span>Staging</span>
+      <div class="nav-badge" id="staging-badge"></div>
     </div>
     <div class="nav-divider"></div>
     <div class="nav-item" data-tab="planner" onclick="switchTab('planner')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span>Planner</span>
     </div>
     <div class="nav-item" data-tab="equipment" onclick="switchTab('equipment')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/><line x1="12" y1="3" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="21"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
       <span>Equipment</span>
     </div>
     <div class="nav-divider"></div>
     <div class="nav-bottom">
       <div class="nav-item" data-tab="trash" onclick="switchTab('trash')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
         <span>Trash</span>
       </div>
       <div class="nav-item" data-tab="settings" onclick="switchTab('settings')">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         <span>Settings</span>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- ── Content ────────────────────────────────────────────────────────────── -->
+<!-- Content -->
 <main class="content" id="content">
 
   <!-- Exercises -->
   <div class="page active" id="page-exercises">
     <div class="page-title">Exercises</div>
+    <div class="filter-bar" id="exercises-filter-bar">
+      <select class="filter-select" id="filter-category" onchange="applyFilters()">
+        <option value="">All Categories</option>
+        <option>strength</option><option>cardio</option><option>flexibility</option>
+        <option>balance</option><option>plyometrics</option>
+      </select>
+      <select class="filter-select" id="filter-muscle" onchange="applyFilters()">
+        <option value="">All Muscles</option>
+        <option>Chest</option><option>Back</option><option>Shoulders</option>
+        <option>Arms</option><option>Core</option><option>Legs</option><option>Full Body</option>
+      </select>
+      <select class="filter-select" id="filter-difficulty" onchange="applyFilters()">
+        <option value="">All Levels</option>
+        <option>beginner</option><option>intermediate</option><option>advanced</option>
+      </select>
+      <span class="filter-clear" id="filter-clear" onclick="clearFilters()" style="display:none">Clear filters</span>
+      <span class="recipe-count" id="exercise-count"></span>
+    </div>
     <div class="exercise-grid" id="exercise-grid"></div>
     <div class="empty-state" id="exercises-empty" style="display:none">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
       <h3>No exercises yet</h3>
-      <p>Add your first exercise to get started.</p>
+      <p>Generate one with AI or browse the exercise database in the Import tab.</p>
+    </div>
+    <div class="empty-state" id="exercises-no-match" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <h3>No matches</h3>
+      <p>No exercises match your filters. <span class="filter-clear" onclick="clearFilters()" style="display:inline;color:var(--amber)">Clear filters</span></p>
     </div>
   </div>
 
@@ -334,40 +316,139 @@ input,select,textarea{font-family:inherit;font-size:inherit}
     <div class="page-title">Favorites</div>
     <div class="exercise-grid" id="favorites-grid"></div>
     <div class="empty-state" id="favorites-empty" style="display:none">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
       <h3>No favorites yet</h3>
-      <p>Heart an exercise to save it here.</p>
+      <p>Open an exercise and tap the heart to save it here.</p>
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <div class="page" id="page-generate">
+    <div class="page-title">Generate with AI</div>
+    <div id="ai-status-bar"></div>
+    <div class="gen-form">
+      <textarea class="gen-prompt" id="gen-prompt" placeholder="Describe an exercise... e.g. 'A dumbbell exercise for rear deltoids' or 'Beginner bodyweight core movement'"></textarea>
+      <div class="gen-options">
+        <div class="gen-field">
+          <label>Category</label>
+          <select id="gen-category">
+            <option value="">Any</option>
+            <option>strength</option><option>cardio</option><option>flexibility</option>
+            <option>balance</option><option>plyometrics</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>Difficulty</label>
+          <select id="gen-difficulty">
+            <option value="">Any</option>
+            <option>beginner</option><option>intermediate</option><option>advanced</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>Muscle Group</label>
+          <select id="gen-muscle">
+            <option value="">Any</option>
+            <option>Chest</option><option>Back</option><option>Shoulders</option>
+            <option>Arms</option><option>Core</option><option>Legs</option><option>Glutes</option><option>Full Body</option>
+          </select>
+        </div>
+        <div class="gen-field">
+          <label>Equipment</label>
+          <select id="gen-equipment">
+            <option value="">Any</option>
+            <option>Body Weight</option><option>Dumbbell</option><option>Barbell</option>
+            <option>Resistance Band</option><option>Kettlebell</option><option>Cable Machine</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="generateExercise()" id="gen-btn" style="width:100%">Generate Exercise</button>
+      <div id="gen-result"></div>
+    </div>
+  </div>
+
+  <!-- Import -->
+  <div class="page" id="page-import">
+    <div class="page-title">Import</div>
+    <div class="import-tabs">
+      <div class="import-tab active" onclick="switchImportTab('seed')">Exercise Database</div>
+      <div class="import-tab" onclick="switchImportTab('camera')">From Image</div>
+    </div>
+
+    <!-- Seed browser -->
+    <div class="import-panel active" id="import-panel-seed">
+      <div class="seed-filters">
+        <input type="text" class="filter-select" id="seed-q" placeholder="Search exercises..." style="width:220px" oninput="debounceSeedSearch()">
+        <select class="filter-select" id="seed-category" onchange="loadSeed()">
+          <option value="">All Categories</option>
+        </select>
+        <select class="filter-select" id="seed-muscle" onchange="loadSeed()">
+          <option value="">All Muscles</option>
+        </select>
+        <select class="filter-select" id="seed-equipment" onchange="loadSeed()">
+          <option value="">All Equipment</option>
+        </select>
+        <select class="filter-select" id="seed-level" onchange="loadSeed()">
+          <option value="">All Levels</option>
+          <option>beginner</option><option>intermediate</option><option>expert</option>
+        </select>
+      </div>
+      <div id="seed-status" style="font-size:13px;color:var(--text-muted);margin-bottom:12px"></div>
+      <div class="seed-grid" id="seed-grid"></div>
+      <div class="seed-import-bar" id="seed-import-bar" style="display:none">
+        <span class="seed-selected-count" id="seed-selected-count"></span>
+        <button class="btn-primary" onclick="importSelected()">Import Selected to Staging</button>
+        <button class="btn-outline" onclick="clearSeedSelection()">Clear</button>
+      </div>
+    </div>
+
+    <!-- Camera -->
+    <div class="import-panel" id="import-panel-camera">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">Upload a photo of an exercise (book, poster, screenshot) and AI will extract the details.</p>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('camera-input').click()" ondragover="onDragOver(event)" ondrop="onDrop(event)">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <p>Click or drag images here<br><span style="font-size:11px">JPG, PNG, WebP — up to 8 images</span></p>
+      </div>
+      <input type="file" id="camera-input" accept="image/*" multiple style="display:none" onchange="onCameraFiles(event)">
+      <div class="thumb-strip" id="thumb-strip"></div>
+      <div style="margin-top:16px;display:flex;gap:8px" id="camera-actions" style="display:none">
+        <button class="btn-primary" id="camera-submit" onclick="submitCamera()" style="display:none">Extract Exercise</button>
+        <button class="btn-outline" onclick="clearCamera()" style="display:none" id="camera-clear">Clear</button>
+      </div>
+      <div id="camera-result" style="margin-top:16px"></div>
     </div>
   </div>
 
   <!-- Staging -->
   <div class="page" id="page-staging">
     <div class="page-title">Staging</div>
+    <div class="staging-actions">
+      <span class="staging-count-info" id="staging-info"></span>
+      <button class="btn-sage" onclick="approveAll()" id="approve-all-btn" style="display:none">Approve All</button>
+      <button class="btn-danger" onclick="discardAll()" id="discard-all-btn" style="display:none">Discard All</button>
+    </div>
     <div class="exercise-grid" id="staging-grid"></div>
     <div class="empty-state" id="staging-empty" style="display:none">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
       <h3>Staging is empty</h3>
-      <p>Imported exercises will appear here for review.</p>
+      <p>Generated or imported exercises will appear here for review.</p>
     </div>
   </div>
 
   <!-- Planner -->
   <div class="page" id="page-planner">
     <div class="page-title">Workout Planner</div>
-    <p style="color:var(--text-muted);font-size:13px">Weekly workout planner coming soon.</p>
+    <p style="color:var(--text-muted);font-size:13px">Weekly workout planner — coming in Phase 3.</p>
   </div>
 
   <!-- Equipment -->
   <div class="page" id="page-equipment">
     <div class="page-title">Equipment</div>
-    <div style="margin-bottom:16px">
-      <button class="btn-outline" onclick="promptAddEquipment()">+ Add Equipment</button>
-    </div>
+    <div style="margin-bottom:16px"><button class="btn-outline" onclick="promptAddEquipment()">+ Add Equipment</button></div>
     <div class="eq-list" id="equipment-list"></div>
     <div class="empty-state" id="equipment-empty" style="display:none">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="9"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
       <h3>No equipment</h3>
-      <p>Track which gym equipment you have access to.</p>
+      <p>Track which equipment you have access to. Used to filter exercises.</p>
     </div>
   </div>
 
@@ -376,7 +457,7 @@ input,select,textarea{font-family:inherit;font-size:inherit}
     <div class="page-title">Trash</div>
     <div class="exercise-grid" id="trash-grid"></div>
     <div class="empty-state" id="trash-empty" style="display:none">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
       <h3>Trash is empty</h3>
       <p>Deleted exercises will appear here.</p>
     </div>
@@ -394,7 +475,7 @@ input,select,textarea{font-family:inherit;font-size:inherit}
       <input type="text" id="set-ppq-url" placeholder="https://api.ppq.ai/v1">
     </div>
     <div class="settings-group">
-      <label>Recipe Model</label>
+      <label>Text Model</label>
       <input type="text" id="set-ppq-model" placeholder="gpt-4o-mini">
     </div>
     <div class="settings-group">
@@ -404,16 +485,22 @@ input,select,textarea{font-family:inherit;font-size:inherit}
     <div class="settings-group">
       <label>Vision Model</label>
       <input type="text" id="set-ppq-vis-model" placeholder="gpt-4o">
+      <div class="hint">Must support vision (e.g. gpt-4o, claude-haiku)</div>
     </div>
-    <button class="btn-save" onclick="saveSettings()">Save Settings</button>
+    <div class="settings-group">
+      <label>Available Equipment <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — guides AI generation)</span></label>
+      <input type="text" id="set-equipment" placeholder="Barbell, Dumbbells, Pull-up Bar">
+    </div>
+    <button class="btn-primary" onclick="saveSettings()" style="margin-top:4px">Save Settings</button>
+    <div id="settings-status" style="margin-top:10px;font-size:12px;color:var(--text-muted)"></div>
   </div>
 </main>
 
-<!-- ── Drawer Overlay ─────────────────────────────────────────────────────── -->
-<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer(event)">
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawerIfOverlay(event)">
   <div class="drawer" id="drawer">
     <button class="drawer-close" onclick="closeDrawer()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
     <div id="drawer-content"></div>
   </div>
@@ -424,20 +511,27 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 let exercisesData = [];
 let currentTab = 'exercises';
 let searchQuery = '';
+let filterCategory = '';
+let filterMuscle = '';
+let filterDifficulty = '';
+let seedSelected = new Set();
+let cameraFiles = [];
+let seedDebounceTimer = null;
 
-// ── Tab switching ────────────────────────────────────────────────────────────
+// ── Sidebar & tabs ────────────────────────────────────────────────────────────
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('expanded'); }
+
 function switchTab(tab) {
   currentTab = tab;
-  document.querySelectorAll('.nav-item').forEach(n => {
-    n.classList.toggle('active', n.dataset.tab === tab);
-  });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const page = document.getElementById('page-' + tab);
   if (page) page.classList.add('active');
 
-  // Show/hide search
-  const search = document.getElementById('topbar-search');
-  search.style.display = ['exercises','favorites','staging','trash'].includes(tab) ? '' : 'none';
+  const searchTabs = ['exercises', 'favorites', 'staging', 'trash'];
+  document.getElementById('topbar-search').style.display = searchTabs.includes(tab) ? '' : 'none';
+  document.getElementById('search-input').value = '';
+  searchQuery = '';
 
   if (tab === 'exercises') loadExercises('active');
   else if (tab === 'favorites') loadExercises('favorited');
@@ -445,22 +539,32 @@ function switchTab(tab) {
   else if (tab === 'trash') loadExercises('trashed');
   else if (tab === 'equipment') loadEquipment();
   else if (tab === 'settings') loadSettings();
+  else if (tab === 'generate') loadAiStatus();
+  else if (tab === 'import') loadSeedFilters();
 }
 
-// ── Sidebar ──────────────────────────────────────────────────────────────────
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('expanded');
+// ── Counts / badges ────────────────────────────────────────────────────────────
+async function refreshCounts() {
+  const r = await fetch('/api/exercises/counts');
+  const c = await r.json();
+  const badge = document.getElementById('staging-badge');
+  if (c.staged > 0) {
+    badge.textContent = c.staged;
+    badge.classList.add('visible');
+  } else {
+    badge.classList.remove('visible');
+  }
 }
 
-// ── Exercises ────────────────────────────────────────────────────────────────
+// ── Exercises ─────────────────────────────────────────────────────────────────
 async function loadExercises(status) {
   const res = await fetch('/api/exercises?status=' + status + '&per_page=200');
   const data = await res.json();
   exercisesData = data.exercises || [];
-  renderExercises(status);
+  renderGrid(status);
 }
 
-function renderExercises(status) {
+function renderGrid(status) {
   let gridId, emptyId;
   if (status === 'favorited') { gridId = 'favorites-grid'; emptyId = 'favorites-empty'; }
   else if (status === 'staged') { gridId = 'staging-grid'; emptyId = 'staging-empty'; }
@@ -469,225 +573,539 @@ function renderExercises(status) {
 
   const grid = document.getElementById(gridId);
   const empty = document.getElementById(emptyId);
+  const noMatch = document.getElementById('exercises-no-match');
+
   let list = exercisesData;
 
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
     list = list.filter(e =>
-      (e.name || '').toLowerCase().includes(q) ||
-      (e.category || '').toLowerCase().includes(q) ||
-      (e.muscle_group || '').toLowerCase().includes(q)
+      (e.name||'').toLowerCase().includes(q) ||
+      (e.category||'').toLowerCase().includes(q) ||
+      (e.muscle_group||'').toLowerCase().includes(q)
     );
   }
 
+  if (status === 'active') {
+    if (filterCategory) list = list.filter(e => e.category === filterCategory);
+    if (filterMuscle) list = list.filter(e => e.muscle_group === filterMuscle);
+    if (filterDifficulty) list = list.filter(e => e.difficulty === filterDifficulty);
+  }
+
+  const isFiltered = searchQuery || filterCategory || filterMuscle || filterDifficulty;
+  const countEl = document.getElementById('exercise-count');
+
   if (!list.length) {
     grid.innerHTML = '';
-    empty.style.display = '';
+    if (exercisesData.length === 0) {
+      if (empty) empty.style.display = '';
+      if (noMatch) noMatch.style.display = 'none';
+    } else {
+      if (empty) empty.style.display = 'none';
+      if (noMatch) noMatch.style.display = '';
+    }
+    if (countEl) countEl.textContent = '';
     return;
   }
-  empty.style.display = 'none';
 
-  grid.innerHTML = list.map(e => {
-    const img = e.image_url
-      ? `<img src="/${e.image_url}" alt="" loading="lazy">`
-      : `<div class="card-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
-    const badgeClass = e.source_type === 'ai' ? 'badge-ai' : e.source_type === 'seed' ? 'badge-seed' : e.source_type === 'camera' ? 'badge-camera' : 'badge-manual';
-    const badge = `<div class="source-badge ${badgeClass}">${e.source_type || 'manual'}</div>`;
-    const muscleIcon = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`;
-    return `<div class="exercise-card" onclick="openDrawer('${e.slug}')">
-      <div class="card-img">${img}${badge}</div>
-      <div class="card-body">
-        <div class="card-name">${esc(e.name)}</div>
-        <div class="card-meta">
-          ${e.muscle_group ? muscleIcon + ' ' + esc(e.muscle_group) : ''}
-          ${e.category ? '<span>' + esc(e.category) + '</span>' : ''}
-          ${e.difficulty ? '<span>' + esc(e.difficulty) + '</span>' : ''}
-        </div>
+  if (empty) empty.style.display = 'none';
+  if (noMatch) noMatch.style.display = 'none';
+  if (countEl) countEl.textContent = isFiltered ? `Showing ${list.length} of ${exercisesData.length}` : '';
+
+  grid.innerHTML = list.map(e => buildCard(e, status)).join('');
+
+  // Staging bulk actions
+  if (status === 'staged') {
+    const approveBtn = document.getElementById('approve-all-btn');
+    const discardBtn = document.getElementById('discard-all-btn');
+    const info = document.getElementById('staging-info');
+    if (approveBtn) approveBtn.style.display = list.length ? '' : 'none';
+    if (discardBtn) discardBtn.style.display = list.length ? '' : 'none';
+    if (info) info.textContent = `${list.length} exercise${list.length !== 1 ? 's' : ''} waiting for review`;
+  }
+}
+
+function buildCard(e, status) {
+  const img = e.image_url
+    ? `<img src="${e.image_url.startsWith('http') ? e.image_url : '/' + e.image_url}" alt="" loading="lazy">`
+    : `<div class="card-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
+
+  const badgeClass = {ai:'badge-ai',seed:'badge-seed',camera:'badge-camera'}[e.source_type] || 'badge-manual';
+  const badge = `<div class="source-badge ${badgeClass}">${esc(e.source_type||'manual')}</div>`;
+
+  const diffClass = {beginner:'diff-beginner',intermediate:'diff-intermediate',advanced:'diff-advanced'}[e.difficulty] || '';
+  const diffBadge = e.difficulty ? `<div class="diff-badge ${diffClass}">${esc(e.difficulty)}</div>` : '';
+
+  return `<div class="exercise-card" onclick="openDrawer('${e.slug}')">
+    <div class="card-img">${img}${badge}${diffBadge}</div>
+    <div class="card-body">
+      <div class="card-name">${esc(e.name)}</div>
+      <div class="card-meta">
+        ${e.muscle_group ? `<span>${esc(e.muscle_group)}</span>` : ''}
+        ${e.category ? `<span class="card-tag">${esc(e.category)}</span>` : ''}
       </div>
-    </div>`;
-  }).join('');
+    </div>
+  </div>`;
 }
 
 function onSearch() {
   searchQuery = document.getElementById('search-input').value.trim();
-  renderExercises(currentTab === 'favorites' ? 'favorited' : currentTab === 'staging' ? 'staged' : currentTab === 'trash' ? 'trashed' : 'active');
+  const statusMap = {exercises:'active',favorites:'favorited',staging:'staged',trash:'trashed'};
+  renderGrid(statusMap[currentTab] || 'active');
 }
 
-// ── Drawer ───────────────────────────────────────────────────────────────────
+function applyFilters() {
+  filterCategory = document.getElementById('filter-category').value;
+  filterMuscle = document.getElementById('filter-muscle').value;
+  filterDifficulty = document.getElementById('filter-difficulty').value;
+  const isFiltered = filterCategory || filterMuscle || filterDifficulty;
+  document.getElementById('filter-clear').style.display = isFiltered ? '' : 'none';
+  renderGrid('active');
+}
+
+function clearFilters() {
+  filterCategory = filterMuscle = filterDifficulty = '';
+  document.getElementById('filter-category').value = '';
+  document.getElementById('filter-muscle').value = '';
+  document.getElementById('filter-difficulty').value = '';
+  document.getElementById('filter-clear').style.display = 'none';
+  renderGrid('active');
+}
+
+// ── Drawer ────────────────────────────────────────────────────────────────────
 async function openDrawer(slug) {
   const res = await fetch('/api/exercises/' + slug);
   const ex = await res.json();
   const full = ex.full || {};
+  const logData = await fetch('/api/log/' + slug).then(r => r.json());
 
-  const img = ex.image_url
-    ? `<img class="drawer-img" src="/${ex.image_url}" alt="">`
-    : `<div class="drawer-img" style="display:flex;align-items:center;justify-content:center"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
+  const imgUrl = ex.image_url ? (ex.image_url.startsWith('http') ? ex.image_url : '/' + ex.image_url) : null;
+  const imgHtml = imgUrl
+    ? `<img class="drawer-img" src="${imgUrl}" alt="">`
+    : `<div class="drawer-img"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
 
-  const tags = (ex.tags || []).map(t => `<span class="drawer-tag">${esc(t)}</span>`).join('');
-  const muscles = (ex.muscles || []).map(m => `<span class="drawer-tag">${esc(m)}</span>`).join('');
-  const equip = (ex.equipment_list || []).map(e => `<span class="drawer-tag">${esc(e)}</span>`).join('');
+  const muscles = (ex.muscles||[]).map(m=>`<span class="tag-pill">${esc(m)}</span>`).join('');
+  const equip = (ex.equipment_list||[]).map(e=>`<span class="tag-pill">${esc(e)}</span>`).join('');
+  const tags = (ex.tags||[]).filter(t=>t).map(t=>`<span class="tag-pill">${esc(t)}</span>`).join('');
 
-  const instructions = full.instructions || [];
+  const setsInfo = (full.default_sets || full.default_reps || full.default_rest_sec) ? `
+    <div class="sets-info">
+      ${full.default_sets ? `<div class="sets-item"><div class="val">${full.default_sets}</div><div class="lbl">Sets</div></div>` : ''}
+      ${full.default_reps ? `<div class="sets-item"><div class="val">${esc(full.default_reps)}</div><div class="lbl">Reps</div></div>` : ''}
+      ${full.default_rest_sec ? `<div class="sets-item"><div class="val">${full.default_rest_sec}s</div><div class="lbl">Rest</div></div>` : ''}
+    </div>` : '';
+
+  const instructions = (full.instructions || []);
   const steps = instructions.map(s => {
     const text = typeof s === 'string' ? s : (s.text || s.description || '');
     return `<li>${esc(text)}</li>`;
   }).join('');
 
+  const logHtml = logData.length ? `
+    <div class="drawer-section">Recent Sessions</div>
+    ${logData.slice(0,5).map(l => {
+      const sets = (typeof l.sets === 'string' ? JSON.parse(l.sets||'[]') : (l.sets||[]));
+      const pills = sets.map(s => `<span class="set-pill">${s.reps||'-'}${s.weight ? ' @ ' + s.weight + 'kg' : ''}</span>`).join('');
+      const d = new Date(l.logged_at);
+      return `<div class="log-entry"><div class="log-entry-date">${d.toLocaleDateString()}</div><div class="log-entry-sets">${pills||'<span style="font-size:11px;color:var(--text-muted)">No set data</span>'}</div></div>`;
+    }).join('')}` : '';
+
   let actions = '';
   if (ex.status === 'active') {
-    actions = `<button class="btn-outline" style="margin-right:8px;color:var(--sage);border-color:var(--sage)" onclick="toggleFav('${slug}')">
-      ${ex.favorited ? 'Unfavorite' : 'Favorite'}
-    </button>
-    <button class="btn-outline" style="color:#c44;border-color:#c44" onclick="trashExercise('${slug}')">Delete</button>`;
+    actions = `
+      <button class="btn-sage" onclick="toggleFav('${slug}')">${ex.favorited ? 'Unfavorite' : 'Favorite'}</button>
+      <button class="btn-danger" onclick="trashExercise('${slug}')">Delete</button>`;
   } else if (ex.status === 'staged') {
-    actions = `<button class="btn-outline" style="margin-right:8px;color:var(--sage);border-color:var(--sage)" onclick="approveExercise('${slug}')">Approve</button>
-    <button class="btn-outline" style="color:#c44;border-color:#c44" onclick="trashExercise('${slug}')">Discard</button>`;
+    actions = `
+      <button class="btn-sage" onclick="approveExercise('${slug}')">Approve</button>
+      <button class="btn-danger" onclick="trashExercise('${slug}')">Discard</button>`;
   } else if (ex.status === 'trashed') {
-    actions = `<button class="btn-outline" style="margin-right:8px;color:var(--sage);border-color:var(--sage)" onclick="restoreExercise('${slug}')">Restore</button>
-    <button class="btn-outline" style="color:#c44;border-color:#c44" onclick="permDelete('${slug}')">Delete Forever</button>`;
+    actions = `
+      <button class="btn-sage" onclick="restoreExercise('${slug}')">Restore</button>
+      <button class="btn-danger" onclick="permDelete('${slug}')">Delete Forever</button>`;
   }
 
   document.getElementById('drawer-content').innerHTML = `
-    ${img}
+    ${imgHtml}
     <div class="drawer-body">
       <div class="drawer-title">${esc(ex.name)}</div>
-      ${ex.description ? `<p style="font-size:13px;color:var(--text-mid);margin-bottom:12px">${esc(ex.description)}</p>` : ''}
-      ${muscles ? `<div class="drawer-section">Target Muscles</div><div class="drawer-tags">${muscles}</div>` : ''}
-      ${equip ? `<div class="drawer-section">Equipment</div><div class="drawer-tags">${equip}</div>` : ''}
-      ${tags ? `<div class="drawer-section">Tags</div><div class="drawer-tags">${tags}</div>` : ''}
+      ${ex.description ? `<p style="font-size:13px;color:var(--text-mid);margin-bottom:12px;line-height:1.5">${esc(ex.description)}</p>` : ''}
+      ${setsInfo}
+      ${muscles ? `<div class="drawer-section">Target Muscles</div><div class="tag-row">${muscles}</div>` : ''}
+      ${equip ? `<div class="drawer-section">Equipment</div><div class="tag-row">${equip}</div>` : ''}
+      ${tags ? `<div class="drawer-section">Tags</div><div class="tag-row">${tags}</div>` : ''}
       ${steps ? `<div class="drawer-section">Instructions</div><ol class="instruction-list">${steps}</ol>` : ''}
-      <div style="margin-top:20px;display:flex;gap:8px">${actions}</div>
+      ${logHtml}
+      <div class="drawer-actions">${actions}</div>
     </div>`;
 
   document.getElementById('drawer-overlay').classList.add('open');
 }
 
-function closeDrawer(e) {
-  if (e && e.target !== document.getElementById('drawer-overlay')) return;
-  document.getElementById('drawer-overlay').classList.remove('open');
-}
+function closeDrawer() { document.getElementById('drawer-overlay').classList.remove('open'); }
+function closeDrawerIfOverlay(e) { if (e.target === document.getElementById('drawer-overlay')) closeDrawer(); }
 
-// ── Actions ──────────────────────────────────────────────────────────────────
+// ── Exercise actions ──────────────────────────────────────────────────────────
 async function toggleFav(slug) {
-  await fetch('/api/exercises/favorite/' + slug, {method: 'POST'});
-  closeDrawer();
-  switchTab(currentTab);
+  await fetch('/api/exercises/favorite/'+slug, {method:'POST'});
+  closeDrawer(); refreshCounts(); switchTab(currentTab);
 }
-
 async function trashExercise(slug) {
-  await fetch('/api/exercises/' + slug, {method: 'DELETE'});
-  closeDrawer();
-  switchTab(currentTab);
+  await fetch('/api/exercises/'+slug, {method:'DELETE'});
+  closeDrawer(); refreshCounts(); switchTab(currentTab);
 }
-
 async function approveExercise(slug) {
-  await fetch('/api/exercises/approve/' + slug, {method: 'POST'});
-  closeDrawer();
-  switchTab(currentTab);
+  await fetch('/api/exercises/approve/'+slug, {method:'POST'});
+  closeDrawer(); refreshCounts(); switchTab(currentTab);
 }
-
 async function restoreExercise(slug) {
-  await fetch('/api/exercises/restore/' + slug, {method: 'POST'});
-  closeDrawer();
-  switchTab(currentTab);
+  await fetch('/api/exercises/restore/'+slug, {method:'POST'});
+  closeDrawer(); refreshCounts(); switchTab(currentTab);
 }
-
 async function permDelete(slug) {
   if (!confirm('Permanently delete this exercise?')) return;
-  await fetch('/api/exercises/permanent/' + slug, {method: 'DELETE'});
-  closeDrawer();
-  switchTab(currentTab);
+  await fetch('/api/exercises/permanent/'+slug, {method:'DELETE'});
+  closeDrawer(); refreshCounts(); switchTab(currentTab);
+}
+async function approveAll() {
+  if (!confirm(`Approve all ${exercisesData.length} staged exercises?`)) return;
+  await Promise.all(exercisesData.map(e => fetch('/api/exercises/approve/'+e.slug, {method:'POST'})));
+  refreshCounts(); switchTab('staging');
+}
+async function discardAll() {
+  if (!confirm(`Discard all ${exercisesData.length} staged exercises?`)) return;
+  await Promise.all(exercisesData.map(e => fetch('/api/exercises/'+e.slug, {method:'DELETE'})));
+  refreshCounts(); switchTab('staging');
 }
 
-// ── Equipment ────────────────────────────────────────────────────────────────
+// ── AI Generate ───────────────────────────────────────────────────────────────
+async function loadAiStatus() {
+  const bar = document.getElementById('ai-status-bar');
+  bar.innerHTML = '<div class="ai-status unknown">Checking AI connection...</div>';
+  const res = await fetch('/api/ai/test');
+  const data = await res.json();
+  if (data.ok) {
+    bar.innerHTML = `<div class="ai-status ok">AI connected — ${esc(data.model)}</div>`;
+  } else {
+    bar.innerHTML = `<div class="ai-status err">AI not configured — <a onclick="switchTab('settings')" style="cursor:pointer;text-decoration:underline">add API key in Settings</a></div>`;
+  }
+}
+
+async function generateExercise() {
+  const prompt = document.getElementById('gen-prompt').value.trim();
+  const category = document.getElementById('gen-category').value;
+  const difficulty = document.getElementById('gen-difficulty').value;
+  const muscle = document.getElementById('gen-muscle').value;
+  const equip = document.getElementById('gen-equipment').value;
+
+  let fullPrompt = prompt || 'Create an exercise';
+  if (category) fullPrompt += `. Category: ${category}`;
+  if (difficulty) fullPrompt += `. Difficulty: ${difficulty}`;
+  if (muscle) fullPrompt += `. Target muscle: ${muscle}`;
+  if (equip) fullPrompt += `. Equipment: ${equip}`;
+
+  const result = document.getElementById('gen-result');
+  const btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  result.innerHTML = `<div class="gen-loading"><div class="spinner"></div>Generating exercise and photo...</div>`;
+
+  const res = await fetch('/api/ai/generate', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({prompt: fullPrompt}),
+  });
+  const data = await res.json();
+  btn.disabled = false;
+
+  if (data.error) {
+    result.innerHTML = `<div style="color:#c44;font-size:13px;margin-top:12px">${esc(data.error)}</div>`;
+    return;
+  }
+
+  const imgUrl = data.image ? '/' + data.image : null;
+  const muscles = (data.muscles||[]).map(m=>`<span class="tag-pill">${esc(m)}</span>`).join('');
+  const equips = (data.equipment||[]).map(e=>`<span class="tag-pill">${esc(e)}</span>`).join('');
+
+  result.innerHTML = `<div class="gen-result">
+    ${imgUrl ? `<img class="gen-result-img" src="${imgUrl}" alt="">` : ''}
+    <div class="gen-result-body">
+      <div style="font-family:'Cormorant Garamond',serif;font-weight:700;font-size:20px;margin-bottom:6px">${esc(data.name)}</div>
+      ${data.description ? `<p style="font-size:13px;color:var(--text-mid);margin-bottom:10px">${esc(data.description)}</p>` : ''}
+      ${muscles ? `<div class="tag-row" style="margin-bottom:8px">${muscles}</div>` : ''}
+      ${equips ? `<div class="tag-row" style="margin-bottom:12px">${equips}</div>` : ''}
+      <div style="display:flex;gap:8px">
+        <button class="btn-sage" onclick="approveExercise('${data.slug}')">Approve</button>
+        <button class="btn-outline" onclick="generateExercise()">Regenerate</button>
+        <button class="btn-danger" onclick="trashExercise('${data.slug}');document.getElementById('gen-result').innerHTML=''">Discard</button>
+      </div>
+    </div>
+  </div>`;
+
+  refreshCounts();
+}
+
+// ── Import tabs ───────────────────────────────────────────────────────────────
+function switchImportTab(tab) {
+  document.querySelectorAll('.import-tab').forEach((t, i) => {
+    t.classList.toggle('active', ['seed','camera'][i] === tab);
+  });
+  document.querySelectorAll('.import-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('import-panel-' + tab).classList.add('active');
+}
+
+// ── Seed browser ──────────────────────────────────────────────────────────────
+async function loadSeedFilters() {
+  const res = await fetch('/api/seed/filters');
+  if (!res.ok) return;
+  const data = await res.json();
+
+  const catSel = document.getElementById('seed-category');
+  data.categories.forEach(c => {
+    const o = document.createElement('option'); o.value = c; o.textContent = c;
+    catSel.appendChild(o);
+  });
+
+  const musSel = document.getElementById('seed-muscle');
+  data.muscles.forEach(m => {
+    const o = document.createElement('option'); o.value = m; o.textContent = m;
+    musSel.appendChild(o);
+  });
+
+  const eqSel = document.getElementById('seed-equipment');
+  data.equipment.forEach(e => {
+    const o = document.createElement('option'); o.value = e; o.textContent = e;
+    eqSel.appendChild(o);
+  });
+
+  loadSeed();
+}
+
+let seedFiltersLoaded = false;
+async function loadSeed() {
+  const q = document.getElementById('seed-q')?.value || '';
+  const category = document.getElementById('seed-category')?.value || '';
+  const muscle = document.getElementById('seed-muscle')?.value || '';
+  const equip = document.getElementById('seed-equipment')?.value || '';
+  const level = document.getElementById('seed-level')?.value || '';
+
+  const status = document.getElementById('seed-status');
+  if (status) status.textContent = 'Loading...';
+
+  const params = new URLSearchParams({q, category, muscle, equipment: equip, level, limit: 60});
+  const res = await fetch('/api/seed/browse?' + params);
+
+  if (!res.ok) {
+    if (status) status.textContent = 'Failed to load exercise database.';
+    return;
+  }
+
+  const data = await res.json();
+  if (status) status.textContent = `${data.length} exercises found`;
+
+  const grid = document.getElementById('seed-grid');
+  if (!data.length) {
+    grid.innerHTML = '<p style="font-size:13px;color:var(--text-muted);padding:20px 0">No exercises found. Try different filters.</p>';
+    return;
+  }
+
+  grid.innerHTML = data.map(ex => {
+    const img = ex.image
+      ? `<img src="${esc(ex.image)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%\'><svg width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' stroke-linecap=\'round\'><path d=\'M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4\'/></svg></div>'">`
+      : `<div style="display:flex;align-items:center;justify-content:center;height:100%"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
+    const sel = seedSelected.has(ex.seed_id) ? 'selected' : '';
+    return `<div class="seed-card ${sel}" id="seed-${esc(ex.seed_id)}" onclick="toggleSeedSelect('${esc(ex.seed_id)}', '${esc(ex.name)}')">
+      <div class="seed-card-img">${img}</div>
+      <div class="seed-card-body">
+        <div class="seed-card-name">${esc(ex.name)}</div>
+        <div class="seed-card-meta">${esc(ex.muscle_group||'')} ${ex.difficulty ? '· ' + esc(ex.difficulty) : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function debounceSeedSearch() {
+  clearTimeout(seedDebounceTimer);
+  seedDebounceTimer = setTimeout(loadSeed, 400);
+}
+
+function toggleSeedSelect(seedId, name) {
+  if (seedSelected.has(seedId)) {
+    seedSelected.delete(seedId);
+  } else {
+    seedSelected.add(seedId);
+  }
+  const card = document.getElementById('seed-' + seedId);
+  if (card) card.classList.toggle('selected', seedSelected.has(seedId));
+  updateSeedBar();
+}
+
+function updateSeedBar() {
+  const bar = document.getElementById('seed-import-bar');
+  const cnt = document.getElementById('seed-selected-count');
+  if (seedSelected.size > 0) {
+    bar.style.display = 'flex';
+    cnt.textContent = `${seedSelected.size} exercise${seedSelected.size !== 1 ? 's' : ''} selected`;
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+function clearSeedSelection() {
+  seedSelected.clear();
+  document.querySelectorAll('.seed-card.selected').forEach(c => c.classList.remove('selected'));
+  updateSeedBar();
+}
+
+async function importSelected() {
+  const ids = [...seedSelected];
+  const status = document.getElementById('seed-status');
+  status.textContent = `Importing ${ids.length} exercise${ids.length !== 1 ? 's' : ''}...`;
+  let imported = 0;
+  for (const seed_id of ids) {
+    const res = await fetch('/api/seed/import', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({seed_id}),
+    });
+    if (res.ok) imported++;
+  }
+  status.textContent = `${imported} exercise${imported !== 1 ? 's' : ''} sent to Staging.`;
+  clearSeedSelection();
+  refreshCounts();
+}
+
+// ── Camera import ─────────────────────────────────────────────────────────────
+function onDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('dragover'); }
+function onDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('dragover');
+  addCameraFiles([...e.dataTransfer.files]);
+}
+function onCameraFiles(e) { addCameraFiles([...e.target.files]); }
+
+function addCameraFiles(files) {
+  files.slice(0, 8 - cameraFiles.length).forEach(f => {
+    if (f.type.startsWith('image/')) cameraFiles.push(f);
+  });
+  renderThumbs();
+}
+
+function renderThumbs() {
+  const strip = document.getElementById('thumb-strip');
+  const submit = document.getElementById('camera-submit');
+  const clear = document.getElementById('camera-clear');
+  strip.innerHTML = cameraFiles.map((f, i) => {
+    const url = URL.createObjectURL(f);
+    return `<div class="thumb"><img src="${url}" alt=""><span class="thumb-remove" onclick="removeCameraFile(${i})">x</span></div>`;
+  }).join('');
+  submit.style.display = cameraFiles.length ? '' : 'none';
+  clear.style.display = cameraFiles.length ? '' : 'none';
+}
+
+function removeCameraFile(i) { cameraFiles.splice(i, 1); renderThumbs(); }
+function clearCamera() { cameraFiles = []; renderThumbs(); document.getElementById('camera-result').innerHTML = ''; document.getElementById('camera-input').value = ''; }
+
+async function submitCamera() {
+  if (!cameraFiles.length) return;
+  const result = document.getElementById('camera-result');
+  const btn = document.getElementById('camera-submit');
+  btn.disabled = true;
+  result.innerHTML = '<div class="gen-loading"><div class="spinner"></div>Analysing image with AI...</div>';
+
+  const form = new FormData();
+  cameraFiles.forEach(f => form.append('images', f));
+
+  const res = await fetch('/api/import/camera', {method:'POST', body:form});
+  const data = await res.json();
+  btn.disabled = false;
+
+  if (data.error) {
+    result.innerHTML = `<div style="color:#c44;font-size:13px">${esc(data.error)}</div>`;
+    return;
+  }
+
+  result.innerHTML = `<div style="background:var(--white);border:1px solid var(--border-soft);border-radius:10px;padding:14px">
+    <div style="font-family:'Cormorant Garamond',serif;font-weight:700;font-size:18px;margin-bottom:6px">${esc(data.name)}</div>
+    <p style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Sent to Staging for review.</p>
+    <button class="btn-sage" onclick="switchTab('staging')">View in Staging</button>
+  </div>`;
+  refreshCounts();
+  clearCamera();
+}
+
+// ── Equipment ─────────────────────────────────────────────────────────────────
 async function loadEquipment() {
   const res = await fetch('/api/equipment');
   const list = await res.json();
   const container = document.getElementById('equipment-list');
   const empty = document.getElementById('equipment-empty');
-
-  if (!list.length) {
-    container.innerHTML = '';
-    empty.style.display = '';
-    return;
-  }
+  if (!list.length) { container.innerHTML = ''; empty.style.display = ''; return; }
   empty.style.display = 'none';
   container.innerHTML = list.map(eq => `
     <div class="eq-item">
-      <div class="eq-owned ${eq.owned ? 'yes' : ''}">
-        ${eq.owned ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+      <div class="eq-owned ${eq.owned ? 'yes' : ''}" onclick="toggleOwned(${eq.id}, ${eq.owned ? 0 : 1})">
+        ${eq.owned ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
       </div>
       <div class="eq-name">${esc(eq.name)}</div>
-      <div class="eq-cat">${esc(eq.category || '')}</div>
-      <button class="btn-outline" style="font-size:11px;height:26px;padding:0 10px;color:#c44;border-color:#c44" onclick="deleteEquipment(${eq.id})">Remove</button>
-    </div>
-  `).join('');
+      <div class="eq-cat">${esc(eq.category||'')}</div>
+      <button class="btn-danger" style="height:26px;padding:0 10px;font-size:11px" onclick="deleteEquipment(${eq.id})">Remove</button>
+    </div>`).join('');
 }
 
 function promptAddEquipment() {
   const name = prompt('Equipment name:');
   if (!name) return;
-  const category = prompt('Category (optional):');
-  fetch('/api/equipment', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name, category: category || null, owned: true}),
-  }).then(() => loadEquipment());
+  const category = prompt('Category (optional):') || null;
+  fetch('/api/equipment', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,category,owned:true})})
+    .then(() => loadEquipment());
 }
 
-async function deleteEquipment(id) {
-  await fetch('/api/equipment/' + id, {method: 'DELETE'});
+async function toggleOwned(id, val) {
+  await fetch('/api/equipment/'+id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({owned:val})});
   loadEquipment();
 }
 
-// ── Settings ─────────────────────────────────────────────────────────────────
+async function deleteEquipment(id) {
+  await fetch('/api/equipment/'+id, {method:'DELETE'});
+  loadEquipment();
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
 async function loadSettings() {
   const res = await fetch('/api/settings');
   const s = await res.json();
-  document.getElementById('set-ppq-key').value = s.PPQ_API_KEY || '';
-  document.getElementById('set-ppq-url').value = s.PPQ_BASE_URL || '';
-  document.getElementById('set-ppq-model').value = s.PPQ_MODEL || '';
-  document.getElementById('set-ppq-img-model').value = s.PPQ_IMAGE_MODEL || '';
-  document.getElementById('set-ppq-vis-model').value = s.PPQ_VISION_MODEL || '';
+  document.getElementById('set-ppq-key').value = s.PPQ_API_KEY||'';
+  document.getElementById('set-ppq-url').value = s.PPQ_BASE_URL||'';
+  document.getElementById('set-ppq-model').value = s.PPQ_MODEL||'';
+  document.getElementById('set-ppq-img-model').value = s.PPQ_IMAGE_MODEL||'';
+  document.getElementById('set-ppq-vis-model').value = s.PPQ_VISION_MODEL||'';
+  document.getElementById('set-equipment').value = s.EQUIPMENT||'';
 }
 
 async function saveSettings() {
   await fetch('/api/settings', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       PPQ_API_KEY: document.getElementById('set-ppq-key').value,
       PPQ_BASE_URL: document.getElementById('set-ppq-url').value,
       PPQ_MODEL: document.getElementById('set-ppq-model').value,
       PPQ_IMAGE_MODEL: document.getElementById('set-ppq-img-model').value,
       PPQ_VISION_MODEL: document.getElementById('set-ppq-vis-model').value,
+      EQUIPMENT: document.getElementById('set-equipment').value,
     }),
   });
-  alert('Settings saved');
+  document.getElementById('settings-status').textContent = 'Saved.';
+  setTimeout(() => document.getElementById('settings-status').textContent = '', 2000);
 }
 
-// ── Add exercise (placeholder — manual for now) ─────────────────────────────
-function openAddModal() {
-  const name = prompt('Exercise name:');
-  if (!name) return;
-  const category = prompt('Category (e.g. Chest, Back, Legs):') || '';
-  const muscle = prompt('Primary muscle group:') || '';
-  fetch('/api/import/manual', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({name, category, muscle_group: muscle}),
-  }).then(() => switchTab('exercises'));
-}
-
-// ── Util ─────────────────────────────────────────────────────────────────────
+// ── Utils ─────────────────────────────────────────────────────────────────────
 function esc(s) {
-  if (!s) return '';
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
+  if (!s && s !== 0) return '';
+  const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML;
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
+refreshCounts();
 switchTab('exercises');
 </script>
 </body>

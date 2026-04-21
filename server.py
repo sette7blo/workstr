@@ -5,13 +5,14 @@ Run: python server.py
 import gzip
 import io
 import json
-import os
+from datetime import date
 from pathlib import Path
 from flask import Flask, jsonify, request, send_from_directory
 
 import core.config as config
 from core.schema import init_db
 from modules import importer, equipment, workout_log, workout_planner
+from modules import ai_generator, camera, seed_browser
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
@@ -75,10 +76,21 @@ def serve_image(filename):
 def api_list_exercises():
     status = request.args.get("status", "active")
     page = int(request.args.get("page", 1))
-    per_page = int(request.args.get("per_page", 24))
+    per_page = int(request.args.get("per_page", 48))
     category = request.args.get("category")
     muscle_group = request.args.get("muscle_group")
     return jsonify(importer.list_exercises(status, page, per_page, category, muscle_group))
+
+
+@app.route("/api/exercises/counts")
+def api_exercise_counts():
+    """Return status counts for sidebar badges."""
+    from core.db import db
+    with db() as conn:
+        staged = conn.execute("SELECT COUNT(*) FROM exercises WHERE status='staged'").fetchone()[0]
+        trashed = conn.execute("SELECT COUNT(*) FROM exercises WHERE status='trashed'").fetchone()[0]
+        active = conn.execute("SELECT COUNT(*) FROM exercises WHERE status='active'").fetchone()[0]
+    return jsonify({"active": active, "staged": staged, "trashed": trashed})
 
 
 @app.route("/api/exercises/<slug>")
@@ -208,7 +220,6 @@ def api_delete_log(log_id):
 def api_get_plan():
     week = request.args.get("week")
     if not week:
-        from datetime import date
         week = date.today().isoformat()
     return jsonify(workout_planner.get_week(week))
 
@@ -264,10 +275,84 @@ def api_delete_template(tid):
     ok = workout_planner.delete_template(tid)
     return jsonify({"ok": ok}), 200 if ok else 404
 
+# ── AI ────────────────────────────────────────────────────────────────────────
+
+@app.route("/api/ai/test")
+def api_ai_test():
+    return jsonify(ai_generator.test_connection())
+
+
+@app.route("/api/ai/generate", methods=["POST"])
+def api_ai_generate():
+    data = request.get_json(force=True)
+    prompt = data.get("prompt", "").strip()
+    if not prompt:
+        return jsonify({"error": "prompt is required"}), 400
+    try:
+        result = ai_generator.generate_exercise(prompt)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ── Camera import ─────────────────────────────────────────────────────────────
+
+@app.route("/api/import/camera", methods=["POST"])
+def api_import_camera():
+    files = request.files.getlist("images")
+    if not files:
+        return jsonify({"error": "no images provided"}), 400
+    images = [(f.read(), f.filename) for f in files]
+    try:
+        result = camera.import_from_images(images)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ── Seed browser ──────────────────────────────────────────────────────────────
+
+@app.route("/api/seed/browse")
+def api_seed_browse():
+    q = request.args.get("q", "")
+    category = request.args.get("category", "")
+    muscle = request.args.get("muscle", "")
+    equip = request.args.get("equipment", "")
+    level = request.args.get("level", "")
+    limit = int(request.args.get("limit", 60))
+    try:
+        results = seed_browser.browse(q, category, muscle, equip, level, limit)
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/seed/filters")
+def api_seed_filters():
+    try:
+        return jsonify({
+            "categories": seed_browser.list_categories(),
+            "muscles": seed_browser.list_muscles(),
+            "equipment": seed_browser.list_equipment(),
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/seed/import", methods=["POST"])
+def api_seed_import():
+    data = request.get_json(force=True)
+    seed_id = data.get("seed_id")
+    if not seed_id:
+        return jsonify({"error": "seed_id required"}), 400
+    result = seed_browser.import_exercise(seed_id)
+    if not result:
+        return jsonify({"error": "exercise not found in seed database"}), 404
+    return jsonify(result)
+
 # ── Settings ──────────────────────────────────────────────────────────────────
 
 SETTINGS_KEYS = [
     "PPQ_API_KEY", "PPQ_BASE_URL", "PPQ_MODEL", "PPQ_IMAGE_MODEL", "PPQ_VISION_MODEL",
+    "EQUIPMENT",
 ]
 
 
@@ -282,11 +367,7 @@ def api_save_settings():
     updates = {}
     for key in SETTINGS_KEYS:
         if key in data:
-            val = (data[key] or "").strip()
-            if val:
-                updates[key] = val
-            else:
-                updates[key] = ""
+            updates[key] = (data[key] or "").strip()
     if updates:
         config.save_env(updates)
     return jsonify({"ok": True})
