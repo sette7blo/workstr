@@ -11,6 +11,9 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+---
+
+## [v1.0.0] — 2026-04-21
 ### Added
 - Exercise library: browse, filter by category/muscle/difficulty, difficulty badges, source badges (AI/seed/camera/manual)
 - Favorites: heart toggle on any active exercise
@@ -34,4 +37,5 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/workstr/compare/main...HEAD
+[Unreleased]: https://github.com/sette7blo/workstr/compare/v1.0.0...HEAD
+[v1.0.0]: https://github.com/sette7blo/workstr/releases/tag/v1.0.0
