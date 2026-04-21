@@ -209,6 +209,12 @@ def api_get_log(slug):
     return jsonify(workout_log.get_log_for_exercise(slug, limit))
 
 
+@app.route("/api/log/history")
+def api_log_history():
+    limit = int(request.args.get("limit", 50))
+    return jsonify(workout_log.get_history(limit))
+
+
 @app.route("/api/log/<int:log_id>", methods=["DELETE"])
 def api_delete_log(log_id):
     ok = workout_log.delete_log_entry(log_id)

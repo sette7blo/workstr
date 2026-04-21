@@ -50,6 +50,27 @@ def get_last_logged(slugs: list) -> dict:
     return {r["exercise_slug"]: r["last_logged"] for r in rows}
 
 
+def get_history(limit: int = 50) -> list:
+    """All recent log entries with exercise name/image for the history view."""
+    with db() as conn:
+        rows = conn.execute("""
+            SELECT wl.*, e.name as exercise_name, e.muscle_group, e.image_url
+            FROM workout_log wl
+            LEFT JOIN exercises e ON e.slug = wl.exercise_slug
+            ORDER BY wl.logged_at DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
+    result = []
+    for r in rows_to_list(rows):
+        if isinstance(r.get("sets"), str):
+            try:
+                r["sets"] = json.loads(r["sets"])
+            except (json.JSONDecodeError, TypeError):
+                pass
+        result.append(r)
+    return result
+
+
 def delete_log_entry(log_id: int) -> bool:
     with db() as conn:
         cur = conn.execute("DELETE FROM workout_log WHERE id=?", (log_id,))

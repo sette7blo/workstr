@@ -201,6 +201,114 @@ a{color:inherit;text-decoration:none}
 .log-entry-date{font-size:11px;color:var(--text-muted);margin-bottom:4px}
 .log-entry-sets{display:flex;gap:8px;flex-wrap:wrap}
 .set-pill{padding:3px 8px;border-radius:8px;background:var(--cream);font-size:11px;font-weight:500;color:var(--text-mid);border:1px solid var(--border-soft)}
+
+/* Planner */
+.planner-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.planner-nav button{width:32px;height:32px;border-radius:8px;border:1px solid var(--border-soft);background:var(--white);color:var(--text-mid);font-size:16px;display:flex;align-items:center;justify-content:center}
+.planner-nav button:hover{border-color:var(--amber);color:var(--amber)}
+.planner-week{font-size:14px;font-weight:600;color:var(--brown-dark)}
+.planner-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;min-width:700px}
+.planner-scroll{overflow-x:auto}
+.planner-day{background:var(--white);border:1px solid var(--border-soft);border-radius:10px;overflow:hidden}
+.planner-day.today{border-color:var(--amber)}
+.planner-day-header{padding:8px;text-align:center;border-bottom:1px solid var(--border-soft)}
+.planner-day-name{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted)}
+.planner-day-num{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:20px;color:var(--brown-dark)}
+.planner-day.today .planner-day-num{color:var(--amber)}
+.planner-slot{padding:6px;border-bottom:1px solid var(--border-soft);min-height:52px;position:relative}
+.planner-slot:last-child{border-bottom:none}
+.slot-label{font-size:9px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:3px}
+.slot-empty{display:flex;align-items:center;justify-content:center;height:30px;cursor:pointer;border-radius:6px;border:1px dashed var(--border-soft);color:var(--text-muted);font-size:18px;transition:border-color .15s,color .15s}
+.slot-empty:hover{border-color:var(--amber);color:var(--amber)}
+.slot-filled{background:var(--cream);border-radius:6px;padding:5px 7px;cursor:pointer;transition:background .15s}
+.slot-filled:hover{background:rgba(232,130,12,.08)}
+.slot-exercise-name{font-size:11px;font-weight:600;color:var(--brown-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.slot-exercise-meta{font-size:10px;color:var(--text-muted)}
+.slot-actions{display:flex;gap:4px;margin-top:3px}
+.slot-btn{height:20px;padding:0 6px;border-radius:4px;font-size:10px;font-weight:600;border:1px solid var(--border-soft);background:var(--white);color:var(--text-muted);cursor:pointer}
+.slot-btn:hover{border-color:var(--amber);color:var(--amber)}
+.slot-btn.danger:hover{border-color:#c44;color:#c44}
+
+/* Templates panel */
+.templates-panel{margin-top:24px}
+.templates-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.template-card{background:var(--white);border:1px solid var(--border-soft);border-radius:10px;padding:12px;margin-bottom:8px}
+.template-card-name{font-weight:600;font-size:14px;margin-bottom:4px}
+.template-card-meta{font-size:11px;color:var(--text-muted)}
+.template-card-actions{margin-top:8px;display:flex;gap:6px}
+
+/* History */
+.history-date-group{margin-bottom:20px}
+.history-date-header{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:18px;color:var(--brown-dark);padding-bottom:6px;border-bottom:1px solid var(--border-soft);margin-bottom:10px}
+.history-exercise-row{display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-soft)}
+.history-exercise-img{width:40px;height:40px;border-radius:6px;object-fit:cover;background:var(--cream);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.history-exercise-img img{width:100%;height:100%;object-fit:cover}
+.history-exercise-info{flex:1}
+.history-exercise-name{font-weight:600;font-size:13px;margin-bottom:4px}
+
+/* Active workout overlay */
+.workout-overlay{display:none;position:fixed;inset:0;background:var(--brown-dark);z-index:300;flex-direction:column;padding:24px;overflow-y:auto}
+.workout-overlay.open{display:flex}
+.workout-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.workout-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:22px;color:#fff}
+.workout-close{color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;padding:4px 10px;border:1px solid rgba(255,255,255,.2);border-radius:6px}
+.workout-close:hover{color:#fff;border-color:rgba(255,255,255,.5)}
+.workout-progress{display:flex;gap:6px;margin-bottom:24px}
+.workout-dot{height:4px;flex:1;border-radius:2px;background:rgba(255,255,255,.2);transition:background .3s}
+.workout-dot.done{background:var(--amber)}
+.workout-dot.current{background:#fff}
+.workout-ex-img{width:100%;max-width:400px;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin:0 auto 20px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.workout-ex-name{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:28px;color:#fff;text-align:center;margin-bottom:6px}
+.workout-ex-meta{text-align:center;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:24px}
+.workout-sets-area{max-width:400px;margin:0 auto;width:100%}
+.workout-set-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.workout-set-num{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.workout-set-num.logged{background:var(--amber);border-color:var(--amber);color:#fff}
+.workout-input{flex:1;height:36px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:0 10px;color:#fff;font-size:13px;outline:none;font-family:'Jost',sans-serif}
+.workout-input:focus{border-color:var(--amber)}
+.workout-input::placeholder{color:rgba(255,255,255,.3)}
+.workout-input-label{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.8px;width:40px;text-align:center}
+.workout-log-btn{height:36px;padding:0 16px;background:var(--amber);color:#fff;font-weight:600;font-size:12px;border-radius:8px}
+.workout-footer{max-width:400px;margin:20px auto 0;width:100%;display:flex;gap:10px}
+.workout-next-btn{flex:1;height:44px;background:var(--amber);color:#fff;font-weight:600;font-size:14px;border-radius:10px}
+.workout-skip{height:44px;padding:0 16px;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);border-radius:10px;font-size:13px}
+.workout-skip:hover{border-color:rgba(255,255,255,.5);color:#fff}
+.workout-rest-overlay{display:none;position:absolute;inset:0;background:rgba(20,10,0,.9);align-items:center;justify-content:center;flex-direction:column;z-index:10}
+.workout-rest-overlay.show{display:flex}
+.rest-timer{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:72px;color:var(--amber)}
+.rest-label{color:rgba(255,255,255,.5);font-size:13px;letter-spacing:2px;text-transform:uppercase;margin-top:8px}
+.rest-skip-btn{margin-top:24px;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;padding:6px 16px;border:1px solid rgba(255,255,255,.15);border-radius:6px}
+.rest-skip-btn:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+
+/* Template builder modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:250;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:14px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;margin:20px}
+.modal-header{padding:20px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:20px}
+.modal-close{width:28px;height:28px;border-radius:50%;background:var(--cream);color:var(--text-mid);display:flex;align-items:center;justify-content:center}
+.modal-body{padding:16px 20px 20px}
+.modal-field{margin-bottom:14px}
+.modal-field label{display:block;font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+.modal-field input,.modal-field select{width:100%;height:36px;border:1px solid var(--border-soft);border-radius:8px;padding:0 10px;font-size:13px;outline:none}
+.modal-field input:focus,.modal-field select:focus{border-color:var(--amber)}
+.template-ex-list{border:1px solid var(--border-soft);border-radius:8px;max-height:240px;overflow-y:auto;margin-bottom:12px}
+.template-ex-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border-soft)}
+.template-ex-item:last-child{border-bottom:none}
+.template-ex-name{flex:1;font-size:13px;font-weight:500}
+.template-ex-reps{width:70px;height:28px;border:1px solid var(--border-soft);border-radius:6px;padding:0 6px;font-size:12px;outline:none}
+.template-ex-remove{width:24px;height:24px;border-radius:50%;background:var(--cream);color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px}
+.template-ex-remove:hover{background:#fee;color:#c44}
+.ex-search-results{max-height:180px;overflow-y:auto;border:1px solid var(--border-soft);border-radius:8px;display:none;margin-top:4px}
+.ex-search-result-item{padding:8px 12px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--border-soft)}
+.ex-search-result-item:last-child{border-bottom:none}
+.ex-search-result-item:hover{background:var(--cream)}
+
+/* Exercise picker modal (for planner) */
+.picker-modal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;max-height:50vh;overflow-y:auto}
+.picker-item{padding:10px;border:1px solid var(--border-soft);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:border-color .15s}
+.picker-item:hover{border-color:var(--amber);background:rgba(232,130,12,.04)}
+.picker-item .meta{font-size:11px;color:var(--text-muted);margin-top:2px}
 </style>
 </head>
 <body>
@@ -255,6 +363,10 @@ a{color:inherit;text-decoration:none}
     <div class="nav-item" data-tab="planner" onclick="switchTab('planner')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       <span>Planner</span>
+    </div>
+    <div class="nav-item" data-tab="history" onclick="switchTab('history')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span>History</span>
     </div>
     <div class="nav-item" data-tab="equipment" onclick="switchTab('equipment')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
@@ -437,7 +549,33 @@ a{color:inherit;text-decoration:none}
   <!-- Planner -->
   <div class="page" id="page-planner">
     <div class="page-title">Workout Planner</div>
-    <p style="color:var(--text-muted);font-size:13px">Weekly workout planner — coming in Phase 3.</p>
+    <div class="planner-nav">
+      <button onclick="plannerPrevWeek()">&#8592;</button>
+      <span class="planner-week" id="planner-week-label"></span>
+      <button onclick="plannerNextWeek()">&#8594;</button>
+      <button onclick="plannerGoToday()" style="margin-left:4px;font-size:11px;padding:0 10px;width:auto">Today</button>
+    </div>
+    <div class="planner-scroll">
+      <div class="planner-grid" id="planner-grid"></div>
+    </div>
+    <div class="templates-panel">
+      <div class="templates-panel-header">
+        <div class="page-title" style="margin:0;font-size:20px">Templates</div>
+        <button class="btn-outline" onclick="openTemplateBuilder()">+ New Template</button>
+      </div>
+      <div id="templates-list"></div>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="page" id="page-history">
+    <div class="page-title">Workout History</div>
+    <div id="history-content"></div>
+    <div class="empty-state" id="history-empty" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <h3>No workouts logged yet</h3>
+      <p>Complete a workout to see your history here.</p>
+    </div>
   </div>
 
   <!-- Equipment -->
@@ -496,6 +634,70 @@ a{color:inherit;text-decoration:none}
   </div>
 </main>
 
+<!-- Active Workout Overlay -->
+<div class="workout-overlay" id="workout-overlay">
+  <div class="workout-header">
+    <div class="workout-title">Active Workout</div>
+    <button class="workout-close" onclick="closeWorkout()">End Workout</button>
+  </div>
+  <div id="workout-content" style="position:relative">
+    <!-- rest overlay -->
+    <div class="workout-rest-overlay" id="rest-overlay">
+      <div class="rest-timer" id="rest-timer-val">90</div>
+      <div class="rest-label">Rest</div>
+      <div class="rest-skip-btn" onclick="skipRest()">Skip Rest</div>
+    </div>
+  </div>
+</div>
+
+<!-- Template Builder Modal -->
+<div class="modal-overlay" id="template-modal" onclick="if(event.target===this)closeTemplateModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Workout Template</div>
+      <button class="modal-close" onclick="closeTemplateModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="tmpl-id">
+      <div class="modal-field">
+        <label>Template Name</label>
+        <input type="text" id="tmpl-name" placeholder="e.g. Push Day A">
+      </div>
+      <div class="modal-field">
+        <label>Category</label>
+        <select id="tmpl-category">
+          <option value="">None</option>
+          <option>Push</option><option>Pull</option><option>Legs</option>
+          <option>Upper Body</option><option>Lower Body</option><option>Full Body</option>
+          <option>Cardio</option><option>Flexibility</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Add Exercises</label>
+        <input type="text" id="tmpl-ex-search" placeholder="Search exercises..." oninput="searchTemplateEx(this.value)">
+        <div class="ex-search-results" id="tmpl-search-results"></div>
+      </div>
+      <div class="template-ex-list" id="tmpl-ex-list"></div>
+      <button class="btn-primary" onclick="saveTemplate()" style="width:100%">Save Template</button>
+    </div>
+  </div>
+</div>
+
+<!-- Exercise Picker Modal (for planner) -->
+<div class="modal-overlay" id="picker-modal" onclick="if(event.target===this)closePicker()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add to Plan</div>
+      <button class="modal-close" onclick="closePicker()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="picker-modal-content"></div>
+  </div>
+</div>
+
 <!-- Drawer -->
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawerIfOverlay(event)">
   <div class="drawer" id="drawer">
@@ -541,6 +743,8 @@ function switchTab(tab) {
   else if (tab === 'settings') loadSettings();
   else if (tab === 'generate') loadAiStatus();
   else if (tab === 'import') loadSeedFilters();
+  else if (tab === 'planner') loadPlanner();
+  else if (tab === 'history') loadHistory();
 }
 
 // ── Counts / badges ────────────────────────────────────────────────────────────
@@ -1102,6 +1306,397 @@ async function saveSettings() {
 function esc(s) {
   if (!s && s !== 0) return '';
   const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML;
+}
+
+// ── Planner ───────────────────────────────────────────────────────────────────
+let plannerWeekStart = getMonday(new Date());
+const SLOTS = ['Morning', 'Afternoon', 'Evening'];
+
+function getMonday(d) {
+  const dt = new Date(d);
+  const day = dt.getDay();
+  const diff = dt.getDate() - day + (day === 0 ? -6 : 1);
+  dt.setDate(diff);
+  dt.setHours(0,0,0,0);
+  return dt;
+}
+
+function plannerPrevWeek() { plannerWeekStart.setDate(plannerWeekStart.getDate()-7); loadPlanner(); }
+function plannerNextWeek() { plannerWeekStart.setDate(plannerWeekStart.getDate()+7); loadPlanner(); }
+function plannerGoToday() { plannerWeekStart = getMonday(new Date()); loadPlanner(); }
+
+async function loadPlanner() {
+  const iso = plannerWeekStart.toISOString().slice(0,10);
+  const endDate = new Date(plannerWeekStart);
+  endDate.setDate(endDate.getDate()+6);
+
+  const label = document.getElementById('planner-week-label');
+  label.textContent = `${plannerWeekStart.toLocaleDateString('en',{month:'short',day:'numeric'})} – ${endDate.toLocaleDateString('en',{month:'short',day:'numeric',year:'numeric'})}`;
+
+  const res = await fetch('/api/plan?week=' + iso);
+  const planEntries = await res.json();
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const grid = document.getElementById('planner-grid');
+  const days = [];
+  for (let i=0; i<7; i++) {
+    const d = new Date(plannerWeekStart);
+    d.setDate(d.getDate()+i);
+    days.push(d);
+  }
+
+  const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  grid.innerHTML = days.map((d, di) => {
+    const iso_d = d.toISOString().slice(0,10);
+    const isToday = d.getTime() === today.getTime();
+    const slots = SLOTS.map(slot => {
+      const entry = planEntries.find(e => e.date === iso_d && e.slot === slot);
+      if (entry) {
+        return `<div class="planner-slot">
+          <div class="slot-label">${slot}</div>
+          <div class="slot-filled">
+            <div class="slot-exercise-name">${esc(entry.exercise_slug || 'Template')}</div>
+            <div class="slot-exercise-meta">${entry.notes ? esc(entry.notes) : ''}</div>
+            <div class="slot-actions">
+              <button class="slot-btn" onclick="launchWorkout('${entry.exercise_slug||''}',${entry.id})">Start</button>
+              <button class="slot-btn danger" onclick="removePlanEntry(${entry.id})">x</button>
+            </div>
+          </div>
+        </div>`;
+      }
+      return `<div class="planner-slot">
+        <div class="slot-label">${slot}</div>
+        <div class="slot-empty" onclick="openExercisePicker('${iso_d}','${slot}')">+</div>
+      </div>`;
+    }).join('');
+    return `<div class="planner-day ${isToday ? 'today' : ''}">
+      <div class="planner-day-header">
+        <div class="planner-day-name">${DAY_NAMES[di]}</div>
+        <div class="planner-day-num">${d.getDate()}</div>
+      </div>
+      ${slots}
+    </div>`;
+  }).join('');
+
+  loadTemplates();
+}
+
+async function removePlanEntry(id) {
+  await fetch('/api/plan/'+id, {method:'DELETE'});
+  loadPlanner();
+}
+
+// ── Exercise picker for planner ───────────────────────────────────────────────
+let _pickerDate = '', _pickerSlot = '';
+
+async function openExercisePicker(date, slot) {
+  _pickerDate = date; _pickerSlot = slot;
+  const res = await fetch('/api/exercises?per_page=200');
+  const data = await res.json();
+  const exercises = data.exercises || [];
+
+  document.getElementById('picker-modal-content').innerHTML = `
+    <input type="text" class="filter-select" placeholder="Search..." style="width:100%;margin-bottom:12px" oninput="filterPickerItems(this.value)" id="picker-search">
+    <div class="picker-modal-grid" id="picker-grid">
+      ${exercises.map(e => `<div class="picker-item" onclick="pickExercise('${e.slug}')">
+        ${esc(e.name)}<div class="meta">${esc(e.muscle_group||'')}</div>
+      </div>`).join('')}
+    </div>`;
+
+  document.getElementById('picker-modal').classList.add('open');
+}
+
+function filterPickerItems(q) {
+  const ql = q.toLowerCase();
+  document.querySelectorAll('.picker-item').forEach(item => {
+    item.style.display = !ql || item.textContent.toLowerCase().includes(ql) ? '' : 'none';
+  });
+}
+
+async function pickExercise(slug) {
+  await fetch('/api/plan', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({date:_pickerDate, slot:_pickerSlot, exercise_slug:slug}),
+  });
+  closePicker();
+  loadPlanner();
+}
+
+function closePicker() { document.getElementById('picker-modal').classList.remove('open'); }
+
+// ── Templates ─────────────────────────────────────────────────────────────────
+let templateExercises = [];
+
+async function loadTemplates() {
+  const res = await fetch('/api/templates');
+  const list = await res.json();
+  const container = document.getElementById('templates-list');
+  if (!list.length) {
+    container.innerHTML = '<p style="font-size:13px;color:var(--text-muted)">No templates yet. Create one to plan repeating workouts.</p>';
+    return;
+  }
+  container.innerHTML = list.map(t => {
+    const exes = (t.exercises||[]).map(e => esc(e.name||e.slug||'')).join(', ');
+    return `<div class="template-card">
+      <div class="template-card-name">${esc(t.name)}</div>
+      <div class="template-card-meta">${t.category ? esc(t.category) + ' · ' : ''}${(t.exercises||[]).length} exercises</div>
+      ${exes ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px">${exes}</div>` : ''}
+      <div class="template-card-actions">
+        <button class="btn-sage" style="font-size:11px;height:26px" onclick="editTemplate(${t.id})">Edit</button>
+        <button class="btn-danger" style="font-size:11px;height:26px" onclick="deleteTemplate(${t.id})">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openTemplateBuilder(id) {
+  templateExercises = [];
+  document.getElementById('tmpl-id').value = id || '';
+  document.getElementById('tmpl-name').value = '';
+  document.getElementById('tmpl-category').value = '';
+  document.getElementById('tmpl-ex-list').innerHTML = '';
+  document.getElementById('tmpl-ex-search').value = '';
+  document.getElementById('tmpl-search-results').style.display = 'none';
+  document.getElementById('template-modal').classList.add('open');
+}
+
+async function editTemplate(id) {
+  const res = await fetch('/api/templates');
+  const list = await res.json();
+  const t = list.find(x => x.id === id);
+  if (!t) return;
+  templateExercises = t.exercises || [];
+  document.getElementById('tmpl-id').value = id;
+  document.getElementById('tmpl-name').value = t.name;
+  document.getElementById('tmpl-category').value = t.category||'';
+  renderTemplateExList();
+  document.getElementById('template-modal').classList.add('open');
+}
+
+function renderTemplateExList() {
+  document.getElementById('tmpl-ex-list').innerHTML = templateExercises.map((e,i) => `
+    <div class="template-ex-item">
+      <span class="template-ex-name">${esc(e.name||e.slug)}</span>
+      <input class="template-ex-reps" value="${esc(e.reps||'8-12')}" placeholder="reps" onchange="templateExercises[${i}].reps=this.value">
+      <div class="template-ex-remove" onclick="removeTemplateEx(${i})">x</div>
+    </div>`).join('');
+}
+
+function removeTemplateEx(i) { templateExercises.splice(i,1); renderTemplateExList(); }
+
+async function searchTemplateEx(q) {
+  const results = document.getElementById('tmpl-search-results');
+  if (!q) { results.style.display = 'none'; return; }
+  const res = await fetch('/api/exercises?per_page=200');
+  const data = await res.json();
+  const filtered = (data.exercises||[]).filter(e => e.name.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+  if (!filtered.length) { results.style.display = 'none'; return; }
+  results.style.display = '';
+  results.innerHTML = filtered.map(e => `
+    <div class="ex-search-result-item" onclick="addTemplateEx('${e.slug}','${esc(e.name)}')">
+      ${esc(e.name)} <span style="font-size:11px;color:var(--text-muted)">${esc(e.muscle_group||'')}</span>
+    </div>`).join('');
+}
+
+function addTemplateEx(slug, name) {
+  templateExercises.push({slug, name, reps:'8-12'});
+  renderTemplateExList();
+  document.getElementById('tmpl-ex-search').value = '';
+  document.getElementById('tmpl-search-results').style.display = 'none';
+}
+
+async function saveTemplate() {
+  const id = document.getElementById('tmpl-id').value;
+  const name = document.getElementById('tmpl-name').value.trim();
+  if (!name) { alert('Name is required'); return; }
+  const body = {
+    name,
+    category: document.getElementById('tmpl-category').value,
+    exercises: templateExercises,
+  };
+  if (id) {
+    await fetch('/api/templates/'+id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  } else {
+    await fetch('/api/templates', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  }
+  closeTemplateModal();
+  loadTemplates();
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('Delete this template?')) return;
+  await fetch('/api/templates/'+id, {method:'DELETE'});
+  loadTemplates();
+}
+
+function closeTemplateModal() { document.getElementById('template-modal').classList.remove('open'); }
+
+// ── Active workout mode ───────────────────────────────────────────────────────
+let workoutExercises = [];
+let workoutIdx = 0;
+let workoutSets = {};
+let restTimer = null;
+
+async function launchWorkout(slug, planId) {
+  if (!slug) return;
+  const res = await fetch('/api/exercises/'+slug);
+  const ex = await res.json();
+  workoutExercises = [ex];
+  workoutIdx = 0;
+  workoutSets = {};
+  renderWorkoutExercise();
+  document.getElementById('workout-overlay').classList.add('open');
+}
+
+async function launchTemplateWorkout(templateId) {
+  const res = await fetch('/api/templates');
+  const list = await res.json();
+  const t = list.find(x => x.id === templateId);
+  if (!t || !t.exercises?.length) return;
+
+  const exercises = await Promise.all(
+    t.exercises.map(e => fetch('/api/exercises/'+e.slug).then(r => r.json()))
+  );
+  workoutExercises = exercises.filter(e => !e.error);
+  workoutIdx = 0;
+  workoutSets = {};
+  renderWorkoutExercise();
+  document.getElementById('workout-overlay').classList.add('open');
+}
+
+function renderWorkoutExercise() {
+  const ex = workoutExercises[workoutIdx];
+  const full = ex?.full || {};
+  const targetSets = full.default_sets || 3;
+  const targetReps = full.default_reps || '8-12';
+
+  const imgUrl = ex.image_url ? (ex.image_url.startsWith('http') ? ex.image_url : '/'+ex.image_url) : null;
+
+  const dots = workoutExercises.map((_,i) =>
+    `<div class="workout-dot ${i < workoutIdx ? 'done' : i === workoutIdx ? 'current' : ''}"></div>`
+  ).join('');
+
+  const loggedSets = workoutSets[ex.slug] || [];
+  const setRows = Array.from({length: targetSets}, (_,i) => {
+    const logged = loggedSets[i];
+    return `<div class="workout-set-row">
+      <div class="workout-set-num ${logged ? 'logged' : ''}">${i+1}</div>
+      <input class="workout-input" id="reps-${i}" type="number" placeholder="${targetReps} reps" value="${logged?.reps||''}">
+      <span class="workout-input-label">reps</span>
+      <input class="workout-input" id="weight-${i}" type="number" placeholder="kg" value="${logged?.weight||''}">
+      <span class="workout-input-label">kg</span>
+      <button class="workout-log-btn" onclick="logSet(${i})">Log</button>
+    </div>`;
+  }).join('');
+
+  document.getElementById('workout-content').innerHTML = `
+    <div class="workout-progress">${dots}</div>
+    ${imgUrl ? `<img class="workout-ex-img" src="${imgUrl}" alt="">` : `<div class="workout-ex-img"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`}
+    <div class="workout-ex-name">${esc(ex.name)}</div>
+    <div class="workout-ex-meta">${workoutIdx+1} of ${workoutExercises.length} · ${targetSets} sets × ${targetReps}</div>
+    <div class="workout-sets-area">${setRows}</div>
+    <div class="workout-footer">
+      <button class="workout-next-btn" onclick="nextWorkoutExercise()">${workoutIdx+1 < workoutExercises.length ? 'Next Exercise' : 'Finish'}</button>
+      <button class="workout-skip" onclick="nextWorkoutExercise()">Skip</button>
+    </div>`;
+}
+
+function logSet(setIndex) {
+  const ex = workoutExercises[workoutIdx];
+  const reps = document.getElementById('reps-'+setIndex)?.value;
+  const weight = document.getElementById('weight-'+setIndex)?.value;
+  if (!workoutSets[ex.slug]) workoutSets[ex.slug] = [];
+  workoutSets[ex.slug][setIndex] = {reps: parseInt(reps)||null, weight: parseFloat(weight)||null};
+  document.querySelectorAll('.workout-set-num')[setIndex]?.classList.add('logged');
+
+  const full = ex.full || {};
+  const restSec = full.default_rest_sec || 90;
+  startRestTimer(restSec);
+}
+
+function startRestTimer(sec) {
+  const overlay = document.getElementById('rest-overlay');
+  overlay.classList.add('show');
+  let remaining = sec;
+  document.getElementById('rest-timer-val').textContent = remaining;
+  clearInterval(restTimer);
+  restTimer = setInterval(() => {
+    remaining--;
+    document.getElementById('rest-timer-val').textContent = remaining;
+    if (remaining <= 0) { clearInterval(restTimer); overlay.classList.remove('show'); }
+  }, 1000);
+}
+
+function skipRest() { clearInterval(restTimer); document.getElementById('rest-overlay').classList.remove('show'); }
+
+async function nextWorkoutExercise() {
+  const ex = workoutExercises[workoutIdx];
+  const sets = (workoutSets[ex.slug] || []).filter(Boolean);
+  if (sets.length) {
+    await fetch('/api/log', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({exercise_slug: ex.slug, sets}),
+    });
+  }
+
+  workoutIdx++;
+  if (workoutIdx >= workoutExercises.length) {
+    closeWorkout();
+    refreshCounts();
+    return;
+  }
+  renderWorkoutExercise();
+}
+
+function closeWorkout() {
+  clearInterval(restTimer);
+  document.getElementById('rest-overlay').classList.remove('show');
+  document.getElementById('workout-overlay').classList.remove('open');
+}
+
+// ── History ───────────────────────────────────────────────────────────────────
+async function loadHistory() {
+  const res = await fetch('/api/log/history?limit=100');
+  const entries = await res.json();
+  const container = document.getElementById('history-content');
+  const empty = document.getElementById('history-empty');
+
+  if (!entries.length) {
+    container.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  // Group by date
+  const groups = {};
+  entries.forEach(e => {
+    const date = (e.logged_at||'').slice(0,10);
+    if (!groups[date]) groups[date] = [];
+    groups[date].push(e);
+  });
+
+  container.innerHTML = Object.keys(groups).sort().reverse().map(date => {
+    const rows = groups[date].map(e => {
+      const sets = (e.sets||[]).filter(s => s && (s.reps || s.weight));
+      const pills = sets.map(s => `<span class="set-pill">${s.reps||'?'} reps${s.weight ? ' @ '+s.weight+'kg' : ''}</span>`).join('');
+      const imgUrl = e.image_url ? (e.image_url.startsWith('http') ? e.image_url : '/'+e.image_url) : null;
+      return `<div class="history-exercise-row">
+        <div class="history-exercise-img">
+          ${imgUrl ? `<img src="${imgUrl}" alt="">` : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>'}
+        </div>
+        <div class="history-exercise-info">
+          <div class="history-exercise-name">${esc(e.exercise_name||e.exercise_slug)}</div>
+          <div class="log-entry-sets">${pills||'<span style="font-size:11px;color:var(--text-muted)">No set data</span>'}</div>
+        </div>
+      </div>`;
+    }).join('');
+    const d = new Date(date+'T00:00:00');
+    return `<div class="history-date-group">
+      <div class="history-date-header">${d.toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}</div>
+      ${rows}
+    </div>`;
+  }).join('');
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
