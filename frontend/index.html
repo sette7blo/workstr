@@ -309,6 +309,28 @@ a{color:inherit;text-decoration:none}
 .picker-item{padding:10px;border:1px solid var(--border-soft);border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:border-color .15s}
 .picker-item:hover{border-color:var(--amber);background:rgba(232,130,12,.04)}
 .picker-item .meta{font-size:11px;color:var(--text-muted);margin-top:2px}
+
+/* AI plan modal */
+.ai-plan-preview{margin-top:16px;border:1px solid var(--border-soft);border-radius:10px;overflow:hidden}
+.ai-plan-day{padding:10px 14px;border-bottom:1px solid var(--border-soft);display:flex;gap:10px;align-items:flex-start}
+.ai-plan-day:last-child{border-bottom:none}
+.ai-plan-date{font-weight:600;font-size:12px;min-width:80px;color:var(--text-mid)}
+.ai-plan-entries{flex:1;display:flex;flex-direction:column;gap:4px}
+.ai-plan-entry{font-size:12px;color:var(--brown-dark)}
+.ai-plan-slot{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.ai-plan-summary{padding:12px 14px;background:var(--cream);font-size:12px;color:var(--text-mid);line-height:1.5}
+
+/* Progress chart */
+.progress-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border-soft)}
+.progress-row:last-child{border-bottom:none}
+.progress-date{font-size:11px;color:var(--text-muted);min-width:72px}
+.progress-bar-wrap{flex:1;height:6px;background:var(--cream);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--amber);border-radius:3px;transition:width .3s}
+.progress-val{font-size:11px;font-weight:600;color:var(--text-mid);min-width:50px;text-align:right}
+
+/* Equipment filter toggle */
+.eq-filter-toggle{display:inline-flex;align-items:center;gap:6px;padding:0 10px;height:32px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border-soft);color:var(--text-mid);background:var(--white);user-select:none}
+.eq-filter-toggle.active{border-color:var(--sage);color:var(--sage);background:rgba(122,144,104,.06)}
 </style>
 </head>
 <body>
@@ -407,6 +429,7 @@ a{color:inherit;text-decoration:none}
         <option value="">All Levels</option>
         <option>beginner</option><option>intermediate</option><option>advanced</option>
       </select>
+      <div class="eq-filter-toggle" id="eq-filter-toggle" onclick="toggleEquipmentFilter()">My Equipment</div>
       <span class="filter-clear" id="filter-clear" onclick="clearFilters()" style="display:none">Clear filters</span>
       <span class="recipe-count" id="exercise-count"></span>
     </div>
@@ -554,6 +577,9 @@ a{color:inherit;text-decoration:none}
       <span class="planner-week" id="planner-week-label"></span>
       <button onclick="plannerNextWeek()">&#8594;</button>
       <button onclick="plannerGoToday()" style="margin-left:4px;font-size:11px;padding:0 10px;width:auto">Today</button>
+      <button class="btn-outline" style="margin-left:auto;font-size:12px" onclick="openAiPlanModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>AI Plan
+      </button>
     </div>
     <div class="planner-scroll">
       <div class="planner-grid" id="planner-grid"></div>
@@ -681,6 +707,52 @@ a{color:inherit;text-decoration:none}
       </div>
       <div class="template-ex-list" id="tmpl-ex-list"></div>
       <button class="btn-primary" onclick="saveTemplate()" style="width:100%">Save Template</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI Plan Modal -->
+<div class="modal-overlay" id="ai-plan-modal" onclick="if(event.target===this)closeAiPlanModal()">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header">
+      <div class="modal-title">Generate AI Workout Plan</div>
+      <button class="modal-close" onclick="closeAiPlanModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div class="modal-field">
+          <label>Goal</label>
+          <select id="aip-goal">
+            <option value="general fitness">General Fitness</option>
+            <option value="muscle building">Muscle Building</option>
+            <option value="weight loss">Weight Loss</option>
+            <option value="strength">Strength</option>
+            <option value="endurance">Endurance</option>
+          </select>
+        </div>
+        <div class="modal-field">
+          <label>Days per Week</label>
+          <select id="aip-days">
+            <option value="2">2 days</option>
+            <option value="3">3 days</option>
+            <option value="4" selected>4 days</option>
+            <option value="5">5 days</option>
+            <option value="6">6 days</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-field">
+        <label>Muscle Focus <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="text" id="aip-focus" placeholder="e.g. Chest, Back, Legs">
+      </div>
+      <div class="modal-field" style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="aip-use-equipment" style="width:16px;height:16px;cursor:pointer">
+        <label for="aip-use-equipment" style="font-size:13px;font-weight:400;letter-spacing:0;text-transform:none;cursor:pointer;color:var(--text-mid)">Filter to my owned equipment only</label>
+      </div>
+      <button class="btn-primary" id="aip-gen-btn" onclick="generateAiPlan()" style="width:100%">Generate Plan</button>
+      <div id="aip-result"></div>
     </div>
   </div>
 </div>
@@ -939,11 +1011,16 @@ async function openDrawer(slug) {
       ${equip ? `<div class="drawer-section">Equipment</div><div class="tag-row">${equip}</div>` : ''}
       ${tags ? `<div class="drawer-section">Tags</div><div class="tag-row">${tags}</div>` : ''}
       ${steps ? `<div class="drawer-section">Instructions</div><ol class="instruction-list">${steps}</ol>` : ''}
+      <div id="drawer-progress"></div>
       ${logHtml}
       <div class="drawer-actions">${actions}</div>
     </div>`;
 
   document.getElementById('drawer-overlay').classList.add('open');
+
+  if (ex.status === 'active') {
+    loadExerciseProgress(slug, document.getElementById('drawer-progress'));
+  }
 }
 
 function closeDrawer() { document.getElementById('drawer-overlay').classList.remove('open'); }
@@ -1697,6 +1774,242 @@ async function loadHistory() {
       ${rows}
     </div>`;
   }).join('');
+}
+
+// ── Equipment filter ──────────────────────────────────────────────────────────
+let filterEquipmentOwned = false;
+let ownedEquipmentNames = null;
+
+async function getOwnedEquipment() {
+  if (ownedEquipmentNames !== null) return ownedEquipmentNames;
+  const res = await fetch('/api/equipment');
+  const list = await res.json();
+  ownedEquipmentNames = list.filter(e => e.owned).map(e => e.name.toLowerCase());
+  return ownedEquipmentNames;
+}
+
+async function toggleEquipmentFilter() {
+  filterEquipmentOwned = !filterEquipmentOwned;
+  document.getElementById('eq-filter-toggle').classList.toggle('active', filterEquipmentOwned);
+  if (filterEquipmentOwned) {
+    ownedEquipmentNames = null; // force refresh
+    await getOwnedEquipment();
+  }
+  renderGrid('active');
+}
+
+// Patch renderGrid to respect equipment filter
+const _origRenderGrid = renderGrid;
+renderGrid = function(status) {
+  _origRenderGrid(status);
+};
+
+// Override the list filtering step — monkey-patch applyFilters to call renderGrid which now has eq filter
+const _origApplyFilters = applyFilters;
+applyFilters = function() {
+  filterCategory = document.getElementById('filter-category').value;
+  filterMuscle = document.getElementById('filter-muscle').value;
+  filterDifficulty = document.getElementById('filter-difficulty').value;
+  const isFiltered = filterCategory || filterMuscle || filterDifficulty || filterEquipmentOwned;
+  document.getElementById('filter-clear').style.display = isFiltered ? '' : 'none';
+  renderGrid('active');
+};
+
+const _origClearFilters = clearFilters;
+clearFilters = function() {
+  filterCategory = filterMuscle = filterDifficulty = '';
+  filterEquipmentOwned = false;
+  document.getElementById('filter-category').value = '';
+  document.getElementById('filter-muscle').value = '';
+  document.getElementById('filter-difficulty').value = '';
+  document.getElementById('filter-clear').style.display = 'none';
+  document.getElementById('eq-filter-toggle').classList.remove('active');
+  renderGrid('active');
+};
+
+// Wrap loadExercises to apply equipment filter after fetch
+const _origLoadExercises = loadExercises;
+loadExercises = async function(status) {
+  const res = await fetch('/api/exercises?status=' + status + '&per_page=200');
+  const data = await res.json();
+  exercisesData = data.exercises || [];
+  if (status === 'active' && filterEquipmentOwned) {
+    const owned = await getOwnedEquipment();
+    if (owned.length) {
+      exercisesData = exercisesData.filter(e => {
+        const eqList = (e.equipment_list || []).map(eq => (typeof eq === 'string' ? eq : '').toLowerCase());
+        return eqList.some(eq => owned.includes(eq));
+      });
+    }
+  }
+  renderGrid(status);
+};
+
+// ── AI Plan ───────────────────────────────────────────────────────────────────
+let _aiPlanData = null;
+
+function openAiPlanModal() {
+  _aiPlanData = null;
+  document.getElementById('aip-result').innerHTML = '';
+  document.getElementById('ai-plan-modal').classList.add('open');
+}
+
+function closeAiPlanModal() {
+  document.getElementById('ai-plan-modal').classList.remove('open');
+  _aiPlanData = null;
+}
+
+async function generateAiPlan() {
+  const goal = document.getElementById('aip-goal').value;
+  const days = parseInt(document.getElementById('aip-days').value);
+  const focusRaw = document.getElementById('aip-focus').value.trim();
+  const useEquipment = document.getElementById('aip-use-equipment').checked;
+  const weekStart = plannerWeekStart.toISOString().slice(0,10);
+
+  let equipmentFilter = null;
+  if (useEquipment) {
+    const owned = await getOwnedEquipment();
+    equipmentFilter = owned.length ? owned : null;
+  }
+
+  const muscleArr = focusRaw ? focusRaw.split(',').map(s => s.trim()).filter(Boolean) : null;
+
+  const btn = document.getElementById('aip-gen-btn');
+  const result = document.getElementById('aip-result');
+  btn.disabled = true;
+  result.innerHTML = '<div class="gen-loading" style="margin-top:16px"><div class="spinner"></div>Generating plan...</div>';
+
+  try {
+    const res = await fetch('/api/ai/plan', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        week_start: weekStart,
+        days_per_week: days,
+        goal,
+        equipment_filter: equipmentFilter,
+        muscle_focus: muscleArr,
+      }),
+    });
+    const data = await res.json();
+    btn.disabled = false;
+
+    if (data.error) {
+      result.innerHTML = `<div style="color:#c44;font-size:13px;margin-top:12px">${esc(data.error)}</div>`;
+      return;
+    }
+
+    _aiPlanData = data;
+    result.innerHTML = renderAiPlanPreview(data, weekStart);
+  } catch(e) {
+    btn.disabled = false;
+    result.innerHTML = `<div style="color:#c44;font-size:13px;margin-top:12px">Failed to generate plan.</div>`;
+  }
+}
+
+function renderAiPlanPreview(data, weekStart) {
+  const plan = data.plan || [];
+  const summary = data.summary || '';
+
+  // Group by date
+  const byDate = {};
+  plan.forEach(e => {
+    if (!byDate[e.date]) byDate[e.date] = [];
+    byDate[e.date].push(e);
+  });
+
+  const start = new Date(weekStart + 'T00:00:00');
+  const dateRows = [];
+  for (let i=0; i<7; i++) {
+    const d = new Date(start); d.setDate(d.getDate()+i);
+    const iso = d.toISOString().slice(0,10);
+    const entries = byDate[iso] || [];
+    if (!entries.length) {
+      dateRows.push(`<div class="ai-plan-day"><div class="ai-plan-date">${d.toLocaleDateString('en',{weekday:'short',month:'short',day:'numeric'})}</div><div class="ai-plan-entries" style="color:var(--text-muted);font-size:11px">Rest day</div></div>`);
+    } else {
+      const entriesHtml = entries.map(e => `<div class="ai-plan-entry"><span class="ai-plan-slot">${esc(e.slot)}</span> ${esc(e.exercise_slug)}${e.notes ? ' <span style="color:var(--text-muted)">— ' + esc(e.notes) + '</span>' : ''}</div>`).join('');
+      dateRows.push(`<div class="ai-plan-day"><div class="ai-plan-date">${d.toLocaleDateString('en',{weekday:'short',month:'short',day:'numeric'})}</div><div class="ai-plan-entries">${entriesHtml}</div></div>`);
+    }
+  }
+
+  return `<div style="margin-top:16px">
+    <div class="ai-plan-preview">
+      ${dateRows.join('')}
+      ${summary ? `<div class="ai-plan-summary">${esc(summary)}</div>` : ''}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn-sage" onclick="acceptAiPlan()">Accept Plan</button>
+      <button class="btn-outline" onclick="generateAiPlan()">Regenerate</button>
+    </div>
+  </div>`;
+}
+
+async function acceptAiPlan() {
+  if (!_aiPlanData?.plan?.length) return;
+  const btn = document.querySelector('#aip-result .btn-sage');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+  for (const entry of _aiPlanData.plan) {
+    await fetch('/api/plan', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        date: entry.date,
+        slot: entry.slot,
+        exercise_slug: entry.exercise_slug,
+        notes: entry.notes || null,
+      }),
+    });
+  }
+
+  closeAiPlanModal();
+  loadPlanner();
+}
+
+// ── Exercise progress ─────────────────────────────────────────────────────────
+async function loadExerciseProgress(slug, container) {
+  const data = await fetch('/api/exercises/' + slug + '/progress').then(r => r.json());
+  if (!data.length) { container.innerHTML = ''; return; }
+
+  const withWeight = data.filter(d => d.best_1rm);
+  const withVolume = data.filter(d => d.volume);
+
+  if (!withWeight.length && !withVolume.length) { container.innerHTML = ''; return; }
+
+  const recentW = withWeight.slice(-6);
+  const maxRM = Math.max(...recentW.map(d => d.best_1rm));
+  const recentV = withVolume.slice(-6);
+  const maxVol = Math.max(...recentV.map(d => d.volume));
+
+  let html = '';
+
+  if (recentW.length >= 2) {
+    const trend = recentW[recentW.length-1].best_1rm - recentW[0].best_1rm;
+    const arrow = trend > 0 ? ' &#8593;' : trend < 0 ? ' &#8595;' : '';
+    html += `<div class="drawer-section">Estimated 1RM${arrow}</div>`;
+    html += recentW.map(d => {
+      const pct = maxRM ? (d.best_1rm / maxRM) * 100 : 0;
+      return `<div class="progress-row">
+        <div class="progress-date">${d.date.slice(5)}</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct.toFixed(0)}%"></div></div>
+        <div class="progress-val">${d.best_1rm} kg</div>
+      </div>`;
+    }).join('');
+  }
+
+  if (recentV.length >= 2) {
+    html += `<div class="drawer-section">Volume (kg)</div>`;
+    html += recentV.map(d => {
+      const pct = maxVol ? (d.volume / maxVol) * 100 : 0;
+      return `<div class="progress-row">
+        <div class="progress-date">${d.date.slice(5)}</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct.toFixed(0)}%;background:var(--sage)"></div></div>
+        <div class="progress-val">${d.volume}</div>
+      </div>`;
+    }).join('');
+  }
+
+  container.innerHTML = html;
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────

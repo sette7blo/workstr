@@ -75,3 +75,42 @@ def delete_log_entry(log_id: int) -> bool:
     with db() as conn:
         cur = conn.execute("DELETE FROM workout_log WHERE id=?", (log_id,))
     return cur.rowcount > 0
+
+
+def get_progress(exercise_slug: str) -> list:
+    """Return per-session 1RM (Epley) and volume for trend charts."""
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT sets, logged_at FROM workout_log WHERE exercise_slug=? ORDER BY logged_at ASC",
+            (exercise_slug,)
+        ).fetchall()
+
+    result = []
+    for r in rows_to_list(rows):
+        sets = r.get("sets", [])
+        if isinstance(sets, str):
+            try:
+                sets = json.loads(sets)
+            except (json.JSONDecodeError, TypeError):
+                sets = []
+
+        best_1rm = 0
+        total_volume = 0
+        for s in (sets or []):
+            if not s:
+                continue
+            weight = s.get("weight") or 0
+            reps = s.get("reps") or 0
+            if weight and reps:
+                one_rm = weight * (1 + reps / 30)
+                if one_rm > best_1rm:
+                    best_1rm = one_rm
+                total_volume += weight * reps
+
+        result.append({
+            "date": (r.get("logged_at") or "")[:10],
+            "best_1rm": round(best_1rm, 1) if best_1rm else None,
+            "volume": round(total_volume, 1),
+        })
+
+    return result

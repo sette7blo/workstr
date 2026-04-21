@@ -12,7 +12,7 @@ from flask import Flask, jsonify, request, send_from_directory
 import core.config as config
 from core.schema import init_db
 from modules import importer, equipment, workout_log, workout_planner
-from modules import ai_generator, camera, seed_browser
+from modules import ai_generator, ai_planner, camera, seed_browser
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
@@ -91,6 +91,11 @@ def api_exercise_counts():
         trashed = conn.execute("SELECT COUNT(*) FROM exercises WHERE status='trashed'").fetchone()[0]
         active = conn.execute("SELECT COUNT(*) FROM exercises WHERE status='active'").fetchone()[0]
     return jsonify({"active": active, "staged": staged, "trashed": trashed})
+
+
+@app.route("/api/exercises/<slug>/progress")
+def api_exercise_progress(slug):
+    return jsonify(workout_log.get_progress(slug))
 
 
 @app.route("/api/exercises/<slug>")
@@ -296,6 +301,24 @@ def api_ai_generate():
         return jsonify({"error": "prompt is required"}), 400
     try:
         result = ai_generator.generate_exercise(prompt)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/ai/plan", methods=["POST"])
+def api_ai_plan():
+    data = request.get_json(force=True)
+    week_start = data.get("week_start")
+    if not week_start:
+        return jsonify({"error": "week_start required"}), 400
+    try:
+        result = ai_planner.generate_plan(
+            week_start=week_start,
+            days_per_week=int(data.get("days_per_week", 4)),
+            goal=data.get("goal", "general fitness"),
+            equipment_filter=data.get("equipment_filter") or None,
+            muscle_focus=data.get("muscle_focus") or None,
+        )
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
