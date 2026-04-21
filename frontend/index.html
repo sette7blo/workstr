@@ -11,7 +11,7 @@
 :root{
   --amber:#E8820C;--cream:#faf7f2;--white:#ffffff;--brown-dark:#2c1a06;
   --text-mid:#6a4a28;--text-muted:#c0a880;--text-dim:#9a8060;
-  --border-soft:#ede7dc;--sage:#7a9068;--sidebar-w:52px;--sidebar-expanded:220px;--topbar-h:68px;
+  --border-soft:#ede7dc;--sage:#7a9068;--sidebar-w:80px;--topbar-h:68px;
 }
 html{height:100%;height:-webkit-fill-available}
 body{font-family:'Jost',sans-serif;font-size:14px;color:var(--brown-dark);background:var(--cream);min-height:100vh;min-height:-webkit-fill-available;overflow:hidden}
@@ -34,29 +34,21 @@ a{color:inherit;text-decoration:none}
 .btn-add:hover{filter:brightness(1.1)}
 
 /* Sidebar */
-.sidebar{position:fixed;top:var(--topbar-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;z-index:90;transition:width .2s ease;overflow:hidden}
-.sidebar.expanded{width:var(--sidebar-expanded)}
-.sidebar-toggle{padding:14px 16px;display:flex;align-items:center;gap:12px;color:var(--text-mid);cursor:pointer}
-.sidebar-toggle svg{flex-shrink:0}
-.sidebar-toggle span{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;opacity:0;white-space:nowrap;transition:opacity .15s}
-.sidebar.expanded .sidebar-toggle span{opacity:1}
+.sidebar{position:fixed;top:var(--topbar-h);left:0;bottom:0;width:var(--sidebar-w);background:var(--white);border-right:1px solid var(--border-soft);display:flex;flex-direction:column;z-index:90;overflow:hidden}
 .nav-items{flex:1;display:flex;flex-direction:column;padding:4px 0;overflow-y:auto}
-.nav-item{display:flex;align-items:center;gap:12px;padding:10px 16px;color:var(--text-dim);cursor:pointer;transition:color .15s,background .15s;position:relative;flex-shrink:0}
+.nav-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 8px;color:var(--text-dim);cursor:pointer;transition:color .15s,background .15s;position:relative;flex-shrink:0}
 .nav-item:hover{color:var(--brown-dark);background:rgba(232,130,12,.04)}
 .nav-item.active{color:var(--amber)}
 .nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--amber);border-radius:0 3px 3px 0}
 .nav-item svg{flex-shrink:0;width:20px;height:20px}
-.nav-item span{font-size:13px;font-weight:500;opacity:0;white-space:nowrap;transition:opacity .15s;flex:1}
-.sidebar.expanded .nav-item span{opacity:1}
-.nav-badge{min-width:18px;height:18px;border-radius:9px;background:var(--amber);color:#fff;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 4px;flex-shrink:0}
+.nav-item span{font-size:9px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap;text-align:center}
+.nav-badge{position:absolute;top:6px;right:6px;min-width:16px;height:16px;border-radius:8px;background:var(--amber);color:#fff;font-size:9px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 3px}
 .nav-badge.visible{display:flex}
-.sidebar.expanded .nav-badge{opacity:1}
 .nav-divider{height:1px;background:var(--border-soft);margin:6px 12px;flex-shrink:0}
 .nav-bottom{margin-top:auto;padding-bottom:12px}
 
 /* Content */
-.content{position:fixed;top:var(--topbar-h);left:var(--sidebar-w);right:0;bottom:0;overflow-y:auto;padding:24px;transition:left .2s ease;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
-.sidebar.expanded ~ .content{left:var(--sidebar-expanded)}
+.content{position:fixed;top:var(--topbar-h);left:var(--sidebar-w);right:0;bottom:0;overflow-y:auto;padding:24px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 .page{display:none}
 .page.active{display:block}
 .page-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-style:italic;font-size:26px;color:var(--brown-dark);margin-bottom:20px}
@@ -155,7 +147,7 @@ a{color:inherit;text-decoration:none}
 
 /* Seed browser */
 .seed-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
-.seed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;max-height:calc(100vh - 320px);overflow-y:auto}
+.seed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
 .seed-card{background:var(--white);border:1px solid var(--border-soft);border-radius:10px;overflow:hidden;cursor:pointer;transition:box-shadow .15s;position:relative}
 .seed-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.08)}
 .seed-card.selected{border-color:var(--amber);box-shadow:0 0 0 2px rgba(232,130,12,.2)}
@@ -355,10 +347,6 @@ a{color:inherit;text-decoration:none}
 
 <!-- Sidebar -->
 <nav class="sidebar" id="sidebar">
-  <div class="sidebar-toggle" onclick="toggleSidebar()">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    <span>Menu</span>
-  </div>
   <div class="nav-items">
     <div class="nav-item active" data-tab="exercises" onclick="switchTab('exercises')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
@@ -529,6 +517,9 @@ a{color:inherit;text-decoration:none}
       </div>
       <div id="seed-status" style="font-size:13px;color:var(--text-muted);margin-bottom:12px"></div>
       <div class="seed-grid" id="seed-grid"></div>
+      <div id="seed-load-more" style="display:none;text-align:center;margin-top:16px">
+        <button class="btn-outline" onclick="loadMoreSeed()">Load more</button>
+      </div>
       <div class="seed-import-bar" id="seed-import-bar" style="display:none">
         <span class="seed-selected-count" id="seed-selected-count"></span>
         <button class="btn-primary" onclick="importSelected()">Import Selected to Staging</button>
@@ -813,9 +804,10 @@ let filterDifficulty = '';
 let seedSelected = new Set();
 let cameraFiles = [];
 let seedDebounceTimer = null;
+let seedOffset = 0;
+let seedTotal = 0;
 
 // ── Sidebar & tabs ────────────────────────────────────────────────────────────
-function toggleSidebar() { document.getElementById('sidebar').classList.toggle('expanded'); }
 
 function switchTab(tab) {
   currentTab = tab;
@@ -1185,6 +1177,7 @@ async function loadSeedFilters() {
 
 let seedFiltersLoaded = false;
 async function loadSeed() {
+  seedOffset = 0;
   const q = document.getElementById('seed-q')?.value || '';
   const category = document.getElementById('seed-category')?.value || '';
   const muscle = document.getElementById('seed-muscle')?.value || '';
@@ -1194,7 +1187,7 @@ async function loadSeed() {
   const status = document.getElementById('seed-status');
   if (status) status.textContent = 'Loading...';
 
-  const params = new URLSearchParams({q, category, muscle, equipment: equip, level, limit: 60});
+  const params = new URLSearchParams({q, category, muscle, equipment: equip, level, limit: 60, offset: 0});
   const res = await fetch('/api/seed/browse?' + params);
 
   if (!res.ok) {
@@ -1203,27 +1196,70 @@ async function loadSeed() {
   }
 
   const data = await res.json();
-  if (status) status.textContent = `${data.length} exercises found`;
+  const exercises = data.results;
+  seedTotal = data.total;
+  seedOffset = exercises.length;
+
+  if (status) {
+    if (seedOffset < seedTotal) status.textContent = `Showing ${seedOffset} of ${seedTotal} exercises`;
+    else status.textContent = `${seedTotal} exercises found`;
+  }
 
   const grid = document.getElementById('seed-grid');
-  if (!data.length) {
+  if (!exercises.length) {
     grid.innerHTML = '<p style="font-size:13px;color:var(--text-muted);padding:20px 0">No exercises found. Try different filters.</p>';
+    document.getElementById('seed-load-more').style.display = 'none';
     return;
   }
 
-  grid.innerHTML = data.map(ex => {
-    const img = ex.image
-      ? `<img src="${esc(ex.image)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%\'><svg width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' stroke-linecap=\'round\'><path d=\'M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4\'/></svg></div>'">`
-      : `<div style="display:flex;align-items:center;justify-content:center;height:100%"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
-    const sel = seedSelected.has(ex.seed_id) ? 'selected' : '';
-    return `<div class="seed-card ${sel}" id="seed-${esc(ex.seed_id)}" onclick="toggleSeedSelect('${esc(ex.seed_id)}', '${esc(ex.name)}')">
-      <div class="seed-card-img">${img}</div>
-      <div class="seed-card-body">
-        <div class="seed-card-name">${esc(ex.name)}</div>
-        <div class="seed-card-meta">${esc(ex.muscle_group||'')} ${ex.difficulty ? '· ' + esc(ex.difficulty) : ''}</div>
-      </div>
-    </div>`;
-  }).join('');
+  grid.innerHTML = exercises.map(ex => seedCardHTML(ex)).join('');
+  document.getElementById('seed-load-more').style.display = seedOffset < seedTotal ? 'block' : 'none';
+}
+
+async function loadMoreSeed() {
+  const q = document.getElementById('seed-q')?.value || '';
+  const category = document.getElementById('seed-category')?.value || '';
+  const muscle = document.getElementById('seed-muscle')?.value || '';
+  const equip = document.getElementById('seed-equipment')?.value || '';
+  const level = document.getElementById('seed-level')?.value || '';
+
+  const btn = document.querySelector('#seed-load-more button');
+  if (btn) btn.disabled = true;
+
+  const params = new URLSearchParams({q, category, muscle, equipment: equip, level, limit: 60, offset: seedOffset});
+  const res = await fetch('/api/seed/browse?' + params);
+  if (btn) btn.disabled = false;
+
+  if (!res.ok) return;
+
+  const data = await res.json();
+  const exercises = data.results;
+  seedOffset += exercises.length;
+
+  const grid = document.getElementById('seed-grid');
+  grid.insertAdjacentHTML('beforeend', exercises.map(ex => seedCardHTML(ex)).join(''));
+
+  const status = document.getElementById('seed-status');
+  if (status) {
+    if (seedOffset < seedTotal) status.textContent = `Showing ${seedOffset} of ${seedTotal} exercises`;
+    else status.textContent = `${seedTotal} exercises found`;
+  }
+
+  document.getElementById('seed-load-more').style.display = seedOffset < seedTotal ? 'block' : 'none';
+}
+
+function seedCardHTML(ex) {
+  const img = ex.image
+    ? `<img src="${esc(ex.image)}" alt="" loading="lazy" onerror="this.parentElement.innerHTML='<div style=\'display:flex;align-items:center;justify-content:center;height:100%\'><svg width=\'32\' height=\'32\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' stroke-linecap=\'round\'><path d=\'M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4\'/></svg></div>'">`
+    : `<div style="display:flex;align-items:center;justify-content:center;height:100%"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
+  const sel = seedSelected.has(ex.seed_id) ? 'selected' : '';
+  return `<div class="seed-card ${sel}" id="seed-${esc(ex.seed_id)}" onclick="toggleSeedSelect('${esc(ex.seed_id)}', '${esc(ex.name)}')">
+    <div class="seed-card-img">${img}</div>
+    <div class="seed-card-body">
+      <div class="seed-card-name">${esc(ex.name)}</div>
+      <div class="seed-card-meta">${esc(ex.muscle_group||'')} ${ex.difficulty ? '· ' + esc(ex.difficulty) : ''}</div>
+    </div>
+  </div>`;
 }
 
 function debounceSeedSearch() {

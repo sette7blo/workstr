@@ -29,8 +29,8 @@ def _fetch() -> list:
 
 
 def browse(q: str = "", category: str = "", muscle: str = "",
-           equipment: str = "", level: str = "", limit: int = 60) -> list:
-    """Search free-exercise-db. Returns list of exercise dicts."""
+           equipment: str = "", level: str = "", limit: int = 60, offset: int = 0) -> dict:
+    """Search free-exercise-db. Returns dict with results list and total match count."""
     try:
         all_ex = _fetch()
     except Exception as e:
@@ -38,6 +38,7 @@ def browse(q: str = "", category: str = "", muscle: str = "",
 
     q_lower = q.lower() if q else ""
     results = []
+    total = 0
 
     for ex in all_ex:
         if q_lower and q_lower not in ex.get("name", "").lower():
@@ -49,15 +50,15 @@ def browse(q: str = "", category: str = "", muscle: str = "",
             sm = [m.lower() for m in ex.get("secondaryMuscles", [])]
             if muscle.lower() not in pm + sm:
                 continue
-        if equipment and ex.get("equipment", "").lower() != equipment.lower():
+        if equipment and (ex.get("equipment") or "").lower() != equipment.lower():
             continue
         if level and ex.get("level", "").lower() != level.lower():
             continue
-        results.append(_format(ex))
-        if len(results) >= limit:
-            break
+        total += 1
+        if total > offset and len(results) < limit:
+            results.append(_format(ex))
 
-    return results
+    return {"results": results, "total": total}
 
 
 def get_one(seed_id: str) -> dict | None:

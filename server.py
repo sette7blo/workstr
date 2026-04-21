@@ -348,9 +348,10 @@ def api_seed_browse():
     equip = request.args.get("equipment", "")
     level = request.args.get("level", "")
     limit = int(request.args.get("limit", 60))
+    offset = int(request.args.get("offset", 0))
     try:
-        results = seed_browser.browse(q, category, muscle, equip, level, limit)
-        return jsonify(results)
+        data = seed_browser.browse(q, category, muscle, equip, level, limit, offset)
+        return jsonify(data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
