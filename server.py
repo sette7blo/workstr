@@ -2,17 +2,18 @@
 server.py — Workstr Flask application
 Run: python server.py
 """
+import csv
 import gzip
 import io
 import json
 from datetime import date
 from pathlib import Path
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, Response
 
 import core.config as config
 from core.schema import init_db
 from modules import importer, equipment, workout_log, workout_planner
-from modules import ai_generator, ai_planner, camera, seed_browser
+from modules import ai_generator, ai_planner, camera, seed_browser, nostr_backup
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
@@ -400,6 +401,77 @@ def api_save_settings():
     if updates:
         config.save_env(updates)
     return jsonify({"ok": True})
+
+# ── Nostr backup ──────────────────────────────────────────────────────────────
+
+@app.route("/api/nostr/sign", methods=["POST"])
+def api_nostr_sign():
+    """Sign all active exercises as Nostr Kind 30078 events. Returns event list for client-side relay publish."""
+    nsec = config.get("NOSTR_NSEC", "").strip()
+    if not nsec:
+        return jsonify({"error": "NOSTR_NSEC not configured"}), 400
+    try:
+        events = nostr_backup.sign_all_exercises(nsec)
+        relay = config.get("NOSTR_RELAY", "")
+        return jsonify({"events": events, "relay": relay, "count": len(events)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/nostr/restore", methods=["POST"])
+def api_nostr_restore():
+    """Restore exercises from a list of Nostr events (JSON array in body)."""
+    data = request.get_json(force=True)
+    events = data if isinstance(data, list) else data.get("events", [])
+    try:
+        result = nostr_backup.restore_from_events(events)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# ── Export ─────────────────────────────────────────────────────────────────────
+
+@app.route("/api/export/log.json")
+def api_export_log_json():
+    limit = int(request.args.get("limit", 10000))
+    entries = workout_log.get_history(limit)
+    payload = json.dumps(entries, ensure_ascii=False, indent=2)
+    return Response(
+        payload,
+        mimetype="application/json",
+        headers={"Content-Disposition": "attachment; filename=workout_log.json"},
+    )
+
+
+@app.route("/api/export/log.csv")
+def api_export_log_csv():
+    limit = int(request.args.get("limit", 10000))
+    entries = workout_log.get_history(limit)
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["id", "date", "exercise_slug", "exercise_name", "set_number", "reps", "weight_kg", "duration_sec", "notes"])
+    for e in entries:
+        sets = e.get("sets") or []
+        if not sets:
+            writer.writerow([e["id"], (e.get("logged_at") or "")[:10], e.get("exercise_slug", ""), e.get("exercise_name", ""), "", "", "", e.get("duration_sec", ""), e.get("notes", "")])
+        else:
+            for i, s in enumerate(sets, 1):
+                if not s:
+                    continue
+                writer.writerow([e["id"], (e.get("logged_at") or "")[:10], e.get("exercise_slug", ""), e.get("exercise_name", ""), i, s.get("reps", ""), s.get("weight", ""), e.get("duration_sec", ""), e.get("notes", "")])
+    return Response(
+        buf.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment; filename=workout_log.csv"},
+    )
+
+# ── Version ────────────────────────────────────────────────────────────────────
+
+@app.route("/api/version")
+def api_version():
+    version_file = Path(__file__).parent / "VERSION"
+    version = version_file.read_text().strip() if version_file.exists() else "dev"
+    return jsonify({"version": version})
 
 # ── Run ───────────────────────────────────────────────────────────────────────
 

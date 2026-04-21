@@ -657,6 +657,28 @@ a{color:inherit;text-decoration:none}
     </div>
     <button class="btn-primary" onclick="saveSettings()" style="margin-top:4px">Save Settings</button>
     <div id="settings-status" style="margin-top:10px;font-size:12px;color:var(--text-muted)"></div>
+
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border-soft)">
+      <div class="page-title" style="font-size:20px;margin-bottom:12px">Nostr Backup</div>
+      <p style="font-size:13px;color:var(--text-mid);margin-bottom:14px;max-width:480px;line-height:1.5">Back up your exercise library to Nostr (Kind 30078). Your nsec is configured in the .env file — events are signed server-side and published client-side via WebSocket.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-outline" onclick="nostrBackup()">Back Up Exercises to Nostr</button>
+        <button class="btn-outline" onclick="openNostrRestorePrompt()">Restore from Nostr Events</button>
+      </div>
+      <div id="nostr-status" style="margin-top:10px;font-size:12px;color:var(--text-muted)"></div>
+    </div>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border-soft)">
+      <div class="page-title" style="font-size:20px;margin-bottom:12px">Export</div>
+      <div style="display:flex;gap:8px">
+        <a class="btn-outline" href="/api/export/log.json" download>Download Log (JSON)</a>
+        <a class="btn-outline" href="/api/export/log.csv" download>Download Log (CSV)</a>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border-soft)">
+      <span id="version-label" style="font-size:11px;color:var(--text-muted)"></span>
+    </div>
   </div>
 </main>
 
@@ -1361,6 +1383,11 @@ async function loadSettings() {
   document.getElementById('set-ppq-img-model').value = s.PPQ_IMAGE_MODEL||'';
   document.getElementById('set-ppq-vis-model').value = s.PPQ_VISION_MODEL||'';
   document.getElementById('set-equipment').value = s.EQUIPMENT||'';
+
+  fetch('/api/version').then(r => r.json()).then(d => {
+    const el = document.getElementById('version-label');
+    if (el) el.textContent = 'Workstr ' + (d.version||'dev');
+  }).catch(() => {});
 }
 
 async function saveSettings() {
@@ -1377,6 +1404,65 @@ async function saveSettings() {
   });
   document.getElementById('settings-status').textContent = 'Saved.';
   setTimeout(() => document.getElementById('settings-status').textContent = '', 2000);
+}
+
+// ── Nostr backup ──────────────────────────────────────────────────────────────
+async function nostrBackup() {
+  const status = document.getElementById('nostr-status');
+  status.textContent = 'Signing events...';
+  try {
+    const res = await fetch('/api/nostr/sign', {method:'POST'});
+    const data = await res.json();
+    if (data.error) { status.textContent = 'Error: ' + data.error; return; }
+    if (!data.events?.length) { status.textContent = 'No active exercises to back up.'; return; }
+
+    const relay = data.relay;
+    if (!relay) { status.textContent = `Signed ${data.events.length} events (no relay configured — check NOSTR_RELAY in .env).`; return; }
+
+    status.textContent = `Publishing ${data.events.length} events to ${relay}...`;
+    let sent = 0;
+    await new Promise(resolve => {
+      const ws = new WebSocket(relay);
+      ws.onopen = () => {
+        for (const ev of data.events) {
+          ws.send(JSON.stringify(['EVENT', ev]));
+        }
+        sent = data.events.length;
+      };
+      ws.onmessage = () => {};
+      ws.onerror = () => { status.textContent = `WebSocket error connecting to ${relay}.`; resolve(); };
+      setTimeout(() => { ws.close(); resolve(); }, 4000);
+    });
+    status.textContent = `Backed up ${sent} exercises to ${relay}.`;
+  } catch(e) {
+    status.textContent = 'Backup failed: ' + e.message;
+  }
+}
+
+function openNostrRestorePrompt() {
+  const json = prompt('Paste a JSON array of Nostr events (copied from a relay or export):');
+  if (!json) return;
+  let events;
+  try { events = JSON.parse(json); } catch(e) { alert('Invalid JSON'); return; }
+  if (!Array.isArray(events)) events = [events];
+  nostrRestore(events);
+}
+
+async function nostrRestore(events) {
+  const status = document.getElementById('nostr-status');
+  status.textContent = 'Restoring...';
+  try {
+    const res = await fetch('/api/nostr/restore', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(events),
+    });
+    const data = await res.json();
+    if (data.error) { status.textContent = 'Error: ' + data.error; return; }
+    status.textContent = `Restored: ${data.imported} imported, ${data.skipped} skipped (already active), ${data.errors} errors.`;
+    refreshCounts();
+  } catch(e) {
+    status.textContent = 'Restore failed: ' + e.message;
+  }
 }
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
