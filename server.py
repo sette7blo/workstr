@@ -13,7 +13,8 @@ from flask import Flask, jsonify, request, send_from_directory, Response
 import core.config as config
 from core.schema import init_db
 from modules import importer, equipment, workout_log, workout_planner, workouts
-from modules import ai_generator, ai_planner, camera, seed_browser, nostr_backup
+from modules import ai_generator, ai_planner, camera, seed_browser, nostr_backup, recovery
+from modules import mesocycles as meso_module
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
@@ -94,6 +95,31 @@ def api_exercise_counts():
     return jsonify({"active": active, "staged": staged, "trashed": trashed})
 
 
+@app.route("/api/exercises/recent")
+def api_exercises_recent():
+    """Return the most recently logged active exercises (distinct, ordered by last use)."""
+    limit = int(request.args.get("limit", 10))
+    from core.db import db, rows_to_list
+    with db() as conn:
+        rows = conn.execute("""
+            SELECT e.slug, e.name, e.muscle_group, e.image_url,
+                   e.favorited, e.tags, e.difficulty,
+                   3 as default_sets, '8-12' as default_reps, 90 as default_rest_sec
+            FROM (
+                SELECT exercise_slug, MAX(ws.finished_at) as last_used
+                FROM workout_session_sets wss
+                JOIN workout_sessions ws ON ws.id = wss.session_id
+                WHERE ws.finished_at IS NOT NULL
+                GROUP BY exercise_slug
+                ORDER BY last_used DESC
+                LIMIT ?
+            ) recent
+            JOIN exercises e ON e.slug = recent.exercise_slug
+            WHERE e.status = 'active'
+        """, (limit,)).fetchall()
+    return jsonify(rows_to_list(rows))
+
+
 @app.route("/api/exercises/<slug>/progress")
 def api_exercise_progress(slug):
     return jsonify(workout_log.get_progress(slug))
@@ -114,6 +140,16 @@ def api_update_exercise(slug):
     if not result:
         return jsonify({"error": "not found"}), 404
     return jsonify(result)
+
+
+@app.route("/api/exercises/<slug>/favorite", methods=["POST"])
+def api_toggle_favorite(slug):
+    data = request.get_json(force=True) or {}
+    from core.db import db
+    val = 1 if data.get("favorited") else 0
+    with db() as conn:
+        conn.execute("UPDATE exercises SET favorited=? WHERE slug=?", (val, slug))
+    return jsonify({"ok": True, "favorited": bool(val)})
 
 
 @app.route("/api/exercises/approve/<slug>", methods=["POST"])
@@ -295,6 +331,7 @@ def api_add_exercise_to_workout(wid):
         weight=data.get("weight"),
         rest_sec=int(data.get("rest_sec", 90)),
         notes=data.get("notes"),
+        superset_group=data.get("superset_group"),
     )
     return jsonify(result), 201
 
@@ -319,6 +356,20 @@ def api_reorder_workout_exercises(wid):
     data = request.get_json(force=True)
     workouts.reorder_exercises(wid, data.get("ordered_ids", []))
     return jsonify({"ok": True})
+
+# ── Recovery ──────────────────────────────────────────────────────────────────
+
+@app.route("/api/recovery")
+def api_recovery():
+    return jsonify(recovery.get_recovery())
+
+
+@app.route("/api/recovery/quick-workout", methods=["POST"])
+def api_quick_workout():
+    data = request.get_json(force=True) or {}
+    duration = int(data.get("duration_minutes", 45))
+    min_rec = int(data.get("min_recovery_percent", 80))
+    return jsonify(recovery.get_quick_workout(duration, min_rec))
 
 # ── Sessions ───────────────────────────────────────────────────────────────────
 
@@ -553,6 +604,125 @@ def api_nostr_restore():
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# ── Nostr identity ────────────────────────────────────────────────────────────
+
+@app.route("/api/nostr/note", methods=["POST"])
+def api_nostr_note():
+    """Sign a Kind 1 note with the stored nsec. Returns signed event for client-side publishing."""
+    nsec = config.get("NOSTR_NSEC", "").strip()
+    if not nsec:
+        return jsonify({"error": "NOSTR_NSEC not configured"}), 400
+    data = request.get_json(force=True) or {}
+    content = data.get("content", "")
+    tags = data.get("tags", [])
+    try:
+        from pynostr.key import PrivateKey
+        from pynostr.event import Event
+        pk = PrivateKey.from_nsec(nsec) if nsec.startswith("nsec") else PrivateKey(bytes.fromhex(nsec))
+        event = Event(content=content, pubkey=pk.public_key.hex(), kind=1, tags=tags)
+        event.sign(pk.hex())
+        relay = config.get("NOSTR_RELAY", "")
+        return jsonify({"event": event.to_dict(), "relay": relay})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/nostr/identity", methods=["GET"])
+def api_nostr_identity_get():
+    nsec = config.get("NOSTR_NSEC", "").strip()
+    if not nsec:
+        return jsonify({"configured": False})
+    try:
+        from pynostr.key import PrivateKey
+        pk = PrivateKey.from_nsec(nsec) if nsec.startswith("nsec") else PrivateKey(bytes.fromhex(nsec))
+        pubkey_hex = pk.public_key.hex()
+        npub = pk.public_key.bech32()
+        relay = config.get("NOSTR_RELAY", "")
+        return jsonify({"configured": True, "pubkey_hex": pubkey_hex, "npub": npub, "relay": relay})
+    except Exception as e:
+        return jsonify({"configured": False, "error": str(e)})
+
+
+@app.route("/api/nostr/identity", methods=["POST"])
+def api_nostr_identity_post():
+    data = request.get_json(force=True) or {}
+    nsec = (data.get("nsec") or "").strip()
+    if not nsec:
+        return jsonify({"error": "nsec required"}), 400
+    try:
+        from pynostr.key import PrivateKey
+        pk = PrivateKey.from_nsec(nsec) if nsec.startswith("nsec") else PrivateKey(bytes.fromhex(nsec))
+        pubkey_hex = pk.public_key.hex()
+        npub = pk.public_key.bech32()
+        config.save_env({"NOSTR_NSEC": nsec})
+        relay = config.get("NOSTR_RELAY", "")
+        return jsonify({"ok": True, "pubkey_hex": pubkey_hex, "npub": npub, "relay": relay})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/api/nostr/identity", methods=["DELETE"])
+def api_nostr_identity_delete():
+    config.save_env({"NOSTR_NSEC": ""})
+    return jsonify({"ok": True})
+
+
+# ── Mesocycles ─────────────────────────────────────────────────────────────────
+
+@app.route("/api/mesocycles")
+def api_list_mesocycles():
+    return jsonify(meso_module.list_mesocycles())
+
+
+@app.route("/api/mesocycles", methods=["POST"])
+def api_create_mesocycle():
+    data = request.get_json(force=True) or {}
+    result = meso_module.create_mesocycle(
+        name=data["name"],
+        goal=data.get("goal", "hypertrophy"),
+        start_date=data.get("start_date"),
+        weeks=int(data.get("weeks", 4)),
+        notes=data.get("notes"),
+    )
+    return jsonify(result), 201
+
+
+@app.route("/api/mesocycles/<int:mid>")
+def api_get_mesocycle(mid):
+    m = meso_module.get_mesocycle(mid)
+    if not m:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(m)
+
+
+@app.route("/api/mesocycles/<int:mid>", methods=["PUT"])
+def api_update_mesocycle(mid):
+    data = request.get_json(force=True) or {}
+    result = meso_module.update_mesocycle(mid, data)
+    if not result:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(result)
+
+
+@app.route("/api/mesocycles/<int:mid>", methods=["DELETE"])
+def api_delete_mesocycle(mid):
+    ok = meso_module.delete_mesocycle(mid)
+    return jsonify({"ok": ok})
+
+
+@app.route("/api/mesocycles/<int:mid>/weeks/<int:week_num>", methods=["PUT"])
+def api_upsert_mesocycle_week(mid, week_num):
+    data = request.get_json(force=True) or {}
+    result = meso_module.upsert_week(
+        meso_id=mid,
+        week_number=week_num,
+        workout_ids=data.get("workout_ids", []),
+        intensity_pct=int(data.get("intensity_pct", 100)),
+        notes=data.get("notes"),
+    )
+    return jsonify(result)
+
 
 # ── Export ─────────────────────────────────────────────────────────────────────
 

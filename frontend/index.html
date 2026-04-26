@@ -11,7 +11,7 @@
 :root{
   --amber:#E8820C;--cream:#faf7f2;--white:#ffffff;--brown-dark:#2c1a06;
   --text-mid:#6a4a28;--text-muted:#c0a880;--text-dim:#9a8060;
-  --border-soft:#ede7dc;--sage:#7a9068;--sidebar-w:80px;--topbar-h:68px;
+  --border-soft:#ede7dc;--sage:#7a9068;--sidebar-w:80px;--topbar-h:84px;
 }
 html{height:100%;height:-webkit-fill-available}
 body{font-family:'Jost',sans-serif;font-size:14px;color:var(--brown-dark);background:var(--cream);min-height:100vh;min-height:-webkit-fill-available;overflow:hidden}
@@ -20,17 +20,27 @@ input,select,textarea{font-family:inherit;font-size:inherit}
 a{color:inherit;text-decoration:none}
 
 /* Topbar */
-.topbar{position:fixed;top:0;left:0;right:0;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border-soft);display:flex;align-items:center;padding:0 20px;z-index:100;gap:12px}
-.logo-zone{width:230px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center}
+.topbar{position:fixed;top:0;left:0;right:0;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border-soft);display:flex;flex-direction:column;padding:8px 16px 6px;z-index:100;gap:0}
+.topbar-row1{display:flex;align-items:center;gap:10px;height:38px;flex-shrink:0}
+.topbar-row2{display:flex;align-items:center;flex:1}
+.logo-zone{flex:1;display:flex;flex-direction:column;justify-content:center}
 .logo-mark{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;color:var(--brown-dark);line-height:1}
 .logo-mark span{color:var(--amber)}
 .logo-tagline{font-family:'Jost',sans-serif;font-weight:500;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-muted);margin-top:2px}
-.topbar-search{flex:1;max-width:420px;position:relative}
-.topbar-search input{width:100%;height:36px;border:1px solid var(--border-soft);border-radius:8px;padding:0 12px 0 36px;font-size:13px;background:var(--cream);outline:none;transition:border .2s}
+.topbar-search{flex:1;max-width:500px;position:relative;visibility:hidden;pointer-events:none}
+.topbar-search.visible{visibility:visible;pointer-events:auto}
+.topbar-search input{width:100%;height:32px;border:1px solid var(--border-soft);border-radius:8px;padding:0 12px 0 34px;font-size:13px;background:var(--cream);outline:none;transition:border .2s}
 .topbar-search input:focus{border-color:var(--amber)}
-.topbar-search svg{position:absolute;left:10px;top:8px;color:var(--text-muted)}
-.topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
-.btn-add{height:36px;padding:0 16px;border-radius:8px;background:var(--amber);color:#fff;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.topbar-search svg{position:absolute;left:9px;top:6px;color:var(--text-muted)}
+.topbar-actions{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.btn-add{height:34px;padding:0 14px;border-radius:8px;background:var(--amber);color:#fff;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap}
+/* Add Exercise method cards */
+.add-ex-cards{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.add-ex-card{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--white);border:1px solid var(--border-soft);border-radius:12px;cursor:pointer;transition:background .15s}
+.add-ex-card:active{background:var(--cream)}
+.add-ex-card-icon{width:40px;height:40px;border-radius:10px;background:var(--cream);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--amber)}
+.add-ex-card-title{font-size:14px;font-weight:600;color:var(--text-dark)}
+.add-ex-card-desc{font-size:11px;color:var(--text-muted);margin-top:2px}
 .btn-add:hover{filter:brightness(1.1)}
 
 /* Sidebar */
@@ -46,7 +56,30 @@ a{color:inherit;text-decoration:none}
 .nav-badge.visible{display:flex}
 .nav-divider{height:1px;background:var(--border-soft);margin:4px 12px;flex-shrink:0}
 .nav-section-label{font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);text-align:center;padding:8px 4px 2px;flex-shrink:0}
-.nav-bottom{margin-top:auto;padding-bottom:12px}
+.nav-bottom{margin-top:auto;padding-bottom:0}
+/* Nostr identity sidebar button */
+.nostr-id-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 4px;cursor:pointer;border-top:1px solid var(--border-soft);transition:background .15s;margin-top:4px}
+.nostr-id-btn:hover{background:rgba(232,130,12,.04)}
+.nostr-avatar-circle{width:30px;height:30px;border-radius:50%;background:var(--cream);border:1.5px solid var(--border-soft);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text-dim);flex-shrink:0}
+.nostr-avatar-circle img{width:100%;height:100%;object-fit:cover;display:block}
+.nostr-id-label{font-size:9px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--text-dim);max-width:72px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Nostr panel */
+.nostr-panel-overlay{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.45)}
+.nostr-panel-overlay.open{display:flex;align-items:flex-end;justify-content:center}
+.nostr-panel{background:var(--white);border-radius:16px 16px 0 0;width:100%;max-width:520px;padding:24px 20px;max-height:85vh;overflow-y:auto}
+.nostr-panel-drag{width:36px;height:4px;background:var(--border-soft);border-radius:2px;margin:0 auto 20px}
+.nostr-panel-title{font-size:17px;font-weight:700;color:var(--brown-dark);margin-bottom:4px}
+.nostr-panel-sub{font-size:12px;color:var(--text-muted);margin-bottom:20px;line-height:1.5}
+.nostr-profile-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px;background:var(--cream);border-radius:12px}
+.nostr-pfp{width:52px;height:52px;border-radius:50%;overflow:hidden;background:var(--border-soft);flex-shrink:0}
+.nostr-pfp img{width:100%;height:100%;object-fit:cover;display:block}
+.nostr-pfp-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-dim)}
+.nostr-panel-name{font-size:15px;font-weight:700;color:var(--brown-dark)}
+.nostr-panel-npub{font-size:10px;color:var(--text-muted);word-break:break-all;margin-top:2px;cursor:pointer}
+.nostr-panel-npub:hover{color:var(--amber)}
+.nostr-login-method{display:flex;flex-direction:column;gap:12px}
+.nostr-method-input{width:100%;height:40px;border:1px solid var(--border-soft);border-radius:8px;padding:0 12px;font-size:13px;font-family:'Jost',sans-serif;outline:none;background:var(--cream)}
+.nostr-method-input:focus{border-color:var(--amber)}
 
 /* Content */
 .content{position:fixed;top:var(--topbar-h);left:var(--sidebar-w);right:0;bottom:0;overflow-y:auto;padding:24px;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
@@ -64,8 +97,20 @@ a{color:inherit;text-decoration:none}
 
 /* Exercise grid */
 .exercise-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
-.exercise-card{background:var(--white);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .15s}
+.exercise-card{background:var(--white);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .2s,transform .15s,border-color .15s}
 .exercise-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-2px)}
+.exercise-card.selected{border-color:var(--amber);box-shadow:0 0 0 2px rgba(232,130,12,.2)}
+.card-check{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,.7);background:rgba(0,0,0,.3);display:none;align-items:center;justify-content:center;z-index:2}
+.select-mode .card-check{display:flex}
+.exercise-card.selected .card-check{background:var(--amber);border-color:var(--amber)}
+/* Bulk bar */
+.bulk-bar{position:fixed;bottom:0;left:var(--sidebar-w);right:0;background:var(--white);border-top:1px solid var(--border-soft);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));display:none;align-items:center;gap:8px;z-index:200;flex-wrap:wrap}
+.bulk-bar.visible{display:flex}
+.bulk-bar-count{font-size:13px;font-weight:600;color:var(--brown-dark);flex:1;white-space:nowrap}
+/* Select mode button */
+.topbar-sel-btn{height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--border-soft);font-size:12px;font-weight:600;color:var(--text-mid);background:var(--white);cursor:pointer;white-space:nowrap;display:none}
+.topbar-sel-btn.visible{display:flex;align-items:center;gap:5px}
+.topbar-sel-btn.active{background:var(--amber);border-color:var(--amber);color:#fff}
 .card-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--cream);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .card-img img{width:100%;height:100%;object-fit:cover}
 .card-placeholder{color:var(--text-muted)}
@@ -314,12 +359,19 @@ a{color:inherit;text-decoration:none}
 .ai-plan-summary{padding:12px 14px;background:var(--cream);font-size:12px;color:var(--text-mid);line-height:1.5}
 
 /* Progress chart */
-.progress-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border-soft)}
-.progress-row:last-child{border-bottom:none}
-.progress-date{font-size:11px;color:var(--text-muted);min-width:72px}
-.progress-bar-wrap{flex:1;height:6px;background:var(--cream);border-radius:3px;overflow:hidden}
-.progress-bar-fill{height:100%;background:var(--amber);border-radius:3px;transition:width .3s}
-.progress-val{font-size:11px;font-weight:600;color:var(--text-mid);min-width:50px;text-align:right}
+.progress-chart{margin-bottom:8px}
+.progress-stat-row{display:flex;gap:8px;margin-bottom:10px}
+.progress-stat{flex:1;background:var(--cream);border-radius:8px;padding:8px 10px}
+.progress-stat-val{font-size:16px;font-weight:700;color:var(--brown-dark)}
+.progress-stat-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.progress-trend-up{color:var(--sage)}
+.progress-trend-down{color:#e05c5c}
+.progress-sparkline{display:block;width:100%;overflow:visible}
+.progress-session-list{margin-top:6px}
+.progress-session-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border-soft);font-size:11px}
+.progress-session-row:last-child{border-bottom:none}
+.progress-session-date{color:var(--text-muted);min-width:52px}
+.progress-session-val{font-weight:600;color:var(--text-mid)}
 
 /* Equipment filter toggle */
 .eq-filter-toggle{display:inline-flex;align-items:center;gap:6px;padding:0 10px;height:32px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border-soft);color:var(--text-mid);background:var(--white);user-select:none}
@@ -349,6 +401,13 @@ a{color:inherit;text-decoration:none}
 .wex-move-btn:hover{border-color:var(--amber);color:var(--amber)}
 .wex-remove{width:26px;height:26px;border-radius:50%;background:var(--cream);color:var(--text-muted);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;flex-shrink:0}
 .wex-remove:hover{background:#fee;color:#c44}
+/* Superset connectors in workout builder */
+.wex-superset-connector{display:flex;align-items:center;justify-content:center;gap:8px;padding:2px 0;cursor:pointer;user-select:none}
+.wex-superset-line{flex:1;height:2px;background:var(--border-soft);border-radius:1px;max-width:20px}
+.wex-superset-btn{font-size:10px;font-weight:600;color:var(--text-muted);background:var(--cream);border:1px dashed var(--border-soft);border-radius:10px;padding:2px 8px;cursor:pointer;white-space:nowrap}
+.wex-superset-btn:hover{border-color:var(--amber);color:var(--amber)}
+.wex-superset-btn.linked{border-style:solid;border-color:var(--amber);color:var(--amber);background:rgba(232,130,12,.08)}
+.wex-superset-badge{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;background:var(--amber);color:#fff;padding:1px 5px;border-radius:3px;letter-spacing:.5px;margin-left:6px;vertical-align:middle}
 
 /* Session overlay (new) */
 .session-overlay{display:none;position:fixed;inset:0;background:#1a0e04;z-index:300;flex-direction:column}
@@ -384,6 +443,8 @@ a{color:inherit;text-decoration:none}
 .session-prev-btn:hover{border-color:rgba(255,255,255,.3);color:#fff}
 .session-rest-overlay{display:none;position:fixed;inset:0;background:rgba(20,10,0,.92);align-items:center;justify-content:center;flex-direction:column;z-index:310}
 .session-rest-overlay.show{display:flex}
+.pr-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.85);background:var(--amber);color:#fff;padding:18px 28px;border-radius:14px;font-size:17px;font-weight:700;z-index:320;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;text-align:center;line-height:1.4}
+.pr-toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
 
 /* Sessions history */
 .session-history-card{background:var(--white);border:1px solid var(--border-soft);border-radius:12px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:box-shadow .15s}
@@ -395,24 +456,182 @@ a{color:inherit;text-decoration:none}
 .picker-tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid var(--border-soft)}
 .picker-tab{padding:6px 14px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
 .picker-tab.active{color:var(--amber);border-bottom-color:var(--amber)}
+
+/* Picker filter chips */
+.picker-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.picker-chip{padding:3px 10px;border-radius:20px;border:1px solid var(--border-soft);font-size:11px;font-weight:600;cursor:pointer;color:var(--text-mid);background:var(--white);transition:all .15s;white-space:nowrap}
+.picker-chip.active{background:var(--amber);border-color:var(--amber);color:#fff}
+/* Picker quick row */
+.picker-quick-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.picker-quick-row::-webkit-scrollbar{display:none}
+.picker-quick-label{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px}
+.picker-quick-item{flex-shrink:0;width:70px;cursor:pointer;text-align:center}
+.picker-quick-img{width:70px;height:52px;border-radius:8px;object-fit:cover;background:var(--cream);display:block}
+.picker-quick-noimg{width:70px;height:52px;border-radius:8px;background:var(--cream);display:flex;align-items:center;justify-content:center;color:var(--text-muted)}
+.picker-quick-name{font-size:10px;color:var(--text-mid);margin-top:4px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* Picker item with image */
+.picker-item-img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:6px;margin-bottom:6px;background:var(--cream);display:block}
+/* Circular rest timer */
+.rest-ring{transform:rotate(-90deg)}
+.rest-ring-bg{fill:none;stroke:rgba(255,255,255,.08)}
+.rest-ring-fg{fill:none;stroke:var(--amber);stroke-linecap:round;transition:stroke-dashoffset .9s linear}
+.rest-timer-wrap{position:relative;width:160px;height:160px;margin-bottom:16px}
+.rest-timer-val{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:700;font-size:52px;color:#fff}
+.rest-adjust-btns{display:flex;gap:12px;margin-bottom:16px}
+.rest-adjust-btn{padding:6px 18px;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;background:none;transition:all .15s}
+.rest-adjust-btn:hover{border-color:rgba(255,255,255,.5);color:#fff}
+/* Session elapsed timer */
+.session-elapsed{font-size:11px;color:rgba(255,255,255,.35);font-variant-numeric:tabular-nums;margin-left:8px}
+/* Per-set prev indicator */
+.session-set-prev{font-size:10px;color:rgba(255,255,255,.25);padding:0 0 6px 36px;display:block}
+.session-set-prog{font-size:10px;color:var(--amber);padding:0 0 6px 36px;display:block;opacity:.75}
+/* Instructions toggle */
+.session-instructions{margin-top:16px;border-top:1px solid rgba(255,255,255,.08);padding-top:12px}
+.session-instructions-toggle{font-size:12px;color:rgba(255,255,255,.35);cursor:pointer;display:inline-flex;align-items:center;gap:5px;user-select:none}
+.session-instructions-toggle:hover{color:rgba(255,255,255,.65)}
+.session-instructions-body{margin-top:10px;display:none}
+.session-instructions-body.open{display:block}
+.session-instructions-step{font-size:12px;color:rgba(255,255,255,.45);line-height:1.65;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.session-instructions-step:last-child{border-bottom:none}
+/* Explore tab */
+.explore-empty{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.explore-empty svg{margin-bottom:12px;color:var(--border-soft)}
+.explore-empty p{font-size:13px;line-height:1.6;max-width:260px;margin:0 auto 16px}
+.explore-status{font-size:12px;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.explore-dot{width:7px;height:7px;border-radius:50%;background:var(--border-soft);flex-shrink:0}
+.explore-dot.live{background:var(--sage)}
+.explore-cards{display:flex;flex-direction:column;gap:10px}
+.explore-card{background:var(--white);border:1px solid var(--border-soft);border-radius:12px;overflow:hidden}
+.explore-card-img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;background:var(--cream)}
+.explore-card-body{padding:12px}
+.explore-card-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.explore-card-author{display:flex;align-items:center;gap:6px;flex:1;min-width:0}
+.explore-author-pfp{width:20px;height:20px;border-radius:50%;object-fit:cover;background:var(--cream);flex-shrink:0}
+.explore-author-name{font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.explore-card-tag{font-size:10px;font-weight:600;background:var(--cream);color:var(--text-dim);padding:2px 8px;border-radius:10px;white-space:nowrap}
+.explore-card-title{font-size:14px;font-weight:700;color:var(--brown-dark);margin-bottom:2px}
+.explore-card-sub{font-size:11px;color:var(--text-muted);margin-bottom:10px}
+.explore-card-actions{display:flex;gap:8px}
+
+/* Recovery tab */
+.recovery-map-hero{text-align:center;margin-bottom:12px}
+.recovery-map-hero svg{display:block;width:100%;max-width:320px;margin:0 auto}
+.recovery-map-caption{font-size:13px;font-weight:600;color:var(--brown-dark);margin-top:10px}
+.recovery-legend-inline{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-top:8px;margin-bottom:4px}
+.recovery-legend-chip{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-muted);font-weight:500;letter-spacing:.3px}
+.recovery-legend-pip{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.recovery-section{border-top:1px solid var(--border-soft);padding-top:18px;margin-bottom:20px}
+.recovery-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px}
+.recovery-section-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:17px;color:var(--brown-dark);white-space:nowrap}
+.recovery-dur-row{display:flex;gap:4px;align-items:center}
+.recovery-dur-btn{height:26px;padding:0 9px;border-radius:6px;font-size:11px;font-weight:600;border:1px solid var(--border-soft);color:var(--text-mid);background:var(--cream);transition:all .15s;flex-shrink:0}
+.recovery-dur-btn.active{background:var(--amber);border-color:var(--amber);color:#fff}
+.recovery-dur-btn:hover:not(.active){border-color:var(--amber);color:var(--amber)}
+.qw-result{margin-top:14px}
+.qw-meta{font-size:12px;color:var(--text-muted);margin-bottom:10px}
+.qw-exercise-list{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.qw-ex-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--cream);border-radius:10px;border:1px solid var(--border-soft)}
+.qw-ex-info{flex:1;min-width:0}
+.qw-ex-name{font-weight:600;font-size:13px;color:var(--brown-dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qw-ex-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
+.qw-ex-actions{display:flex;gap:6px;flex-shrink:0}
+.qw-ex-swap{font-size:11px;font-weight:600;color:var(--amber);border:1px solid var(--amber);border-radius:6px;padding:3px 8px;background:none}
+.qw-ex-swap:hover{background:var(--amber);color:#fff}
+.qw-ex-remove{font-size:13px;color:var(--text-muted);width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid var(--border-soft);background:none}
+.qw-ex-remove:hover{color:#e05c5c;border-color:#e05c5c}
+.qw-actions{display:flex;gap:8px}
+.recovery-list{display:flex;flex-direction:column}
+.recovery-list-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border-soft)}
+.recovery-list-row:last-child{border-bottom:none}
+.recovery-list-name{flex:0 0 85px;font-size:12px;font-weight:600;color:var(--brown-dark)}
+.recovery-list-bar{flex:1;height:4px;background:var(--border-soft);border-radius:2px;overflow:hidden;min-width:30px}
+.recovery-list-bar-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.recovery-list-right{flex:0 0 110px;display:flex;align-items:baseline;gap:5px;justify-content:flex-end}
+.recovery-list-pct{font-size:12px;font-weight:700;color:var(--brown-dark)}
+.recovery-list-status{font-size:10px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.rc-ready{color:#7a9068}.rc-partial{color:var(--amber)}.rc-recovering{color:#e05c5c}.rc-untrained{color:var(--text-muted)}
+/* Mesocycle page */
+.meso-card{background:var(--white);border:1px solid var(--border-soft);border-radius:12px;padding:16px;margin-bottom:12px;cursor:pointer;transition:border-color .15s}
+.meso-card:hover{border-color:var(--amber)}
+.meso-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.meso-card-name{font-size:15px;font-weight:700;color:var(--brown-dark)}
+.meso-card-goal{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;padding:2px 7px;border-radius:10px;background:var(--cream);color:var(--text-mid)}
+.meso-card-meta{font-size:12px;color:var(--text-muted);margin-bottom:8px}
+.meso-progress-bar{height:4px;background:var(--cream);border-radius:2px;overflow:hidden}
+.meso-progress-fill{height:100%;background:var(--amber);border-radius:2px;transition:width .3s}
+.meso-card-actions{display:flex;gap:8px;margin-top:12px}
+.meso-detail-back{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text-mid);cursor:pointer;margin-bottom:16px;padding:4px 0}
+.meso-detail-back:hover{color:var(--amber)}
+.meso-detail-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:26px;color:var(--brown-dark);margin-bottom:4px}
+.meso-detail-sub{font-size:12px;color:var(--text-muted);margin-bottom:20px}
+.meso-week-row{display:grid;grid-template-columns:40px 1fr 70px;gap:10px;align-items:start;padding:10px 0;border-bottom:1px solid var(--border-soft)}
+.meso-week-row:last-child{border-bottom:none}
+.meso-week-num{font-size:13px;font-weight:700;color:var(--text-mid);padding-top:2px}
+.meso-week-num.current{color:var(--amber)}
+.meso-week-workouts{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.meso-workout-tag{font-size:11px;background:var(--cream);color:var(--brown-dark);padding:3px 8px;border-radius:6px;cursor:pointer;border:1px solid var(--border-soft)}
+.meso-workout-tag:hover{border-color:var(--amber)}
+.meso-workout-tag.active{background:var(--amber);color:#fff;border-color:var(--amber)}
+.meso-add-workout{font-size:11px;color:var(--text-dim);cursor:pointer;padding:3px 8px;border:1px dashed var(--border-soft);border-radius:6px}
+.meso-add-workout:hover{border-color:var(--amber);color:var(--amber)}
+.meso-intensity{font-size:12px;font-weight:600;color:var(--text-mid);text-align:right;cursor:pointer;padding:4px 0}
+.meso-intensity:hover{color:var(--amber)}
+.meso-week-label{font-size:10px;color:rgba(232,130,12,.8);font-weight:600;letter-spacing:.4px}
+/* Session summary overlay */
+.session-summary-overlay{display:none;position:fixed;inset:0;background:#1a0e04;z-index:320;flex-direction:column;align-items:center;overflow-y:auto;padding:32px 24px 32px}
+.session-summary-overlay.show{display:flex}
+.session-summary-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:34px;color:#fff;margin-bottom:6px;text-align:center}
+.session-summary-sub{font-size:12px;color:rgba(255,255,255,.4);margin-bottom:24px;text-align:center}
+.session-summary-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:320px;margin-bottom:20px}
+.session-summary-stat{background:rgba(255,255,255,.05);border-radius:12px;padding:14px;text-align:center}
+.session-summary-stat-val{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:28px;color:#fff;margin-bottom:4px}
+.session-summary-stat-label{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.8px}
+.session-summary-done{width:100%;max-width:320px;height:48px;background:var(--sage);color:#fff;font-weight:700;font-size:15px;border-radius:12px}
+.summary-section{width:100%;max-width:320px;margin-bottom:18px}
+.summary-section-title{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:10px}
+.summary-pr-chip{display:inline-flex;align-items:center;gap:6px;background:var(--amber);color:#fff;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:600;margin:0 6px 6px 0}
+.summary-ex-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.summary-ex-row:last-child{border-bottom:none}
+.summary-ex-name{font-size:13px;color:rgba(255,255,255,.8);flex:1}
+.summary-delta{font-size:12px;font-weight:600;padding:2px 8px;border-radius:10px}
+.summary-delta.up{color:#7a9068;background:rgba(122,144,104,.15)}
+.summary-delta.down{color:#e05c5c;background:rgba(224,92,92,.15)}
+.summary-delta.same{color:rgba(255,255,255,.35)}
+/* Share to Nostr in summary */
+.summary-nostr{width:100%;max-width:320px;margin-bottom:18px;background:rgba(255,255,255,.05);border-radius:12px;padding:14px}
+.summary-nostr-title{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:10px}
+.summary-nostr-toggle{display:flex;align-items:center;gap:8px;margin-bottom:12px;cursor:pointer}
+.summary-nostr-toggle input[type=checkbox]{width:14px;height:14px;accent-color:var(--amber)}
+.summary-nostr-toggle-label{font-size:12px;color:rgba(255,255,255,.6)}
+.summary-nostr-btn{width:100%;height:38px;background:var(--amber);color:#fff;font-weight:700;font-size:13px;border-radius:9px;opacity:1;transition:opacity .15s}
+.summary-nostr-btn:disabled{opacity:.4;cursor:default}
+.summary-nostr-status{font-size:11px;color:rgba(255,255,255,.45);margin-top:8px;min-height:14px;text-align:center}
 </style>
 </head>
 <body>
 
 <!-- Topbar -->
 <header class="topbar">
-  <div class="logo-zone">
-    <div class="logo-mark">Work<span>str</span></div>
-    <div class="logo-tagline">exercise intelligence</div>
+  <div class="topbar-row1">
+    <div class="logo-zone">
+      <div class="logo-mark">Work<span>str</span></div>
+      <div class="logo-tagline">exercise intelligence</div>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn-add" onclick="switchTab('add-exercise')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Exercise
+      </button>
+    </div>
   </div>
-  <div class="topbar-search" id="topbar-search">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    <input type="text" placeholder="Search exercises..." id="search-input" oninput="onSearch()">
-  </div>
-  <div class="topbar-actions">
-    <button class="btn-add" onclick="switchTab('generate')">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      Generate
+  <div class="topbar-row2">
+    <div class="topbar-search" id="topbar-search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search exercises..." id="search-input" oninput="onSearch()">
+    </div>
+    <button class="topbar-sel-btn" id="topbar-sel-btn" onclick="toggleSelectMode()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></polyline></svg>
+      Select
     </button>
   </div>
 </header>
@@ -425,13 +644,9 @@ a{color:inherit;text-decoration:none}
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
       <span>Exercises</span>
     </div>
-    <div class="nav-item" data-tab="generate" onclick="switchTab('generate')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-      <span>Generate</span>
-    </div>
-    <div class="nav-item" data-tab="import" onclick="switchTab('import')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      <span>Import</span>
+    <div class="nav-item" data-tab="explore" onclick="switchTab('explore')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+      <span>Explore</span>
     </div>
     <div class="nav-item" data-tab="staging" onclick="switchTab('staging')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
@@ -452,6 +667,14 @@ a{color:inherit;text-decoration:none}
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       <span>History</span>
     </div>
+    <div class="nav-item" data-tab="recovery" onclick="switchTab('recovery')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+      <span>Recovery</span>
+    </div>
+    <div class="nav-item" data-tab="mesocycles" onclick="switchTab('mesocycles')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
+      <span>Mesocycles</span>
+    </div>
     <div class="nav-divider"></div>
     <div class="nav-section-label">System</div>
     <div class="nav-item" data-tab="equipment" onclick="switchTab('equipment')">
@@ -467,12 +690,30 @@ a{color:inherit;text-decoration:none}
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         <span>Settings</span>
       </div>
+      <div class="nostr-id-btn" id="nostr-id-btn" onclick="openNostrPanel()">
+        <div class="nostr-avatar-circle" id="nostr-avatar-circle">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <span class="nostr-id-label" id="nostr-id-label">Login</span>
+      </div>
     </div>
   </div>
 </nav>
 
 <!-- Content -->
 <main class="content" id="content">
+
+  <!-- Explore -->
+  <div class="page" id="page-explore">
+    <div class="page-title">Explore</div>
+    <div id="explore-body">
+      <div class="explore-empty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+        <p>Connect your Nostr identity to explore exercises shared by people you follow.</p>
+        <button class="btn-primary" onclick="openNostrPanel()">Connect Nostr</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Exercises -->
   <div class="page active" id="page-exercises">
@@ -518,6 +759,40 @@ a{color:inherit;text-decoration:none}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
       <h3>No workouts yet</h3>
       <p>Build your first workout to get started.</p>
+    </div>
+  </div>
+
+  <!-- Add Exercise -->
+  <div class="page" id="page-add-exercise">
+    <div class="page-title">Add Exercise</div>
+    <div class="add-ex-cards">
+      <div class="add-ex-card" onclick="switchTab('generate')">
+        <div class="add-ex-card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div>
+          <div class="add-ex-card-title">AI Generate</div>
+          <div class="add-ex-card-desc">Describe an exercise and let AI create it</div>
+        </div>
+      </div>
+      <div class="add-ex-card" onclick="switchTab('import');switchImportTab('seed')">
+        <div class="add-ex-card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div>
+          <div class="add-ex-card-title">Exercise Database</div>
+          <div class="add-ex-card-desc">Browse and import from a library of exercises</div>
+        </div>
+      </div>
+      <div class="add-ex-card" onclick="switchTab('import');switchImportTab('camera')">
+        <div class="add-ex-card-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        </div>
+        <div>
+          <div class="add-ex-card-title">From Image</div>
+          <div class="add-ex-card-desc">Upload a photo and AI extracts the exercise details</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -671,6 +946,94 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
+  <!-- Recovery -->
+  <div class="page" id="page-recovery">
+    <div class="page-title">Recovery</div>
+
+    <!-- Body map hero -->
+    <div class="recovery-map-hero">
+      <svg viewBox="0 0 300 210" xmlns="http://www.w3.org/2000/svg" id="body-map-svg">
+        <text x="75" y="206" text-anchor="middle" font-size="8" font-family="Jost,sans-serif" fill="#c0a880" letter-spacing="1.5" font-weight="600">FRONT</text>
+        <circle cx="75" cy="20" r="11" fill="#ede7dc" stroke="#d8cfc4" stroke-width="1"/>
+        <rect x="71" y="31" width="8" height="7" rx="2" fill="#ede7dc"/>
+        <ellipse cx="54" cy="46" rx="11" ry="8" data-muscle="Shoulders" fill="#ede7dc"/>
+        <ellipse cx="96" cy="46" rx="11" ry="8" data-muscle="Shoulders" fill="#ede7dc"/>
+        <path d="M57,38 L93,38 L96,67 L54,67 Z" data-muscle="Chest" fill="#ede7dc"/>
+        <rect x="55" y="67" width="40" height="26" rx="3" data-muscle="Core" fill="#ede7dc"/>
+        <rect x="40" y="40" width="12" height="25" rx="6" data-muscle="Biceps" fill="#ede7dc"/>
+        <rect x="98" y="40" width="12" height="25" rx="6" data-muscle="Biceps" fill="#ede7dc"/>
+        <rect x="37" y="67" width="11" height="22" rx="5" data-muscle="Forearms" fill="#ede7dc"/>
+        <rect x="102" y="67" width="11" height="22" rx="5" data-muscle="Forearms" fill="#ede7dc"/>
+        <rect x="56" y="93" width="38" height="10" rx="3" fill="#ede7dc"/>
+        <rect x="56" y="105" width="17" height="37" rx="6" data-muscle="Quadriceps" fill="#ede7dc"/>
+        <rect x="77" y="105" width="17" height="37" rx="6" data-muscle="Quadriceps" fill="#ede7dc"/>
+        <rect x="57" y="144" width="15" height="28" rx="6" data-muscle="Calves" fill="#ede7dc"/>
+        <rect x="78" y="144" width="15" height="28" rx="6" data-muscle="Calves" fill="#ede7dc"/>
+        <text x="225" y="206" text-anchor="middle" font-size="8" font-family="Jost,sans-serif" fill="#c0a880" letter-spacing="1.5" font-weight="600">BACK</text>
+        <circle cx="225" cy="20" r="11" fill="#ede7dc" stroke="#d8cfc4" stroke-width="1"/>
+        <rect x="221" y="31" width="8" height="7" rx="2" fill="#ede7dc"/>
+        <path d="M207,38 L243,38 L241,55 L209,55 Z" data-muscle="Traps" fill="#ede7dc"/>
+        <rect x="207" y="55" width="36" height="24" rx="2" data-muscle="Back" fill="#ede7dc"/>
+        <rect x="213" y="79" width="24" height="16" rx="3" data-muscle="Lower Back" fill="#ede7dc"/>
+        <rect x="190" y="40" width="12" height="25" rx="6" data-muscle="Triceps" fill="#ede7dc"/>
+        <rect x="248" y="40" width="12" height="25" rx="6" data-muscle="Triceps" fill="#ede7dc"/>
+        <rect x="187" y="67" width="11" height="22" rx="5" data-muscle="Forearms" fill="#ede7dc"/>
+        <rect x="252" y="67" width="11" height="22" rx="5" data-muscle="Forearms" fill="#ede7dc"/>
+        <rect x="207" y="99" width="36" height="16" rx="5" data-muscle="Glutes" fill="#ede7dc"/>
+        <rect x="207" y="117" width="16" height="35" rx="6" data-muscle="Hamstrings" fill="#ede7dc"/>
+        <rect x="227" y="117" width="16" height="35" rx="6" data-muscle="Hamstrings" fill="#ede7dc"/>
+        <rect x="208" y="154" width="14" height="26" rx="5" data-muscle="Calves" fill="#ede7dc"/>
+        <rect x="227" y="154" width="14" height="26" rx="5" data-muscle="Calves" fill="#ede7dc"/>
+      </svg>
+      <div class="recovery-map-caption" id="recovery-stat-text">—</div>
+      <div class="recovery-legend-inline">
+        <div class="recovery-legend-chip"><div class="recovery-legend-pip" style="background:#7a9068"></div>Ready</div>
+        <div class="recovery-legend-chip"><div class="recovery-legend-pip" style="background:#E8820C"></div>Partial</div>
+        <div class="recovery-legend-chip"><div class="recovery-legend-pip" style="background:#e05c5c"></div>Recovering</div>
+        <div class="recovery-legend-chip"><div class="recovery-legend-pip" style="background:#d8cfc4"></div>Untrained</div>
+      </div>
+    </div>
+
+    <!-- Quick Workout -->
+    <div class="recovery-section">
+      <div class="recovery-section-header">
+        <div class="recovery-section-title">Quick Workout</div>
+        <div class="recovery-dur-row">
+          <button class="recovery-dur-btn" onclick="setQwDuration(20,this)">20</button>
+          <button class="recovery-dur-btn" onclick="setQwDuration(30,this)">30</button>
+          <button class="recovery-dur-btn active" onclick="setQwDuration(45,this)">45</button>
+          <button class="recovery-dur-btn" onclick="setQwDuration(60,this)">60</button>
+          <span style="font-size:10px;color:var(--text-muted);margin-left:2px">min</span>
+        </div>
+      </div>
+      <button class="btn-primary" id="qw-generate-btn" onclick="generateQuickWorkout()" style="width:100%">Generate Workout</button>
+      <div id="qw-result" style="display:none" class="qw-result">
+        <div class="qw-meta" id="qw-meta"></div>
+        <div class="qw-exercise-list" id="qw-exercise-list"></div>
+        <div class="qw-actions">
+          <button class="btn-primary" onclick="startQuickWorkoutSession()" style="flex:1">Start Workout</button>
+          <button class="btn-secondary" onclick="generateQuickWorkout()" style="padding:0 16px">Regenerate</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Muscle list -->
+    <div class="recovery-section">
+      <div class="recovery-section-title">Muscle Groups</div>
+      <div class="recovery-list" id="recovery-list"></div>
+    </div>
+  </div>
+
+  <!-- Mesocycles -->
+  <div class="page" id="page-mesocycles">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div class="page-title">Mesocycles</div>
+      <button class="btn-primary" style="height:34px;font-size:13px;padding:0 14px" onclick="openMesoModal()">New Block</button>
+    </div>
+    <div id="meso-list"></div>
+    <div id="meso-detail" style="display:none"></div>
+  </div>
+
   <!-- Equipment -->
   <div class="page" id="page-equipment">
     <div class="page-title">Equipment</div>
@@ -749,12 +1112,30 @@ a{color:inherit;text-decoration:none}
   </div>
 </main>
 
+<!-- Bulk Action Bar -->
+<div class="bulk-bar" id="bulk-bar">
+  <span class="bulk-bar-count" id="bulk-count">0 selected</span>
+  <div id="bulk-actions"></div>
+  <button class="btn-secondary" style="font-size:12px;height:34px;padding:0 12px" onclick="toggleSelectMode()">Cancel</button>
+</div>
+
+<!-- Nostr Panel -->
+<div class="nostr-panel-overlay" id="nostr-panel-overlay" onclick="if(event.target===this)closeNostrPanel()">
+  <div class="nostr-panel">
+    <div class="nostr-panel-drag"></div>
+    <div id="nostr-panel-content"></div>
+  </div>
+</div>
+
 <!-- Session Overlay -->
 <div class="session-overlay" id="session-overlay">
   <div class="session-header">
     <div>
       <div class="session-title" id="session-title">Workout</div>
-      <div class="session-meta" id="session-meta"></div>
+      <div style="display:flex;align-items:center">
+        <div class="session-meta" id="session-meta"></div>
+        <span class="session-elapsed" id="session-elapsed"></span>
+      </div>
     </div>
     <button class="session-close-btn" onclick="confirmCancelSession()">Cancel</button>
   </div>
@@ -763,11 +1144,94 @@ a{color:inherit;text-decoration:none}
   <div class="session-footer" id="session-footer"></div>
 </div>
 
+<!-- PR Toast -->
+<div id="pr-toast" class="pr-toast"></div>
+
 <!-- Session Rest Overlay -->
 <div class="session-rest-overlay" id="session-rest-overlay">
-  <div class="rest-timer" id="session-rest-val">90</div>
-  <div class="rest-label">Rest</div>
+  <div class="rest-label" style="margin-bottom:12px">Rest</div>
+  <div class="rest-timer-wrap">
+    <svg class="rest-ring" width="160" height="160" viewBox="0 0 120 120">
+      <circle class="rest-ring-bg" cx="60" cy="60" r="54" stroke-width="8"/>
+      <circle class="rest-ring-fg" id="rest-ring-fg" cx="60" cy="60" r="54" stroke-width="8" stroke-dasharray="339.3" stroke-dashoffset="0"/>
+    </svg>
+    <div class="rest-timer-val" id="session-rest-val">90</div>
+  </div>
+  <div class="rest-adjust-btns">
+    <button class="rest-adjust-btn" onclick="adjustRest(-15)">-15s</button>
+    <button class="rest-adjust-btn" onclick="adjustRest(15)">+15s</button>
+  </div>
   <div class="rest-skip-btn" onclick="skipSessionRest()">Skip</div>
+</div>
+
+<!-- Session Summary Overlay -->
+<div class="session-summary-overlay" id="session-summary-overlay">
+  <div class="session-summary-title" id="summary-title">Workout Complete</div>
+  <div class="session-summary-sub" id="summary-sub"></div>
+  <div class="session-summary-stats" id="summary-stats"></div>
+  <div class="summary-section" id="summary-prs" style="display:none">
+    <div class="summary-section-title">Personal Records</div>
+    <div id="summary-pr-list"></div>
+  </div>
+  <div class="summary-section" id="summary-comparison" style="display:none">
+    <div class="summary-section-title">vs Last Session</div>
+    <div id="summary-comparison-list"></div>
+  </div>
+  <div class="summary-nostr" id="summary-nostr" style="display:none">
+    <div class="summary-nostr-title">Share to Nostr</div>
+    <label class="summary-nostr-toggle">
+      <input type="checkbox" id="summary-nostr-details">
+      <span class="summary-nostr-toggle-label">Include exercise details (names, sets, weights)</span>
+    </label>
+    <button class="summary-nostr-btn" id="summary-nostr-btn" onclick="shareWorkoutToNostr()">Publish Note</button>
+    <div class="summary-nostr-status" id="summary-nostr-status"></div>
+  </div>
+  <button class="session-summary-done" onclick="closeSummary()">Done</button>
+</div>
+
+<!-- Mesocycle Modal -->
+<div class="modal-overlay" id="meso-modal" onclick="if(event.target===this)closeMesoModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="meso-modal-title">New Training Block</div>
+      <button class="modal-close" onclick="closeMesoModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="meso-id">
+      <div class="modal-field">
+        <label>Name</label>
+        <input type="text" id="meso-name" placeholder="e.g. Hypertrophy Block 1">
+      </div>
+      <div class="modal-field">
+        <label>Goal</label>
+        <select id="meso-goal" style="width:100%;height:40px;border:1px solid var(--border-soft);border-radius:8px;padding:0 12px;font-size:13px;font-family:'Jost',sans-serif;background:var(--white);outline:none">
+          <option value="hypertrophy">Hypertrophy</option>
+          <option value="strength">Strength</option>
+          <option value="peaking">Peaking</option>
+          <option value="deload">Deload</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Start Date</label>
+        <input type="date" id="meso-start-date">
+      </div>
+      <div class="modal-field">
+        <label>Weeks</label>
+        <input type="number" id="meso-weeks" value="4" min="1" max="16">
+      </div>
+      <div class="modal-field">
+        <label>Notes</label>
+        <textarea id="meso-notes" placeholder="Optional notes..." style="height:60px;resize:none"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="closeMesoModal()">Cancel</button>
+      <button class="btn-primary" onclick="saveMesocycle()">Save</button>
+    </div>
+  </div>
 </div>
 
 <!-- Template Builder Modal -->
@@ -927,14 +1391,23 @@ let seedTotal = 0;
 // ── Sidebar & tabs ────────────────────────────────────────────────────────────
 
 function switchTab(tab) {
+  // Exit select mode when switching tabs
+  if (_selectMode) { _selectMode = false; _selectedSlugs.clear(); document.getElementById('bulk-bar').classList.remove('visible'); document.getElementById('content').classList.remove('select-mode'); }
   currentTab = tab;
+  // Show/hide select button after tab change (needs to run after currentTab is set)
+  setTimeout(_updateSelectButton, 0);
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const page = document.getElementById('page-' + tab);
   if (page) page.classList.add('active');
 
   const searchTabs = ['exercises', 'staging', 'trash'];
-  document.getElementById('topbar-search').style.display = searchTabs.includes(tab) ? '' : 'none';
+  const searchEl = document.getElementById('topbar-search');
+  if (searchTabs.includes(tab)) {
+    searchEl.classList.add('visible');
+  } else {
+    searchEl.classList.remove('visible');
+  }
   document.getElementById('search-input').value = '';
   searchQuery = '';
 
@@ -948,6 +1421,9 @@ function switchTab(tab) {
   else if (tab === 'import') loadSeedFilters();
   else if (tab === 'planner') loadPlanner();
   else if (tab === 'history') loadHistory();
+  else if (tab === 'recovery') loadRecovery();
+  else if (tab === 'explore') loadExplore();
+  else if (tab === 'mesocycles') loadMesocycles();
 }
 
 // ── Counts / badges ────────────────────────────────────────────────────────────
@@ -1043,8 +1519,9 @@ function buildCard(e, status) {
   const diffClass = {beginner:'diff-beginner',intermediate:'diff-intermediate',advanced:'diff-advanced'}[e.difficulty] || '';
   const diffBadge = e.difficulty ? `<div class="diff-badge ${diffClass}">${esc(e.difficulty)}</div>` : '';
 
-  return `<div class="exercise-card" onclick="openDrawer('${e.slug}')">
-    <div class="card-img">${img}${badge}${diffBadge}</div>
+  const checkSvg = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  return `<div class="exercise-card${_selectedSlugs.has(e.slug)?' selected':''}" data-slug="${e.slug}" onclick="_cardClick('${e.slug}')">
+    <div class="card-img" style="position:relative">${img}${badge}${diffBadge}<div class="card-check">${checkSvg}</div></div>
     <div class="card-body">
       <div class="card-name">${esc(e.name)}</div>
       <div class="card-meta">
@@ -1156,6 +1633,91 @@ async function openDrawer(slug) {
 
 function closeDrawer() { document.getElementById('drawer-overlay').classList.remove('open'); }
 function closeDrawerIfOverlay(e) { if (e.target === document.getElementById('drawer-overlay')) closeDrawer(); }
+
+// ── Select mode ───────────────────────────────────────────────────────────────
+
+let _selectMode = false;
+let _selectedSlugs = new Set();
+const _selectTabs = ['exercises', 'staging', 'trash'];
+
+function _updateSelectButton() {
+  const btn = document.getElementById('topbar-sel-btn');
+  const onSelectTab = _selectTabs.includes(currentTab);
+  btn.classList.toggle('visible', onSelectTab);
+  btn.classList.toggle('active', _selectMode);
+  btn.textContent = _selectMode ? `${_selectedSlugs.size} selected` : 'Select';
+  if (_selectMode) { btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg> ${_selectedSlugs.size} selected`; }
+  else { btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg> Select`; }
+}
+
+function toggleSelectMode() {
+  _selectMode = !_selectMode;
+  if (!_selectMode) _selectedSlugs.clear();
+  document.getElementById('content').classList.toggle('select-mode', _selectMode);
+  _updateBulkBar();
+  _updateSelectButton();
+  const statusMap = {exercises:'active',staging:'staged',trash:'trashed'};
+  const s = statusMap[currentTab];
+  if (s) renderGrid(s);
+}
+
+function _cardClick(slug) {
+  if (!_selectMode) { openDrawer(slug); return; }
+  if (_selectedSlugs.has(slug)) _selectedSlugs.delete(slug);
+  else _selectedSlugs.add(slug);
+  const card = document.querySelector(`.exercise-card[data-slug="${slug}"]`);
+  if (card) card.classList.toggle('selected', _selectedSlugs.has(slug));
+  _updateBulkBar();
+  _updateSelectButton();
+}
+
+function _updateBulkBar() {
+  const bar = document.getElementById('bulk-bar');
+  const count = document.getElementById('bulk-count');
+  const actions = document.getElementById('bulk-actions');
+  if (!_selectMode) { bar.classList.remove('visible'); return; }
+  bar.classList.add('visible');
+  count.textContent = `${_selectedSlugs.size} selected`;
+
+  const btnStyle = 'font-size:12px;height:34px;padding:0 12px';
+  if (currentTab === 'exercises') {
+    actions.innerHTML = `
+      <button class="btn-primary" style="${btnStyle}" onclick="bulkAction('favorite')">Favorite</button>
+      <button class="btn-secondary" style="${btnStyle}" onclick="bulkAction('unfavorite')">Unfavorite</button>
+      <button class="btn-danger" style="${btnStyle}" onclick="bulkAction('trash')">Trash</button>`;
+  } else if (currentTab === 'staging') {
+    actions.innerHTML = `
+      <button class="btn-sage" style="${btnStyle}" onclick="bulkAction('approve')">Approve</button>
+      <button class="btn-danger" style="${btnStyle}" onclick="bulkAction('trash')">Trash</button>`;
+  } else if (currentTab === 'trash') {
+    actions.innerHTML = `
+      <button class="btn-outline" style="${btnStyle}" onclick="bulkAction('restore')">Restore</button>
+      <button class="btn-danger" style="${btnStyle}" onclick="bulkAction('perm-delete')">Delete</button>`;
+  }
+}
+
+async function bulkAction(action) {
+  const slugs = [..._selectedSlugs];
+  if (!slugs.length) return;
+  if (['trash', 'perm-delete'].includes(action)) {
+    const label = action === 'perm-delete' ? 'permanently delete' : 'trash';
+    if (!confirm(`${label} ${slugs.length} exercise${slugs.length!==1?'s':''}?`)) return;
+  }
+  const handlers = {
+    'trash': sl => fetch('/api/exercises/'+sl, {method:'DELETE'}),
+    'approve': sl => fetch('/api/exercises/approve/'+sl, {method:'POST'}),
+    'restore': sl => fetch('/api/exercises/restore/'+sl, {method:'POST'}),
+    'perm-delete': sl => fetch('/api/exercises/permanent/'+sl, {method:'DELETE'}),
+    'favorite': sl => fetch('/api/exercises/'+sl+'/favorite', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({favorited:1})}),
+    'unfavorite': sl => fetch('/api/exercises/'+sl+'/favorite', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({favorited:0})}),
+  };
+  const fn = handlers[action];
+  if (!fn) return;
+  await Promise.all(slugs.map(fn));
+  refreshCounts();
+  toggleSelectMode(); // exits select mode and re-renders
+  switchTab(currentTab);
+}
 
 // ── Exercise actions ──────────────────────────────────────────────────────────
 async function trashExercise(slug) {
@@ -1555,6 +2117,168 @@ async function saveSettings() {
   setTimeout(() => document.getElementById('settings-status').textContent = '', 2000);
 }
 
+// ── Nostr identity ────────────────────────────────────────────────────────────
+
+let _nostrIdentity = null; // {pubkey_hex, npub, relay} or null
+
+async function loadNostrIdentity() {
+  try {
+    const data = await fetch('/api/nostr/identity').then(r => r.json());
+    if (!data.configured) { _nostrIdentity = null; _renderNostrSidebar(null); return; }
+    _nostrIdentity = {pubkey_hex: data.pubkey_hex, npub: data.npub, relay: data.relay};
+    _renderNostrSidebar(null); // show pubkey immediately
+    if (data.relay) {
+      const profile = await _fetchNostrKind0(data.pubkey_hex, data.relay);
+      if (profile) { _nostrIdentity.profile = profile; _renderNostrSidebar(profile); }
+    }
+  } catch(e) { /* silent fail */ }
+}
+
+function _renderNostrSidebar(profile) {
+  const circle = document.getElementById('nostr-avatar-circle');
+  const label = document.getElementById('nostr-id-label');
+  if (!_nostrIdentity) {
+    circle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+    label.textContent = 'Login';
+    return;
+  }
+  const pic = profile?.picture;
+  if (pic && pic.startsWith('http')) {
+    circle.innerHTML = `<img src="${pic}" alt="" onerror="this.parentNode.innerHTML='<svg width=16 height=16 viewBox=\\'0 0 24 24\\' fill=none stroke=currentColor stroke-width=1.5 stroke-linecap=round><circle cx=12 cy=7 r=4/><path d=\\'M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2\\'/></svg>'">`;
+  } else {
+    circle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/></svg>';
+  }
+  const name = profile?.name || profile?.display_name || (_nostrIdentity.npub.slice(0, 10) + '…');
+  label.textContent = name;
+}
+
+async function _fetchNostrKind0(pubkey_hex, relayUrl) {
+  return new Promise(resolve => {
+    let ws;
+    try { ws = new WebSocket(relayUrl); } catch(e) { resolve(null); return; }
+    const subId = 'id_' + Math.random().toString(36).slice(2);
+    let profile = null;
+    const done = () => { try { ws.close(); } catch(e) {} resolve(profile); };
+    const t = setTimeout(done, 6000);
+    ws.onopen = () => ws.send(JSON.stringify(['REQ', subId, {kinds:[0], authors:[pubkey_hex], limit:1}]));
+    ws.onmessage = e => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg[0] === 'EVENT' && msg[2]?.kind === 0) {
+          profile = JSON.parse(msg[2].content);
+          clearTimeout(t); done();
+        } else if (msg[0] === 'EOSE') { clearTimeout(t); done(); }
+      } catch(ex) {}
+    };
+    ws.onerror = () => { clearTimeout(t); done(); };
+  });
+}
+
+function openNostrPanel() {
+  _renderNostrPanelContent();
+  document.getElementById('nostr-panel-overlay').classList.add('open');
+}
+
+function closeNostrPanel() {
+  document.getElementById('nostr-panel-overlay').classList.remove('open');
+}
+
+function _renderNostrPanelContent() {
+  const el = document.getElementById('nostr-panel-content');
+  if (_nostrIdentity) {
+    const profile = _nostrIdentity.profile || {};
+    const pic = profile.picture && profile.picture.startsWith('http') ? profile.picture : null;
+    const name = profile.name || profile.display_name || '';
+    const about = profile.about || '';
+    el.innerHTML = `
+      <div class="nostr-panel-title">Nostr Identity</div>
+      <div class="nostr-profile-header">
+        <div class="nostr-pfp">
+          ${pic ? `<img src="${pic}" alt="">` : `<div class="nostr-pfp-placeholder"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="7" r="4"/><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/></svg></div>`}
+        </div>
+        <div>
+          ${name ? `<div class="nostr-panel-name">${esc(name)}</div>` : ''}
+          <div class="nostr-panel-npub" title="Tap to copy" onclick="_copyNpub()">${_nostrIdentity.npub.slice(0,16)}…${_nostrIdentity.npub.slice(-8)}</div>
+          ${about ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;line-height:1.4">${esc(about.slice(0,120))}</div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="padding:12px;background:var(--cream);border-radius:10px">
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Exercise Backup</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-outline" style="font-size:12px" onclick="closeNostrPanel();nostrBackup()">Back Up to Nostr</button>
+            <button class="btn-outline" style="font-size:12px" onclick="closeNostrPanel();openNostrRestorePrompt()">Restore</button>
+          </div>
+          <div id="nostr-panel-backup-status" style="font-size:11px;color:var(--text-muted);margin-top:6px"></div>
+        </div>
+        <button class="btn-secondary" onclick="nostrLogout()" style="margin-top:4px">Disconnect</button>
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div class="nostr-panel-title">Connect Nostr</div>
+      <div class="nostr-panel-sub">Your identity stays local. Used to sign exercise backups and (soon) follow others on Explore.</div>
+      <div class="nostr-login-method">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Paste private key</div>
+          <input class="nostr-method-input" id="nostr-nsec-input" type="password" placeholder="nsec1... or hex private key" autocomplete="off">
+          <button class="btn-primary" style="width:100%;margin-top:8px" onclick="nostrLoginNsec()">Connect</button>
+          <div id="nostr-login-status" style="font-size:11px;color:var(--text-muted);margin-top:6px"></div>
+        </div>
+        ${window.nostr ? `<div style="text-align:center;font-size:11px;color:var(--text-muted)">or</div>
+        <button class="btn-outline" style="width:100%" onclick="nostrLoginNip07()">Use Browser Extension (NIP-07)</button>` : ''}
+      </div>`;
+  }
+}
+
+async function nostrLoginNsec() {
+  const nsec = document.getElementById('nostr-nsec-input')?.value?.trim();
+  const statusEl = document.getElementById('nostr-login-status');
+  if (!nsec) return;
+  if (statusEl) statusEl.textContent = 'Connecting...';
+  try {
+    const res = await fetch('/api/nostr/identity', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({nsec}),
+    });
+    const data = await res.json();
+    if (data.error) { if (statusEl) statusEl.textContent = 'Error: ' + data.error; return; }
+    _nostrIdentity = {pubkey_hex: data.pubkey_hex, npub: data.npub, relay: data.relay};
+    _renderNostrSidebar(null);
+    if (data.relay) {
+      const profile = await _fetchNostrKind0(data.pubkey_hex, data.relay);
+      if (profile) { _nostrIdentity.profile = profile; _renderNostrSidebar(profile); }
+    }
+    closeNostrPanel();
+  } catch(e) { if (statusEl) statusEl.textContent = 'Connection failed'; }
+}
+
+async function nostrLoginNip07() {
+  if (!window.nostr) return;
+  try {
+    const pubkey_hex = await window.nostr.getPublicKey();
+    if (!pubkey_hex) return;
+    // NIP-07: store pubkey only (no nsec)
+    _nostrIdentity = {pubkey_hex, npub: 'npub1' + pubkey_hex.slice(0, 10) + '…', relay: ''};
+    _renderNostrSidebar(null);
+    closeNostrPanel();
+  } catch(e) { alert('NIP-07 login failed: ' + e.message); }
+}
+
+async function nostrLogout() {
+  await fetch('/api/nostr/identity', {method: 'DELETE'});
+  _nostrIdentity = null;
+  _renderNostrSidebar(null);
+  closeNostrPanel();
+}
+
+function _copyNpub() {
+  if (!_nostrIdentity?.npub) return;
+  navigator.clipboard.writeText(_nostrIdentity.npub).then(() => {
+    const el = document.querySelector('.nostr-panel-npub');
+    if (el) { const orig = el.textContent; el.textContent = 'Copied!'; setTimeout(() => el.textContent = orig, 1500); }
+  });
+}
+
 // ── Nostr backup ──────────────────────────────────────────────────────────────
 async function nostrBackup() {
   const status = document.getElementById('nostr-status');
@@ -1701,33 +2425,24 @@ async function removePlanEntry(id) {
 // ── Exercise picker for planner ───────────────────────────────────────────────
 let _pickerDate = '', _pickerSlot = '', _pickerMode = 'planner';
 
-async function openExercisePicker(date, slot) {
-  _pickerDate = date; _pickerSlot = slot;
-  const res = await fetch('/api/exercises?per_page=200');
-  const data = await res.json();
-  const exercises = data.exercises || [];
-
-  document.getElementById('picker-modal-content').innerHTML = `
-    <input type="text" class="filter-select" placeholder="Search..." style="width:100%;margin-bottom:12px" oninput="filterPickerItems(this.value)" id="picker-search">
-    <div class="picker-modal-grid" id="picker-grid">
-      ${exercises.map(e => `<div class="picker-item" onclick="pickExercise('${e.slug}')">
-        ${esc(e.name)}<div class="meta">${esc(e.muscle_group||'')}</div>
-      </div>`).join('')}
-    </div>`;
-
-  document.getElementById('picker-modal').classList.add('open');
-}
 
 function filterPickerItems(q) {
   const ql = q.toLowerCase();
   document.querySelectorAll('.picker-item').forEach(item => {
-    item.style.display = !ql || item.textContent.toLowerCase().includes(ql) ? '' : 'none';
+    const matchText = !ql || item.textContent.toLowerCase().includes(ql);
+    const matchMuscle = !_pickerMuscle || item.dataset.muscle === _pickerMuscle;
+    item.style.display = matchText && matchMuscle ? '' : 'none';
   });
 }
 
-async function pickExercise(slug, name) {
+async function pickExercise(slug, name, dataset) {
   if (_pickerMode === 'wb') {
-    addWbExercise(slug, name || slug);
+    addWbExercise(slug, name || slug, {
+      sets: parseInt(dataset?.sets) || 3,
+      reps: dataset?.reps || '8-12',
+      rest_sec: parseInt(dataset?.rest) || 90,
+      image_url: dataset?.img || '',
+    });
     closePicker();
     return;
   }
@@ -1741,6 +2456,7 @@ async function pickExercise(slug, name) {
 
 function closePicker() {
   document.getElementById('picker-modal').classList.remove('open');
+  _pickerMuscle = '';
   if (_pickerMode === 'wb') {
     _pickerMode = 'planner';
     document.querySelector('.picker-tabs').style.display = '';
@@ -1894,8 +2610,10 @@ function openWorkoutBuilder(id) {
   document.getElementById('wb-id').value = id || '';
   document.getElementById('wb-name').value = '';
   document.getElementById('wb-desc').value = '';
-  document.getElementById('wb-ex-search').value = '';
-  document.getElementById('wb-search-results').style.display = 'none';
+  const wbSearch = document.getElementById('wb-ex-search');
+  if (wbSearch) wbSearch.value = '';
+  const wbResults = document.getElementById('wb-search-results');
+  if (wbResults) wbResults.style.display = 'none';
   document.getElementById('wb-ex-list').innerHTML = '';
   document.getElementById('workout-builder-title').textContent = 'New Workout';
   document.getElementById('workout-builder-modal').classList.add('open');
@@ -1907,12 +2625,15 @@ async function editWorkout(id) {
   wbExercises = (w.exercises || []).map(e => ({
     id: e.id, slug: e.exercise_slug, name: e.exercise_name || e.exercise_slug,
     sets: e.sets, reps: e.reps, weight: e.weight, rest_sec: e.rest_sec,
+    image_url: e.image_url || '', superset_group: e.superset_group || null,
   }));
   document.getElementById('wb-id').value = id;
   document.getElementById('wb-name').value = w.name;
   document.getElementById('wb-desc').value = w.description || '';
-  document.getElementById('wb-ex-search').value = '';
-  document.getElementById('wb-search-results').style.display = 'none';
+  const wbSearch = document.getElementById('wb-ex-search');
+  if (wbSearch) wbSearch.value = '';
+  const wbResults = document.getElementById('wb-search-results');
+  if (wbResults) wbResults.style.display = 'none';
   document.getElementById('workout-builder-title').textContent = 'Edit Workout';
   renderWbExList();
   document.getElementById('workout-builder-modal').classList.add('open');
@@ -1923,14 +2644,17 @@ function closeWorkoutBuilder() { document.getElementById('workout-builder-modal'
 function renderWbExList() {
   const container = document.getElementById('wb-ex-list');
   if (!wbExercises.length) { container.innerHTML = '<p style="font-size:12px;color:var(--text-muted);padding:8px 0">No exercises yet. Search above to add.</p>'; return; }
-  container.innerHTML = wbExercises.map((e, i) => `
-    <div class="wex-row">
+  const parts = [];
+  wbExercises.forEach((e, i) => {
+    const sgBadge = e.superset_group ? `<span class="wex-superset-badge">SS ${esc(e.superset_group)}</span>` : '';
+    parts.push(`<div class="wex-row">
       <div class="wex-move-btns">
         <div class="wex-move-btn" onclick="moveWbEx(${i},-1)">&#8593;</div>
         <div class="wex-move-btn" onclick="moveWbEx(${i},1)">&#8595;</div>
       </div>
+      ${e.image_url ? `<img src="${esc(e.image_url)}" alt="" style="width:44px;height:44px;border-radius:6px;object-fit:cover;flex-shrink:0" loading="lazy">` : ''}
       <div class="wex-info">
-        <div class="wex-name">${esc(e.name)}</div>
+        <div class="wex-name">${esc(e.name)}${sgBadge}</div>
         <div class="wex-params">
           <div class="wex-param-group">
             <div class="wex-param-label">Sets</div>
@@ -1951,7 +2675,18 @@ function renderWbExList() {
         </div>
       </div>
       <div class="wex-remove" onclick="removeWbEx(${i})">&#x2715;</div>
-    </div>`).join('');
+    </div>`);
+    if (i < wbExercises.length - 1) {
+      const next = wbExercises[i + 1];
+      const linked = e.superset_group && e.superset_group === next.superset_group;
+      parts.push(`<div class="wex-superset-connector">
+        <div class="wex-superset-line"></div>
+        <button class="wex-superset-btn ${linked ? 'linked' : ''}" onclick="toggleSupersetLink(${i})">${linked ? 'Superset — click to unlink' : '+ Superset'}</button>
+        <div class="wex-superset-line"></div>
+      </div>`);
+    }
+  });
+  container.innerHTML = parts.join('');
 }
 
 function moveWbEx(i, dir) {
@@ -1962,6 +2697,24 @@ function moveWbEx(i, dir) {
 }
 
 function removeWbEx(i) { wbExercises.splice(i, 1); renderWbExList(); }
+
+function toggleSupersetLink(i) {
+  const a = wbExercises[i], b = wbExercises[i + 1];
+  if (!a || !b) return;
+  if (a.superset_group && a.superset_group === b.superset_group) {
+    // Unlink: remove group from both (and any others sharing this group)
+    const g = a.superset_group;
+    wbExercises.forEach(e => { if (e.superset_group === g) e.superset_group = null; });
+  } else {
+    // Link: assign next available group letter
+    const used = new Set(wbExercises.map(e => e.superset_group).filter(Boolean));
+    let letter = 'A';
+    while (used.has(letter)) letter = String.fromCharCode(letter.charCodeAt(0) + 1);
+    a.superset_group = letter;
+    b.superset_group = letter;
+  }
+  renderWbExList();
+}
 
 async function searchWbExercises(q) {
   const results = document.getElementById('wb-search-results');
@@ -1977,12 +2730,22 @@ async function searchWbExercises(q) {
     </div>`).join('');
 }
 
-function addWbExercise(slug, name) {
+function addWbExercise(slug, name, opts = {}) {
   const existing = wbExercises.find(e => e.slug === slug);
-  if (!existing) wbExercises.push({slug, name, sets:3, reps:'8-12', weight:null, rest_sec:90});
+  if (!existing) wbExercises.push({
+    slug, name,
+    sets: opts.sets || 3,
+    reps: opts.reps || '8-12',
+    weight: opts.weight || null,
+    rest_sec: opts.rest_sec || 90,
+    image_url: opts.image_url || '',
+    superset_group: null,
+  });
   renderWbExList();
-  document.getElementById('wb-ex-search').value = '';
-  document.getElementById('wb-search-results').style.display = 'none';
+  const wbSearch = document.getElementById('wb-ex-search');
+  if (wbSearch) wbSearch.value = '';
+  const wbResults = document.getElementById('wb-search-results');
+  if (wbResults) wbResults.style.display = 'none';
 }
 
 async function saveWorkout() {
@@ -2009,7 +2772,7 @@ async function saveWorkout() {
   for (const e of wbExercises) {
     await fetch(`/api/workouts/${wid}/exercises`,{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({exercise_slug:e.slug,sets:e.sets,reps:e.reps,weight:e.weight,rest_sec:e.rest_sec}),
+      body:JSON.stringify({exercise_slug:e.slug,sets:e.sets,reps:e.reps,weight:e.weight,rest_sec:e.rest_sec,superset_group:e.superset_group||null}),
     });
   }
 
@@ -2028,6 +2791,15 @@ let _session = null;        // {id, workout_id, exercises:[{slug,name,sets,reps,
 let _sessionExIdx = 0;      // current exercise index
 let _sessionSetCounts = {}; // slug -> number of sets shown
 let _sessionRestTimer = null;
+let _exercisePR = {};       // slug -> historical best estimated 1RM
+let _sessionPRs = [];       // [{slug, name, rm}] PRs set this session
+let _sessionRestTotal = 0;
+let _sessionRestRemaining = 0;
+let _sessionElapsedTimer = null;
+let _sessionStartTime = null;
+let _sessionLoggedSets = {}; // slug -> Set of set indices logged in current session
+let _exerciseCache = {};    // slug -> exercise detail (for instructions)
+let _pickerMuscle = '';     // active muscle group chip filter
 
 async function startWorkoutSession(workoutId) {
   const wRes = await fetch('/api/workouts/' + workoutId);
@@ -2039,6 +2811,9 @@ async function startWorkoutSession(workoutId) {
   _session = {id:s.id, workout_id:workoutId, workoutName:w.name, exercises:w.exercises};
   _sessionExIdx = 0;
   _sessionSetCounts = {};
+  _sessionLoggedSets = {};
+  _exercisePR = {};
+  _sessionPRs = [];
   _openSessionOverlay();
 }
 
@@ -2058,6 +2833,9 @@ async function startQuickSession(slug) {
   };
   _sessionExIdx = 0;
   _sessionSetCounts = {};
+  _sessionLoggedSets = {};
+  _exercisePR = {};
+  _sessionPRs = [];
   closeDrawer();
   _openSessionOverlay();
 }
@@ -2069,6 +2847,16 @@ async function launchWorkout(slug) {
 
 function _openSessionOverlay() {
   document.getElementById('session-overlay').classList.add('open');
+  _sessionStartTime = Date.now();
+  clearInterval(_sessionElapsedTimer);
+  _sessionElapsedTimer = setInterval(() => {
+    const s = Math.floor((Date.now() - _sessionStartTime) / 1000);
+    const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    const el = document.getElementById('session-elapsed');
+    if (el) el.textContent = h > 0
+      ? `${h}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`
+      : `${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  }, 1000);
   _renderSessionEx();
 }
 
@@ -2092,35 +2880,80 @@ async function _renderSessionEx() {
   document.getElementById('session-meta').textContent = `Exercise ${_sessionExIdx+1} of ${_session.exercises.length}`;
   _renderSessionNav();
 
-  // Fetch last session sets for pre-fill
+  // Fetch last session sets for pre-fill + per-set indicators
   const lastRes = await fetch(`/api/exercises/${slug}/last-sets?before_session_id=${_session.id}`);
   const lastSets = await lastRes.json();
-  const lastText = lastSets.length
-    ? 'Last session: ' + lastSets.map(s => `${s.actual_reps||'?'}${s.actual_weight?' @ '+s.actual_weight+'kg':''}`).join(', ')
-    : '';
+
+  // Load historical best 1RM for PR detection (once per exercise per session)
+  if (_exercisePR[slug] === undefined) {
+    const prog = await fetch('/api/exercises/'+slug+'/progress').then(r=>r.json()).catch(()=>[]);
+    const bests = prog.map(d => d.best_1rm).filter(Boolean);
+    _exercisePR[slug] = bests.length ? Math.max(...bests) : 0;
+  }
 
   if (!_sessionSetCounts[slug]) _sessionSetCounts[slug] = targetSets;
   const numSets = _sessionSetCounts[slug];
 
   const imgUrl = ex.image_url ? (ex.image_url.startsWith('http') ? ex.image_url : '/'+ex.image_url) : null;
 
+  // Defaults to pre-fill when no previous session data exists
+  const defaultReps = parseInt(targetReps) || '';
+  const defaultWeight = ex.weight || '';
+
+  // Compute progression suggestion from last session
+  const prog = _calcProgression(lastSets, targetReps, ex.weight);
+
   const setRows = Array.from({length:numSets}, (_,i) => {
     const last = lastSets[i];
+    // Use progression suggestion as pre-fill, fall back to last session, then defaults
+    const repsVal = prog ? prog.reps : (last?.actual_reps != null ? last.actual_reps : defaultReps);
+    const weightVal = prog ? prog.weight : (last?.actual_weight != null ? last.actual_weight : defaultWeight);
+    const prevHint = last
+      ? `<span class="session-set-prev">prev: ${last.actual_reps||'?'}${last.actual_weight?' @ '+last.actual_weight+'kg':''}</span>`
+      : '';
+    const progHint = prog
+      ? `<span class="session-set-prog">suggested: ${prog.reps} reps @ ${prog.weight}kg (${prog.note})</span>`
+      : '';
     return `<div class="session-set-row">
       <div class="session-set-num" id="snum-${i}">${i+1}</div>
-      <input class="session-set-input" id="sreps-${i}" type="number" placeholder="${targetReps}" value="${last?.actual_reps||''}" min="0">
-      <input class="session-set-input" id="sweight-${i}" type="number" placeholder="${ex.weight||'kg'}" value="${last?.actual_weight||''}" min="0" step="0.5">
+      <input class="session-set-input" id="sreps-${i}" type="number" placeholder="${targetReps}" value="${repsVal}" min="0">
+      <input class="session-set-input" id="sweight-${i}" type="number" placeholder="${ex.weight||'kg'}" value="${weightVal}" min="0" step="0.5">
       <button class="session-log-btn" id="slog-${i}" onclick="logSessionSet(${i},${restSec},'${slug}','${targetReps}',${ex.weight||'null'})">Log</button>
-    </div>`;
+    </div>${prevHint}${progHint}`;
   }).join('');
+
+  // Fetch instructions (cached)
+  if (!_exerciseCache[slug]) _exerciseCache[slug] = fetch('/api/exercises/'+slug).then(r=>r.json());
+  const exDetail = await _exerciseCache[slug];
+  const instructions = exDetail?.full?.instructions || [];
+  const instructionsHtml = instructions.length ? `
+    <div class="session-instructions">
+      <div class="session-instructions-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('span').textContent=this.nextElementSibling.classList.contains('open')?'hide':'how to perform'">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span>how to perform</span>
+      </div>
+      <div class="session-instructions-body">
+        ${instructions.map((s,i) => `<div class="session-instructions-step">${i+1}. ${esc(s)}</div>`).join('')}
+      </div>
+    </div>` : '';
 
   document.getElementById('session-body').innerHTML = `
     ${imgUrl ? `<img src="${imgUrl}" alt="" style="width:100%;max-width:400px;aspect-ratio:16/9;object-fit:cover;border-radius:10px;margin-bottom:16px;display:block">` : ''}
-    <div class="session-ex-name">${esc(ex.exercise_name||slug)}</div>
-    <div class="session-ex-target">${targetSets} sets × ${targetReps}${ex.weight ? ' @ '+ex.weight+'kg' : ''} · ${restSec}s rest</div>
-    ${lastText ? `<div class="session-last">${esc(lastText)}</div>` : '<div style="margin-bottom:20px"></div>'}
+    <div class="session-ex-name">${esc(ex.exercise_name||slug)}${ex.superset_group ? `<span class="wex-superset-badge" style="font-size:10px;padding:2px 6px">SS ${esc(ex.superset_group)}</span>` : ''}</div>
+    <div class="session-ex-target">${targetSets} sets × ${targetReps}${ex.weight ? ' @ '+ex.weight+'kg' : ''} · ${restSec}s rest${ex.superset_group ? ' · superset' : ''}</div>
+    <div style="margin-bottom:16px"></div>
     <div class="session-sets">${setRows}</div>
-    <div class="session-add-set" onclick="addSessionSet('${slug}')">+ Add set</div>`;
+    <div class="session-add-set" onclick="addSessionSet('${slug}')">+ Add set</div>
+    ${instructionsHtml}`;
+
+  // Restore done state for sets already logged in this session
+  const doneSets = _sessionLoggedSets[slug] || new Set();
+  doneSets.forEach(i => {
+    const numEl = document.getElementById('snum-'+i);
+    const logBtn = document.getElementById('slog-'+i);
+    if (numEl) numEl.classList.add('done');
+    if (logBtn) { logBtn.textContent = 'Done'; logBtn.classList.add('done'); }
+  });
 
   const isLast = _sessionExIdx >= _session.exercises.length - 1;
   document.getElementById('session-footer').innerHTML = `
@@ -2143,12 +2976,58 @@ async function logSessionSet(setIdx, restSec, slug, prescReps, prescWeight) {
     }),
   });
 
+  if (!_sessionLoggedSets[slug]) _sessionLoggedSets[slug] = new Set();
+  _sessionLoggedSets[slug].add(setIdx);
+
   const numEl = document.getElementById('snum-'+setIdx);
   const logBtn = document.getElementById('slog-'+setIdx);
   if (numEl) numEl.classList.add('done');
   if (logBtn) { logBtn.textContent='Done'; logBtn.classList.add('done'); }
 
+  // PR detection: Epley 1RM estimate
+  if (reps && weight) {
+    const estimated1rm = weight * (1 + reps / 30);
+    const prevBest = _exercisePR[slug] || 0;
+    if (estimated1rm > prevBest && prevBest > 0) {
+      _exercisePR[slug] = estimated1rm;
+      const exName = _session?.exercises?.find(e => e.exercise_slug === slug)?.exercise_name || slug;
+      _sessionPRs.push({slug, name: exName, rm: Math.round(estimated1rm * 10) / 10});
+      showPrToast(Math.round(estimated1rm * 10) / 10);
+    }
+  }
+
+  // Superset auto-navigation: jump to next exercise in same group with no rest
+  const curEx = _session?.exercises?.[_sessionExIdx];
+  const supersetGroup = curEx?.superset_group;
+  if (supersetGroup) {
+    const nextIdx = _findNextInSuperset(supersetGroup, _sessionExIdx);
+    if (nextIdx !== -1) {
+      jumpSessionEx(nextIdx);
+      return; // skip rest between superset exercises
+    }
+  }
+
   startSessionRest(restSec);
+}
+
+function _findNextInSuperset(group, currentIdx) {
+  const exes = _session?.exercises || [];
+  for (let i = currentIdx + 1; i < exes.length; i++) {
+    if (exes[i].superset_group === group) return i;
+  }
+  for (let i = 0; i < currentIdx; i++) {
+    if (exes[i].superset_group === group) return i;
+  }
+  return -1;
+}
+
+function showPrToast(rm) {
+  const el = document.getElementById('pr-toast');
+  if (!el) return;
+  el.innerHTML = 'New PR<br><span style="font-size:13px;font-weight:500;opacity:.85">~' + rm + 'kg estimated 1RM</span>';
+  el.classList.add('show');
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
 function addSessionSet(slug) {
@@ -2165,14 +3044,32 @@ function jumpSessionEx(i) {
 function startSessionRest(sec) {
   const overlay = document.getElementById('session-rest-overlay');
   overlay.classList.add('show');
-  let remaining = sec;
-  document.getElementById('session-rest-val').textContent = remaining;
+  _sessionRestTotal = sec;
+  _sessionRestRemaining = sec;
+  _updateRestDisplay();
   clearInterval(_sessionRestTimer);
   _sessionRestTimer = setInterval(() => {
-    remaining--;
-    document.getElementById('session-rest-val').textContent = remaining;
-    if (remaining <= 0) { clearInterval(_sessionRestTimer); overlay.classList.remove('show'); }
+    _sessionRestRemaining--;
+    _updateRestDisplay();
+    if (_sessionRestRemaining <= 0) { clearInterval(_sessionRestTimer); overlay.classList.remove('show'); }
   }, 1000);
+}
+
+function _updateRestDisplay() {
+  document.getElementById('session-rest-val').textContent = _sessionRestRemaining;
+  const circumference = 339.3;
+  const fg = document.getElementById('rest-ring-fg');
+  if (fg) {
+    const offset = _sessionRestTotal > 0 ? circumference * (1 - _sessionRestRemaining / _sessionRestTotal) : 0;
+    fg.style.strokeDashoffset = Math.max(0, Math.min(circumference, offset));
+    fg.style.stroke = _sessionRestRemaining <= 5 ? '#ef4444' : 'var(--amber)';
+  }
+}
+
+function adjustRest(delta) {
+  _sessionRestRemaining = Math.max(5, _sessionRestRemaining + delta);
+  if (_sessionRestTotal < _sessionRestRemaining) _sessionRestTotal = _sessionRestRemaining;
+  _updateRestDisplay();
 }
 
 function skipSessionRest() {
@@ -2182,9 +3079,168 @@ function skipSessionRest() {
 
 async function finishSession() {
   if (!_session) return;
+  clearInterval(_sessionElapsedTimer);
+  const elapsedSec = _sessionStartTime ? Math.floor((Date.now() - _sessionStartTime) / 1000) : 0;
   await fetch(`/api/sessions/${_session.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+  const sRes = await fetch('/api/sessions/' + _session.id);
+  const s = await sRes.json();
+  const sets = s.sets || [];
+  const totalSets = sets.length;
+  const totalVolume = Math.round(sets.reduce((acc, st) => acc + ((st.actual_reps||0) * (st.actual_weight||0)), 0));
+  const mins = Math.floor(elapsedSec / 60);
+  const secs = elapsedSec % 60;
+  const durationLabel = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+  document.getElementById('summary-title').textContent = _session.workoutName || 'Workout Complete';
+  document.getElementById('summary-sub').textContent = `${_session.exercises.length} exercise${_session.exercises.length!==1?'s':''}`;
+  document.getElementById('summary-stats').innerHTML = [
+    {val: durationLabel, label: 'Duration'},
+    {val: totalSets, label: 'Sets'},
+    {val: totalVolume > 0 ? totalVolume + ' kg' : '—', label: 'Volume'},
+    {val: _session.exercises.length, label: 'Exercises'},
+  ].map(st => `<div class="session-summary-stat">
+    <div class="session-summary-stat-val">${st.val}</div>
+    <div class="session-summary-stat-label">${st.label}</div>
+  </div>`).join('');
+
+  // PRs
+  const prSection = document.getElementById('summary-prs');
+  const uniquePRs = _sessionPRs.filter((p, i, arr) => arr.findIndex(x => x.slug === p.slug) === i);
+  if (uniquePRs.length) {
+    document.getElementById('summary-pr-list').innerHTML = uniquePRs.map(p =>
+      `<span class="summary-pr-chip">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        ${esc(p.name)} ~${p.rm}kg 1RM
+      </span>`
+    ).join('');
+    prSection.style.display = '';
+  } else { prSection.style.display = 'none'; }
+
+  // vs last time comparison — group current sets by exercise, fetch previous
+  const slugs = [...new Set(sets.map(s => s.exercise_slug))];
+  const compSection = document.getElementById('summary-comparison');
+  if (slugs.length) {
+    const prevData = await Promise.all(slugs.map(sl =>
+      fetch(`/api/exercises/${sl}/last-sets?before_session_id=${_session.id}`).then(r => r.json()).catch(() => [])
+    ));
+    const rows = slugs.map((sl, i) => {
+      const cur = sets.filter(s => s.exercise_slug === sl);
+      const prev = prevData[i];
+      const curVol = cur.reduce((a, s) => a + ((s.actual_reps||0) * (s.actual_weight||0)), 0);
+      const prevVol = prev.reduce((a, s) => a + ((s.actual_reps||0) * (s.actual_weight||0)), 0);
+      const exName = _session.exercises.find(e => e.exercise_slug === sl)?.exercise_name || sl;
+      let delta = '', cls = 'same';
+      if (prevVol > 0 && curVol > 0) {
+        const pct = Math.round(((curVol - prevVol) / prevVol) * 100);
+        if (pct > 0) { delta = '+' + pct + '%'; cls = 'up'; }
+        else if (pct < 0) { delta = pct + '%'; cls = 'down'; }
+        else { delta = '='; cls = 'same'; }
+      } else if (!prevVol) { delta = 'new'; cls = 'same'; }
+      return `<div class="summary-ex-row">
+        <span class="summary-ex-name">${esc(exName)}</span>
+        <span class="summary-delta ${cls}">${delta}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('summary-comparison-list').innerHTML = rows;
+    compSection.style.display = '';
+  } else { compSection.style.display = 'none'; }
+
+  // Show Nostr share section only if identity is configured
+  const nostrSection = document.getElementById('summary-nostr');
+  if (_nostrIdentity?.relay) {
+    nostrSection.style.display = '';
+    document.getElementById('summary-nostr-status').textContent = '';
+    document.getElementById('summary-nostr-btn').disabled = false;
+    document.getElementById('summary-nostr-details').checked = false;
+  } else {
+    nostrSection.style.display = 'none';
+  }
+
+  // Store summary data for share function
+  window._summaryShareData = {
+    workoutName: _session.workoutName || 'Workout',
+    durationLabel,
+    totalSets,
+    totalVolume,
+    exerciseCount: _session.exercises.length,
+    sets,
+    slugs,
+    exercises: _session.exercises,
+    prs: uniquePRs,
+  };
+
+  document.getElementById('session-summary-overlay').classList.add('show');
+}
+
+function closeSummary() {
+  document.getElementById('session-summary-overlay').classList.remove('show');
   _closeSessionOverlay();
   switchTab('history');
+  loadHistory();
+}
+
+async function shareWorkoutToNostr() {
+  const d = window._summaryShareData;
+  if (!d || !_nostrIdentity?.relay) return;
+  const btn = document.getElementById('summary-nostr-btn');
+  const statusEl = document.getElementById('summary-nostr-status');
+  const withDetails = document.getElementById('summary-nostr-details').checked;
+
+  btn.disabled = true;
+  statusEl.textContent = 'Signing...';
+
+  // Build note content
+  let content = `Finished "${d.workoutName}" — ${d.durationLabel}, ${d.exerciseCount} exercises, ${d.totalSets} sets`;
+  if (d.totalVolume > 0) content += `, ${d.totalVolume} kg total volume`;
+  if (d.prs?.length) {
+    const prNames = d.prs.map(p => p.name).join(', ');
+    content += `\nPR${d.prs.length > 1 ? 's' : ''}: ${prNames}`;
+  }
+  if (withDetails && d.sets?.length) {
+    const bySlug = {};
+    for (const s of d.sets) {
+      if (!bySlug[s.exercise_slug]) bySlug[s.exercise_slug] = {name: d.exercises.find(e => e.exercise_slug === s.exercise_slug)?.exercise_name || s.exercise_slug, sets: []};
+      if (s.actual_reps || s.actual_weight) bySlug[s.exercise_slug].sets.push(`${s.actual_reps||'?'}x${s.actual_weight||'?'}kg`);
+    }
+    const lines = Object.values(bySlug).map(ex => `- ${ex.name}: ${ex.sets.join(', ')}`);
+    if (lines.length) content += '\n' + lines.join('\n');
+  }
+  content += '\n\n#workout #fitness #workstr';
+
+  const durationMin = d.durationLabel;
+  const tags = [
+    ['t','workout'],['t','fitness'],['t','workstr'],
+    ['workout', d.workoutName, durationMin, String(d.exerciseCount), String(d.totalSets), String(d.totalVolume)]
+  ];
+
+  try {
+    const res = await fetch('/api/nostr/note', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({content, tags})});
+    const data = await res.json();
+    if (data.error) { statusEl.textContent = 'Error: ' + data.error; btn.disabled = false; return; }
+
+    const event = data.event;
+    const relay = data.relay || _nostrIdentity.relay;
+    if (!relay) { statusEl.textContent = 'Signed. No relay configured — cannot publish.'; return; }
+
+    statusEl.textContent = 'Publishing...';
+    const ws = new WebSocket(relay);
+    let done = false;
+    ws.onopen = () => ws.send(JSON.stringify(['EVENT', event]));
+    ws.onmessage = (msg) => {
+      if (done) return;
+      try {
+        const parsed = JSON.parse(msg.data);
+        if (parsed[0] === 'OK' && parsed[1] === event.id) {
+          done = true;
+          statusEl.textContent = parsed[2] ? 'Published!' : ('Relay rejected: ' + (parsed[3] || 'unknown'));
+          ws.close();
+        }
+      } catch(e) {}
+    };
+    ws.onerror = () => { if (!done) { statusEl.textContent = 'WebSocket error'; btn.disabled = false; } };
+    ws.onclose = () => { if (!done) { statusEl.textContent = 'Published (no confirmation).'; } };
+    setTimeout(() => { if (!done) { ws.close(); statusEl.textContent = 'Timed out waiting for relay.'; btn.disabled = false; } }, 8000);
+  } catch(e) { statusEl.textContent = 'Error: ' + e.message; btn.disabled = false; }
 }
 
 async function confirmCancelSession() {
@@ -2196,9 +3252,43 @@ async function confirmCancelSession() {
 
 function _closeSessionOverlay() {
   clearInterval(_sessionRestTimer);
+  clearInterval(_sessionElapsedTimer);
   document.getElementById('session-rest-overlay').classList.remove('show');
   document.getElementById('session-overlay').classList.remove('open');
+  document.getElementById('session-elapsed').textContent = '';
   _session = null;
+}
+
+// ── Auto-progression engine ───────────────────────────────────────────────────
+function _parseRepRange(reps) {
+  // "8-12" → {lo:8,hi:12}, "10" → {lo:10,hi:10}
+  if (!reps) return {lo: 8, hi: 12};
+  const m = String(reps).match(/^(\d+)\s*[-–]\s*(\d+)$/);
+  if (m) return {lo: parseInt(m[1]), hi: parseInt(m[2])};
+  const n = parseInt(reps);
+  return {lo: n||8, hi: n||12};
+}
+
+function _calcProgression(lastSets, targetReps, prescribedWeight) {
+  // Returns {reps, weight, note} or null when no history
+  if (!lastSets || !lastSets.length) return null;
+  const {lo, hi} = _parseRepRange(targetReps);
+  // Use median weight and check if all sets hit the top of rep range
+  const weights = lastSets.map(s => s.actual_weight || prescribedWeight || 0).filter(Boolean);
+  const reps = lastSets.map(s => s.actual_reps || 0);
+  if (!weights.length || !reps.length) return null;
+  const baseWeight = weights.reduce((a, b) => a + b, 0) / weights.length;
+  const allHitTop = reps.every(r => r >= hi);
+  if (allHitTop) {
+    // Increase weight, reset to bottom of rep range
+    const step = baseWeight >= 60 ? 2.5 : (baseWeight >= 20 ? 2.5 : 1.25);
+    return {reps: lo, weight: Math.round((baseWeight + step) * 2) / 2, note: `+${step}kg`};
+  }
+  // Suggest 1 more rep (up to top), keep weight
+  const avgReps = Math.round(reps.reduce((a, b) => a + b, 0) / reps.length);
+  const sugReps = Math.min(hi, avgReps + 1);
+  if (sugReps === avgReps) return null; // already at top but not all sets — keep same
+  return {reps: sugReps, weight: Math.round(baseWeight * 2) / 2, note: `+1 rep`};
 }
 
 // ── Planner picker (with workout tab) ─────────────────────────────────────────
@@ -2224,17 +3314,49 @@ async function renderPickerContent() {
         ${esc(w.name)}<div class="meta">${w.exercise_count||0} exercises</div>
       </div>`).join('');
   } else {
-    const res = await fetch('/api/exercises?per_page=200');
-    const data = await res.json();
-    const exercises = data.exercises || [];
+    const [exRes, recentExs] = await Promise.all([
+      fetch('/api/exercises?per_page=500').then(r => r.json()),
+      fetch('/api/exercises/recent?limit=6').then(r => r.json()).catch(() => []),
+    ]);
+    const exercises = exRes.exercises || [];
+    const favoriteExs = exercises.filter(e => e.favorited).slice(0, 8);
+
+    const _quickItem = (e) => {
+      const img = e.image_url
+        ? `<img class="picker-quick-img" src="${esc(e.image_url)}" alt="" loading="lazy">`
+        : `<div class="picker-quick-noimg"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12"/></svg></div>`;
+      return `<div class="picker-quick-item" data-slug="${e.slug}" data-name="${esc(e.name)}" data-muscle="${esc(e.muscle_group||'')}" data-sets="${e.default_sets||3}" data-reps="${esc(e.default_reps||'8-12')}" data-rest="${e.default_rest_sec||90}" data-img="${esc(e.image_url||'')}" onclick="pickExercise(this.dataset.slug,this.dataset.name,this.dataset)">
+        ${img}<div class="picker-quick-name">${esc(e.name)}</div>
+      </div>`;
+    };
+
+    const quickHtml = [
+      favoriteExs.length ? `<div class="picker-quick-label">Favorites</div><div class="picker-quick-row">${favoriteExs.map(_quickItem).join('')}</div>` : '',
+      recentExs.length ? `<div class="picker-quick-label">Recent</div><div class="picker-quick-row">${recentExs.map(_quickItem).join('')}</div>` : '',
+    ].join('');
+
+    const muscles = [...new Set(exercises.map(e => e.muscle_group).filter(Boolean))].sort();
     container.innerHTML = `
-      <input type="text" class="filter-select" placeholder="Search..." style="width:100%;margin-bottom:10px" oninput="filterPickerItems(this.value)" id="picker-search">
+      ${quickHtml}
+      <input type="text" class="filter-select" placeholder="Search exercises..." style="width:100%;margin-bottom:8px" oninput="filterPickerItems(this.value)" id="picker-search">
+      <div class="picker-chips" id="picker-chips">
+        ${muscles.map(m => `<div class="picker-chip${_pickerMuscle===m?' active':''}" data-muscle="${esc(m)}" onclick="setPickerMuscle('${esc(m)}')">${esc(m)}</div>`).join('')}
+      </div>
       <div class="picker-modal-grid" id="picker-grid">
-        ${exercises.map(e => `<div class="picker-item" data-slug="${e.slug}" data-name="${esc(e.name)}" onclick="pickExercise(this.dataset.slug,this.dataset.name)">
-          ${esc(e.name)}<div class="meta">${esc(e.muscle_group||'')}</div>
-        </div>`).join('')}
+        ${exercises.map(e => {
+          const img = e.image_url ? `<img class="picker-item-img" src="${esc(e.image_url)}" alt="" loading="lazy">` : '';
+          return `<div class="picker-item" data-slug="${e.slug}" data-name="${esc(e.name)}" data-muscle="${esc(e.muscle_group||'')}" data-sets="${e.default_sets||3}" data-reps="${esc(e.default_reps||'8-12')}" data-rest="${e.default_rest_sec||90}" data-img="${esc(e.image_url||'')}" onclick="pickExercise(this.dataset.slug,this.dataset.name,this.dataset)">
+            ${img}${esc(e.name)}<div class="meta">${esc(e.muscle_group||'')}</div>
+          </div>`;
+        }).join('')}
       </div>`;
   }
+}
+
+function setPickerMuscle(m) {
+  _pickerMuscle = _pickerMuscle === m ? '' : m;
+  document.querySelectorAll('.picker-chip').forEach(c => c.classList.toggle('active', c.dataset.muscle === _pickerMuscle));
+  filterPickerItems(document.getElementById('picker-search')?.value || '');
 }
 
 async function openExercisePicker(date, slot) {
@@ -2512,50 +3634,597 @@ async function loadExerciseProgress(slug, container) {
   const data = await fetch('/api/exercises/' + slug + '/progress').then(r => r.json());
   if (!data.length) { container.innerHTML = ''; return; }
 
-  const withWeight = data.filter(d => d.best_1rm);
-  const withVolume = data.filter(d => d.volume);
+  const withRM = data.filter(d => d.best_1rm).slice(-10);
+  const withVol = data.filter(d => d.volume > 0).slice(-10);
 
-  if (!withWeight.length && !withVolume.length) { container.innerHTML = ''; return; }
-
-  const recentW = withWeight.slice(-6);
-  const maxRM = Math.max(...recentW.map(d => d.best_1rm));
-  const recentV = withVolume.slice(-6);
-  const maxVol = Math.max(...recentV.map(d => d.volume));
+  if (!withRM.length && !withVol.length) { container.innerHTML = ''; return; }
 
   let html = '';
 
-  if (recentW.length >= 2) {
-    const trend = recentW[recentW.length-1].best_1rm - recentW[0].best_1rm;
-    const arrow = trend > 0 ? ' &#8593;' : trend < 0 ? ' &#8595;' : '';
-    html += `<div class="drawer-section">Estimated 1RM${arrow}</div>`;
-    html += recentW.map(d => {
-      const pct = maxRM ? (d.best_1rm / maxRM) * 100 : 0;
-      return `<div class="progress-row">
-        <div class="progress-date">${d.date.slice(5)}</div>
-        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct.toFixed(0)}%"></div></div>
-        <div class="progress-val">${d.best_1rm} kg</div>
-      </div>`;
-    }).join('');
+  if (withRM.length >= 1) {
+    const best = Math.max(...withRM.map(d => d.best_1rm));
+    const last = withRM[withRM.length - 1].best_1rm;
+    const prev = withRM.length >= 2 ? withRM[withRM.length - 2].best_1rm : null;
+    const trendPct = prev ? Math.round(((last - prev) / prev) * 100) : null;
+    const trendHtml = trendPct !== null
+      ? `<span class="${trendPct >= 0 ? 'progress-trend-up' : 'progress-trend-down'}">${trendPct >= 0 ? '+' : ''}${trendPct}%</span>`
+      : '';
+
+    html += `<div class="drawer-section">Estimated 1RM ${trendHtml}</div>`;
+    html += `<div class="progress-stat-row">
+      <div class="progress-stat"><div class="progress-stat-val">${last} kg</div><div class="progress-stat-label">Last</div></div>
+      <div class="progress-stat"><div class="progress-stat-val">${best} kg</div><div class="progress-stat-label">Best</div></div>
+      <div class="progress-stat"><div class="progress-stat-val">${withRM.length}</div><div class="progress-stat-label">Sessions</div></div>
+    </div>`;
+
+    if (withRM.length >= 2) {
+      html += _buildSparkline(withRM.map(d => d.best_1rm), 'var(--amber)');
+    }
+
+    html += `<div class="progress-session-list">`;
+    html += withRM.slice().reverse().slice(0, 5).map(d =>
+      `<div class="progress-session-row">
+        <span class="progress-session-date">${d.date.slice(5)}</span>
+        <span class="progress-session-val">${d.best_1rm} kg</span>
+      </div>`
+    ).join('');
+    html += `</div>`;
   }
 
-  if (recentV.length >= 2) {
-    html += `<div class="drawer-section">Volume (kg)</div>`;
-    html += recentV.map(d => {
-      const pct = maxVol ? (d.volume / maxVol) * 100 : 0;
-      return `<div class="progress-row">
-        <div class="progress-date">${d.date.slice(5)}</div>
-        <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct.toFixed(0)}%;background:var(--sage)"></div></div>
-        <div class="progress-val">${d.volume}</div>
-      </div>`;
-    }).join('');
+  if (withVol.length >= 2) {
+    const last = withVol[withVol.length - 1].volume;
+    const prev = withVol.length >= 2 ? withVol[withVol.length - 2].volume : null;
+    const trendPct = prev ? Math.round(((last - prev) / prev) * 100) : null;
+    const trendHtml = trendPct !== null
+      ? `<span class="${trendPct >= 0 ? 'progress-trend-up' : 'progress-trend-down'}">${trendPct >= 0 ? '+' : ''}${trendPct}%</span>`
+      : '';
+
+    html += `<div class="drawer-section" style="margin-top:12px">Volume (kg) ${trendHtml}</div>`;
+    html += _buildSparkline(withVol.map(d => d.volume), 'var(--sage)');
   }
 
   container.innerHTML = html;
 }
 
+function _buildSparkline(values, color) {
+  const W = 240, H = 54, pad = 6;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const n = values.length;
+  const pts = values.map((v, i) => {
+    const x = pad + (i / (n - 1)) * (W - pad * 2);
+    const y = H - pad - ((v - min) / range) * (H - pad * 2);
+    return [x, y];
+  });
+  const polyPts = pts.map(p => p.join(',')).join(' ');
+  const areaPath = `M${pts[0].join(',')} ` + pts.slice(1).map(p => `L${p.join(',')}`).join(' ') +
+    ` L${pts[n-1][0]},${H} L${pts[0][0]},${H} Z`;
+  const dots = pts.map(([x, y]) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="${color}"/>`).join('');
+  return `<div class="progress-chart">
+    <svg class="progress-sparkline" viewBox="0 0 ${W} ${H}" height="54">
+      <path d="${areaPath}" fill="${color}" opacity=".12"/>
+      <polyline points="${polyPts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}
+    </svg>
+  </div>`;
+}
+
+// ── Explore ───────────────────────────────────────────────────────────────────
+
+let _exploreEvents = [];  // cached exercise events from relay
+let _exploreLoaded = false;
+
+async function loadExplore() {
+  const body = document.getElementById('explore-body');
+  if (!_nostrIdentity) {
+    body.innerHTML = `<div class="explore-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+      <p>Connect your Nostr identity to explore exercises shared by people you follow.</p>
+      <button class="btn-primary" onclick="openNostrPanel()">Connect Nostr</button>
+    </div>`;
+    return;
+  }
+  if (!_nostrIdentity.relay) {
+    body.innerHTML = `<div class="explore-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 6s0 0 0 0"/><path d="M1 12s4-4 11-4 11 4 11 4"/><path d="M1 18s4-4 11-4 11 4 11 4"/></svg>
+      <p>Configure a relay in Settings to browse Nostr exercises.</p>
+      <button class="btn-outline" onclick="switchTab('settings')">Open Settings</button>
+    </div>`;
+    return;
+  }
+  if (_exploreLoaded) { _renderExploreFeed(); return; }
+
+  body.innerHTML = `<div class="explore-status"><div class="explore-dot live"></div>Connecting to relay...</div><div id="explore-cards" class="explore-cards"></div>`;
+
+  // Fetch contact list (Kind 3)
+  const contacts = await _fetchNostrContacts(_nostrIdentity.pubkey_hex, _nostrIdentity.relay);
+  const followedPubkeys = contacts.length ? contacts : [_nostrIdentity.pubkey_hex];
+
+  // Subscribe to exercise events (Kind 30078) from followed pubkeys
+  _exploreEvents = await _fetchNostrExercises(followedPubkeys, _nostrIdentity.relay);
+  _exploreLoaded = true;
+  _renderExploreFeed();
+}
+
+function _renderExploreFeed() {
+  const body = document.getElementById('explore-body');
+  if (!_exploreEvents.length) {
+    body.innerHTML = `<div class="explore-empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+      <p>No exercises found from the people you follow yet.</p>
+    </div>`;
+    return;
+  }
+  body.innerHTML = `<div class="explore-status"><div class="explore-dot live"></div>${_exploreEvents.length} exercise${_exploreEvents.length!==1?'s':''} from your network</div>
+    <div class="explore-cards" id="explore-cards">
+      ${_exploreEvents.map((ev, i) => _renderExploreCard(ev, i)).join('')}
+    </div>`;
+}
+
+function _renderExploreCard(ev, i) {
+  let ex = {};
+  try { ex = JSON.parse(ev.content); } catch(e) {}
+  const img = ex.image_url ? `<img class="explore-card-img" src="${esc(ex.image_url)}" alt="" loading="lazy">` : '';
+  const authorProfile = ev._profile || {};
+  const pfp = authorProfile.picture && authorProfile.picture.startsWith('http')
+    ? `<img class="explore-author-pfp" src="${esc(authorProfile.picture)}" alt="" loading="lazy">`
+    : `<div class="explore-author-pfp" style="background:var(--cream)"></div>`;
+  const authorName = authorProfile.name || authorProfile.display_name || ev.pubkey.slice(0, 8) + '…';
+  return `<div class="explore-card">
+    ${img}
+    <div class="explore-card-body">
+      <div class="explore-card-meta">
+        <div class="explore-card-author">${pfp}<span class="explore-author-name">${esc(authorName)}</span></div>
+        ${ex.muscle_group ? `<span class="explore-card-tag">${esc(ex.muscle_group)}</span>` : ''}
+      </div>
+      <div class="explore-card-title">${esc(ex.name || 'Unnamed Exercise')}</div>
+      <div class="explore-card-sub">${esc([ex.category, ex.difficulty].filter(Boolean).join(' · '))}</div>
+      <div class="explore-card-actions">
+        <button class="btn-primary" style="font-size:12px;height:32px;padding:0 14px" onclick="importExploreExercise(${i})">Import</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function importExploreExercise(i) {
+  const ev = _exploreEvents[i];
+  if (!ev) return;
+  const events = [ev];
+  const res = await fetch('/api/nostr/restore', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(events),
+  });
+  const data = await res.json();
+  if (data.imported > 0) {
+    refreshCounts();
+    const card = document.querySelectorAll('.explore-card')[i];
+    if (card) { card.querySelector('.btn-primary').textContent = 'Imported'; card.querySelector('.btn-primary').disabled = true; }
+  }
+}
+
+async function _fetchNostrContacts(pubkey_hex, relayUrl) {
+  return new Promise(resolve => {
+    let ws;
+    try { ws = new WebSocket(relayUrl); } catch(e) { resolve([]); return; }
+    const subId = 'c3_' + Math.random().toString(36).slice(2);
+    let pubkeys = [];
+    const done = () => { try { ws.close(); } catch(e) {} resolve(pubkeys); };
+    const t = setTimeout(done, 6000);
+    ws.onopen = () => ws.send(JSON.stringify(['REQ', subId, {kinds:[3], authors:[pubkey_hex], limit:1}]));
+    ws.onmessage = e => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg[0] === 'EVENT' && msg[2]?.kind === 3) {
+          const tags = msg[2].tags || [];
+          pubkeys = tags.filter(t => t[0] === 'p' && t[1]).map(t => t[1]);
+          clearTimeout(t); done();
+        } else if (msg[0] === 'EOSE') { clearTimeout(t); done(); }
+      } catch(ex) {}
+    };
+    ws.onerror = () => { clearTimeout(t); done(); };
+  });
+}
+
+async function _fetchNostrExercises(pubkeys, relayUrl) {
+  return new Promise(resolve => {
+    let ws;
+    try { ws = new WebSocket(relayUrl); } catch(e) { resolve([]); return; }
+    const subId = 'ex_' + Math.random().toString(36).slice(2);
+    const events = [];
+    const done = () => { try { ws.close(); } catch(e) {} resolve(events); };
+    const t = setTimeout(done, 8000);
+    ws.onopen = () => ws.send(JSON.stringify(['REQ', subId, {kinds:[30078], authors:pubkeys, '#t':['workstr','exercise'], limit:50}]));
+    ws.onmessage = e => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg[0] === 'EVENT' && msg[2]?.kind === 30078) {
+          const tags = (msg[2].tags || []).map(t => t[1]);
+          if (tags.includes('workstr') && tags.includes('exercise')) events.push(msg[2]);
+        } else if (msg[0] === 'EOSE') { clearTimeout(t); done(); }
+      } catch(ex) {}
+    };
+    ws.onerror = () => { clearTimeout(t); done(); };
+  });
+}
+
+// ── Recovery ─────────────────────────────────────────────────────────────────
+
+let _qwDuration = 45;
+let _qwExercises = [];  // currently proposed exercises
+let _qwPool = {};       // remaining exercises per muscle group for swapping
+
+function setQwDuration(min, btn) {
+  _qwDuration = min;
+  document.querySelectorAll('.recovery-dur-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function _recoveryColor(percent, status) {
+  if (status === 'untrained') return '#d8cfc4';
+  if (percent >= 80) return '#7a9068';
+  if (percent >= 50) return '#E8820C';
+  return '#e05c5c';
+}
+
+function _recoveryStatusClass(status) {
+  if (status === 'ready') return 'rc-ready';
+  if (status === 'partial') return 'rc-partial';
+  if (status === 'recovering') return 'rc-recovering';
+  return 'rc-untrained';
+}
+
+function _recoveryStatusLabel(status) {
+  if (status === 'ready') return 'Ready';
+  if (status === 'partial') return 'Partial';
+  if (status === 'recovering') return 'Recovering';
+  return 'Untrained';
+}
+
+function _formatLastTrained(isoStr) {
+  if (!isoStr) return 'Never trained';
+  const then = new Date(isoStr);
+  const diffMs = Date.now() - then.getTime();
+  const diffH = diffMs / 3600000;
+  if (diffH < 1) return 'Less than 1h ago';
+  if (diffH < 24) return `${Math.floor(diffH)}h ago`;
+  const days = Math.floor(diffH / 24);
+  return days === 1 ? '1 day ago' : `${days} days ago`;
+}
+
+async function loadRecovery() {
+  const res = await fetch('/api/recovery');
+  const data = await res.json();
+
+  const readyCount = data.ready_count || 0;
+  const total = data.total_count || 0;
+  const pct = data.overall_readiness || 0;
+  document.getElementById('recovery-stat-text').textContent =
+    `${readyCount} of ${total} muscles ready · ${pct}% overall`;
+
+  // Color body map
+  const muscleMap = {};
+  (data.muscle_groups || []).forEach(mg => { muscleMap[mg.name] = mg; });
+  document.querySelectorAll('[data-muscle]').forEach(el => {
+    const mg = muscleMap[el.dataset.muscle];
+    el.setAttribute('fill', mg ? _recoveryColor(mg.percent, mg.status) : '#ede7dc');
+  });
+
+  // Compact muscle list sorted: recovering first, then partial, ready, untrained
+  const statusOrder = { recovering: 0, partial: 1, ready: 2, untrained: 3 };
+  const sorted = [...(data.muscle_groups || [])].sort(
+    (a, b) => (statusOrder[a.status] ?? 4) - (statusOrder[b.status] ?? 4) || a.percent - b.percent
+  );
+  document.getElementById('recovery-list').innerHTML = sorted.map(mg => `
+    <div class="recovery-list-row">
+      <div class="recovery-list-name">${mg.name}</div>
+      <div class="recovery-list-bar">
+        <div class="recovery-list-bar-fill" style="width:${mg.percent}%;background:${_recoveryColor(mg.percent, mg.status)}"></div>
+      </div>
+      <div class="recovery-list-right">
+        <span class="recovery-list-pct">${mg.percent}%</span>
+        <span class="recovery-list-status ${_recoveryStatusClass(mg.status)}">${_recoveryStatusLabel(mg.status)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function generateQuickWorkout() {
+  const btn = document.getElementById('qw-generate-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+
+  const res = await fetch('/api/recovery/quick-workout', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({duration_minutes: _qwDuration, min_recovery_percent: 80}),
+  });
+  const data = await res.json();
+  btn.disabled = false;
+  btn.textContent = 'Generate from recovered muscles';
+
+  if (!data.exercises?.length) {
+    document.getElementById('qw-result').style.display = 'none';
+    alert('No recovered muscle groups with exercises yet. Add exercises or finish a workout first.');
+    return;
+  }
+
+  _qwExercises = data.exercises;
+  _qwPool = data.pool || {};
+  _renderQwList();
+  document.getElementById('qw-meta').textContent =
+    `${data.exercises.length} exercises · ~${data.estimated_duration_min} min · ${(data.target_muscle_groups || []).join(', ')}`;
+  document.getElementById('qw-result').style.display = '';
+}
+
+function _renderQwList() {
+  document.getElementById('qw-exercise-list').innerHTML = _qwExercises.map((ex, i) => {
+    const hasSwap = (_qwPool[ex.muscle_group] || []).length > 0;
+    return `<div class="qw-ex-item" id="qw-ex-${i}">
+      <div class="qw-ex-info">
+        <div class="qw-ex-name">${esc(ex.name)}</div>
+        <div class="qw-ex-meta">${esc(ex.muscle_group)} · ${ex.sets} sets × ${esc(ex.reps)}</div>
+      </div>
+      <div class="qw-ex-actions">
+        ${hasSwap ? `<button class="qw-ex-swap" onclick="swapQwEx(${i})">Swap</button>` : ''}
+        <button class="qw-ex-remove" onclick="removeQwEx(${i})">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function swapQwEx(i) {
+  const ex = _qwExercises[i];
+  const pool = _qwPool[ex.muscle_group] || [];
+  if (!pool.length) return;
+  const replacement = pool.shift();
+  // put old exercise back into pool
+  pool.push(ex);
+  _qwPool[ex.muscle_group] = pool;
+  _qwExercises[i] = replacement;
+  _renderQwList();
+}
+
+function removeQwEx(i) {
+  _qwExercises.splice(i, 1);
+  if (!_qwExercises.length) {
+    document.getElementById('qw-result').style.display = 'none';
+    return;
+  }
+  _renderQwList();
+}
+
+async function startQuickWorkoutSession() {
+  if (!_qwExercises.length) return;
+  const sRes = await fetch('/api/sessions', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({workout_id: null}),
+  });
+  const s = await sRes.json();
+  _session = {
+    id: s.id,
+    workout_id: null,
+    workoutName: 'Quick Workout',
+    exercises: _qwExercises.map(e => ({
+      exercise_slug: e.slug,
+      exercise_name: e.name,
+      image_url: e.image_url || null,
+      sets: e.sets,
+      reps: e.reps,
+      weight: null,
+      rest_sec: e.rest_sec,
+    })),
+  };
+  _sessionExIdx = 0;
+  _sessionSetCounts = {};
+  _sessionLoggedSets = {};
+  _exercisePR = {};
+  _sessionPRs = [];
+  document.getElementById('qw-result').style.display = 'none';
+  _openSessionOverlay();
+}
+
+// ── Mesocycle planner ─────────────────────────────────────────────────────────
+let _mesoList = [];
+let _mesoWorkouts = [];
+let _mesoDetailId = null;
+
+async function loadMesocycles() {
+  if (!_mesoWorkouts.length) {
+    const wr = await fetch('/api/workouts');
+    _mesoWorkouts = await wr.json();
+  }
+  const res = await fetch('/api/mesocycles');
+  _mesoList = await res.json();
+  _renderMesoList();
+}
+
+function _renderMesoList() {
+  const el = document.getElementById('meso-list');
+  const detail = document.getElementById('meso-detail');
+  detail.style.display = 'none';
+  el.style.display = '';
+  if (!_mesoList.length) {
+    el.innerHTML = '<p style="font-size:13px;color:var(--text-muted);padding:20px 0;text-align:center">No training blocks yet. Create your first mesocycle to plan multi-week training.</p>';
+    return;
+  }
+  el.innerHTML = _mesoList.map(m => {
+    const start = m.start_date ? new Date(m.start_date) : null;
+    const endDate = start ? new Date(start.getTime() + m.weeks * 7 * 86400000) : null;
+    const today = new Date();
+    let progressPct = 0, weekLabel = '';
+    if (start && today >= start) {
+      const daysIn = Math.floor((today - start) / 86400000);
+      const weekNum = Math.min(m.weeks, Math.floor(daysIn / 7) + 1);
+      progressPct = Math.round((weekNum / m.weeks) * 100);
+      if (today <= endDate) weekLabel = `Week ${weekNum} of ${m.weeks}`;
+      else weekLabel = 'Completed';
+    }
+    const dateStr = start ? start.toLocaleDateString('en-GB',{month:'short',day:'numeric',year:'numeric'}) : '';
+    return `<div class="meso-card" onclick="openMesoDetail(${m.id})">
+      <div class="meso-card-header">
+        <div class="meso-card-name">${esc(m.name)}</div>
+        <div class="meso-card-goal">${esc(m.goal)}</div>
+      </div>
+      <div class="meso-card-meta">${dateStr} · ${m.weeks} weeks${weekLabel ? ' · <strong>' + esc(weekLabel) + '</strong>' : ''}</div>
+      <div class="meso-progress-bar"><div class="meso-progress-fill" style="width:${progressPct}%"></div></div>
+      <div class="meso-card-actions" onclick="event.stopPropagation()">
+        <button class="btn-outline" style="height:28px;font-size:11px;padding:0 10px" onclick="openMesoModal(${m.id})">Edit</button>
+        <button class="btn-outline" style="height:28px;font-size:11px;padding:0 10px;color:#c44;border-color:#c44" onclick="deleteMeso(${m.id})">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function openMesoDetail(id) {
+  _mesoDetailId = id;
+  document.getElementById('meso-list').style.display = 'none';
+  const detail = document.getElementById('meso-detail');
+  detail.style.display = '';
+  detail.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-muted)">Loading...</div>';
+
+  const res = await fetch('/api/mesocycles/' + id);
+  const m = await res.json();
+  if (!_mesoWorkouts.length) {
+    const wr = await fetch('/api/workouts');
+    _mesoWorkouts = await wr.json();
+  }
+
+  const today = new Date();
+  const start = m.start_date ? new Date(m.start_date) : null;
+  const curWeek = m.current_week;
+
+  const workoutOptions = _mesoWorkouts.map(w =>
+    `<option value="${w.id}">${esc(w.name)}</option>`
+  ).join('');
+
+  const weekRows = m.weeks_detail.map(w => {
+    const isCurrent = w.week_number === curWeek;
+    const wids = w.workout_ids || [];
+    const wTags = wids.map(wid => {
+      const wo = _mesoWorkouts.find(x => x.id === wid);
+      return wo ? `<span class="meso-workout-tag active" title="Click to remove" onclick="removeMesoWeekWorkout(${id},${w.week_number},${wid})">${esc(wo.name)}</span>` : '';
+    }).join('');
+    return `<div class="meso-week-row">
+      <div class="meso-week-num ${isCurrent ? 'current' : ''}">W${w.week_number}${isCurrent ? '<div class="meso-week-label">NOW</div>' : ''}</div>
+      <div>
+        <div class="meso-week-workouts">
+          ${wTags}
+          <div class="meso-add-workout" onclick="addMesoWeekWorkoutPrompt(${id},${w.week_number})">+ Add</div>
+        </div>
+        ${w.notes ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px">${esc(w.notes)}</div>` : ''}
+      </div>
+      <div class="meso-intensity" title="Click to change intensity" onclick="setMesoWeekIntensity(${id},${w.week_number},${w.intensity_pct})">${w.intensity_pct}%</div>
+    </div>`;
+  }).join('');
+
+  detail.innerHTML = `
+    <div class="meso-detail-back" onclick="_renderMesoList()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      All Blocks
+    </div>
+    <div class="meso-detail-title">${esc(m.name)}</div>
+    <div class="meso-detail-sub">${esc(m.goal)} · ${m.weeks} weeks from ${m.start_date}</div>
+    <div id="meso-week-list">${weekRows}</div>`;
+}
+
+async function addMesoWeekWorkoutPrompt(mesoId, weekNum) {
+  if (!_mesoWorkouts.length) return;
+  const workoutNames = _mesoWorkouts.map((w, i) => `${i+1}. ${w.name}`).join('\n');
+  const choice = prompt(`Choose a workout to add to Week ${weekNum}:\n\n${workoutNames}\n\nEnter number:`);
+  const idx = parseInt(choice) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= _mesoWorkouts.length) return;
+  const workoutId = _mesoWorkouts[idx].id;
+
+  const m = await fetch('/api/mesocycles/' + mesoId).then(r => r.json());
+  const weekData = m.weeks_detail.find(w => w.week_number === weekNum) || {};
+  const ids = weekData.workout_ids || [];
+  if (ids.includes(workoutId)) return;
+  ids.push(workoutId);
+  await fetch(`/api/mesocycles/${mesoId}/weeks/${weekNum}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({workout_ids: ids, intensity_pct: weekData.intensity_pct||100, notes: weekData.notes||null}),
+  });
+  openMesoDetail(mesoId);
+}
+
+async function removeMesoWeekWorkout(mesoId, weekNum, workoutId) {
+  const m = await fetch('/api/mesocycles/' + mesoId).then(r => r.json());
+  const weekData = m.weeks_detail.find(w => w.week_number === weekNum) || {};
+  const ids = (weekData.workout_ids || []).filter(id => id !== workoutId);
+  await fetch(`/api/mesocycles/${mesoId}/weeks/${weekNum}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({workout_ids: ids, intensity_pct: weekData.intensity_pct||100, notes: weekData.notes||null}),
+  });
+  openMesoDetail(mesoId);
+}
+
+async function setMesoWeekIntensity(mesoId, weekNum, current) {
+  const val = prompt(`Week ${weekNum} intensity % (current: ${current}):`);
+  const pct = parseInt(val);
+  if (isNaN(pct) || pct < 1 || pct > 200) return;
+  const m = await fetch('/api/mesocycles/' + mesoId).then(r => r.json());
+  const weekData = m.weeks_detail.find(w => w.week_number === weekNum) || {};
+  await fetch(`/api/mesocycles/${mesoId}/weeks/${weekNum}`, {
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({workout_ids: weekData.workout_ids||[], intensity_pct: pct, notes: weekData.notes||null}),
+  });
+  openMesoDetail(mesoId);
+}
+
+function openMesoModal(id = null) {
+  document.getElementById('meso-id').value = id || '';
+  document.getElementById('meso-modal-title').textContent = id ? 'Edit Training Block' : 'New Training Block';
+  if (id) {
+    const m = _mesoList.find(x => x.id === id);
+    if (m) {
+      document.getElementById('meso-name').value = m.name;
+      document.getElementById('meso-goal').value = m.goal;
+      document.getElementById('meso-start-date').value = m.start_date;
+      document.getElementById('meso-weeks').value = m.weeks;
+      document.getElementById('meso-notes').value = m.notes || '';
+    }
+  } else {
+    document.getElementById('meso-name').value = '';
+    document.getElementById('meso-goal').value = 'hypertrophy';
+    document.getElementById('meso-start-date').value = new Date().toISOString().slice(0,10);
+    document.getElementById('meso-weeks').value = 4;
+    document.getElementById('meso-notes').value = '';
+  }
+  document.getElementById('meso-modal').classList.add('open');
+}
+
+function closeMesoModal() { document.getElementById('meso-modal').classList.remove('open'); }
+
+async function saveMesocycle() {
+  const id = document.getElementById('meso-id').value;
+  const payload = {
+    name: document.getElementById('meso-name').value.trim(),
+    goal: document.getElementById('meso-goal').value,
+    start_date: document.getElementById('meso-start-date').value,
+    weeks: parseInt(document.getElementById('meso-weeks').value) || 4,
+    notes: document.getElementById('meso-notes').value.trim() || null,
+  };
+  if (!payload.name) return;
+  if (id) {
+    await fetch('/api/mesocycles/'+id, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+  } else {
+    await fetch('/api/mesocycles', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+  }
+  closeMesoModal();
+  loadMesocycles();
+}
+
+async function deleteMeso(id) {
+  if (!confirm('Delete this training block?')) return;
+  await fetch('/api/mesocycles/'+id, {method:'DELETE'});
+  loadMesocycles();
+}
+
 // ── Init ─────────────────────────────────────────────────────────────────────
 refreshCounts();
 switchTab('exercises');
+loadNostrIdentity();
 </script>
 </body>
 </html>

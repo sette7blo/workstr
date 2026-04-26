@@ -80,25 +80,35 @@ def delete_log_entry(log_id: int) -> bool:
 def get_progress(exercise_slug: str) -> list:
     """Return per-session 1RM (Epley) and volume for trend charts."""
     with db() as conn:
-        rows = conn.execute(
-            "SELECT sets, logged_at FROM workout_log WHERE exercise_slug=? ORDER BY logged_at ASC",
-            (exercise_slug,)
-        ).fetchall()
+        rows = conn.execute("""
+            SELECT
+                ws.id as session_id,
+                ws.finished_at,
+                wss.actual_reps,
+                wss.actual_weight
+            FROM workout_session_sets wss
+            JOIN workout_sessions ws ON ws.id = wss.session_id
+            WHERE wss.exercise_slug = ?
+              AND ws.finished_at IS NOT NULL
+            ORDER BY ws.finished_at ASC
+        """, (exercise_slug,)).fetchall()
+
+    # Group by session
+    sessions: dict = {}
+    for r in rows_to_list(rows):
+        sid = r["session_id"]
+        if sid not in sessions:
+            sessions[sid] = {"date": (r["finished_at"] or "")[:10], "sets": []}
+        sessions[sid]["sets"].append({
+            "reps": r["actual_reps"],
+            "weight": r["actual_weight"],
+        })
 
     result = []
-    for r in rows_to_list(rows):
-        sets = r.get("sets", [])
-        if isinstance(sets, str):
-            try:
-                sets = json.loads(sets)
-            except (json.JSONDecodeError, TypeError):
-                sets = []
-
+    for data in sessions.values():
         best_1rm = 0
         total_volume = 0
-        for s in (sets or []):
-            if not s:
-                continue
+        for s in data["sets"]:
             weight = s.get("weight") or 0
             reps = s.get("reps") or 0
             if weight and reps:
@@ -108,7 +118,7 @@ def get_progress(exercise_slug: str) -> list:
                 total_volume += weight * reps
 
         result.append({
-            "date": (r.get("logged_at") or "")[:10],
+            "date": data["date"],
             "best_1rm": round(best_1rm, 1) if best_1rm else None,
             "volume": round(total_volume, 1),
         })

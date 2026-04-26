@@ -116,6 +116,27 @@ CREATE TABLE IF NOT EXISTS settings (
     value       TEXT
 );
 
+CREATE TABLE IF NOT EXISTS mesocycles (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    name        TEXT NOT NULL,
+    goal        TEXT DEFAULT 'hypertrophy',
+    start_date  TEXT NOT NULL,
+    weeks       INTEGER NOT NULL DEFAULT 4,
+    notes       TEXT,
+    created_at  TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS mesocycle_weeks (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    mesocycle_id  INTEGER NOT NULL,
+    week_number   INTEGER NOT NULL,
+    workout_ids   TEXT DEFAULT '[]',
+    intensity_pct INTEGER DEFAULT 100,
+    notes         TEXT,
+    FOREIGN KEY (mesocycle_id) REFERENCES mesocycles(id) ON DELETE CASCADE,
+    UNIQUE(mesocycle_id, week_number)
+);
+
 CREATE INDEX IF NOT EXISTS idx_exercises_status ON exercises(status);
 CREATE INDEX IF NOT EXISTS idx_exercises_slug ON exercises(slug);
 CREATE INDEX IF NOT EXISTS idx_exercises_category ON exercises(category);

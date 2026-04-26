@@ -62,7 +62,8 @@ def delete_workout(workout_id: int) -> bool:
 # ── Exercises within a workout ─────────────────────────────────────────────────
 
 def add_exercise(workout_id: int, exercise_slug: str, sets: int = 3, reps: str = "8-12",
-                 weight: float = None, rest_sec: int = 90, notes: str = None) -> dict:
+                 weight: float = None, rest_sec: int = 90, notes: str = None,
+                 superset_group: str = None) -> dict:
     with db() as conn:
         pos_row = conn.execute(
             "SELECT COALESCE(MAX(position), -1) + 1 AS pos FROM workout_exercises WHERE workout_id=?",
@@ -71,16 +72,16 @@ def add_exercise(workout_id: int, exercise_slug: str, sets: int = 3, reps: str =
         position = pos_row["pos"] if pos_row else 0
         conn.execute(
             """INSERT INTO workout_exercises
-               (workout_id, exercise_slug, position, sets, reps, weight, rest_sec, notes)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (workout_id, exercise_slug, position, sets, reps, weight, rest_sec, notes)
+               (workout_id, exercise_slug, position, sets, reps, weight, rest_sec, notes, superset_group)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (workout_id, exercise_slug, position, sets, reps, weight, rest_sec, notes, superset_group)
         )
         row = conn.execute("SELECT * FROM workout_exercises ORDER BY id DESC LIMIT 1").fetchone()
     return row_to_dict(row)
 
 
 def update_exercise(ex_id: int, data: dict) -> dict | None:
-    allowed = {"position", "sets", "reps", "weight", "rest_sec", "notes"}
+    allowed = {"position", "sets", "reps", "weight", "rest_sec", "notes", "superset_group"}
     fields = {k: v for k, v in data.items() if k in allowed}
     if not fields:
         return None
