@@ -12,7 +12,7 @@ from flask import Flask, jsonify, request, send_from_directory, Response
 
 import core.config as config
 from core.schema import init_db
-from modules import importer, equipment, workout_log, workout_planner, workouts
+from modules import importer, workout_log, workout_planner, workouts
 from modules import ai_generator, ai_planner, camera, seed_browser, nostr_backup, recovery
 from modules import mesocycles as meso_module
 
@@ -189,39 +189,6 @@ def api_import_manual():
     if not path:
         return jsonify({"error": "exercise already exists"}), 409
     return jsonify({"ok": True, "slug": data.get("slug")})
-
-# ── Equipment ─────────────────────────────────────────────────────────────────
-
-@app.route("/api/equipment")
-def api_list_equipment():
-    return jsonify(equipment.list_equipment())
-
-
-@app.route("/api/equipment", methods=["POST"])
-def api_add_equipment():
-    data = request.get_json(force=True)
-    result = equipment.add_equipment(
-        name=data["name"],
-        category=data.get("category"),
-        owned=data.get("owned", True),
-        notes=data.get("notes"),
-    )
-    return jsonify(result), 201
-
-
-@app.route("/api/equipment/<int:eq_id>", methods=["PUT"])
-def api_update_equipment(eq_id):
-    data = request.get_json(force=True)
-    result = equipment.update_equipment(eq_id, data)
-    if not result:
-        return jsonify({"error": "not found"}), 404
-    return jsonify(result)
-
-
-@app.route("/api/equipment/<int:eq_id>", methods=["DELETE"])
-def api_delete_equipment(eq_id):
-    ok = equipment.delete_equipment(eq_id)
-    return jsonify({"ok": ok}), 200 if ok else 404
 
 # ── Workout Log ───────────────────────────────────────────────────────────────
 

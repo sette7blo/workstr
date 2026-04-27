@@ -13,6 +13,22 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [v1.1.0] — 2026-04-27
+### Fixed
+- Equipment filter on exercises page now actually filters when toggled
+- Bodyweight exercises (no equipment) no longer hidden by equipment filter
+- Workout card action buttons no longer overflow outside the card on narrow screens
+
+### Changed
+- Consolidated equipment management into Settings — removed dedicated Equipment tab
+- Single comma-separated "My Equipment" field in Settings now drives both exercise filter and AI generation
+- Workout cards use two-row layout with actions on second line
+
+### Removed
+- Equipment tab, page, and CRUD API endpoints (`/api/equipment`)
+
+---
+
 ## [v1.0.0] — 2026-04-21
 ### Added
 - Exercise library: browse, filter by category/muscle/difficulty, difficulty badges, source badges (AI/seed/camera/manual)
@@ -37,5 +53,6 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/workstr/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/sette7blo/workstr/compare/v1.1.0...HEAD
+[v1.1.0]: https://github.com/sette7blo/workstr/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/sette7blo/workstr/releases/tag/v1.0.0

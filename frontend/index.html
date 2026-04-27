@@ -220,12 +220,6 @@ a{color:inherit;text-decoration:none}
 .staging-count-info{font-size:13px;color:var(--text-muted);flex:1}
 
 /* Equipment */
-.eq-list{max-width:600px}
-.eq-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-soft)}
-.eq-name{flex:1;font-weight:500}
-.eq-cat{font-size:12px;color:var(--text-muted)}
-.eq-owned{width:20px;height:20px;border-radius:4px;border:2px solid var(--border-soft);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
-.eq-owned.yes{background:var(--sage);border-color:var(--sage);color:#fff}
 
 /* Settings */
 .settings-group{max-width:480px;margin-bottom:20px}
@@ -378,12 +372,12 @@ a{color:inherit;text-decoration:none}
 .eq-filter-toggle.active{border-color:var(--sage);color:var(--sage);background:rgba(122,144,104,.06)}
 
 /* Workout cards */
-.workout-card{background:var(--white);border:1px solid var(--border-soft);border-radius:12px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px}
+.workout-card{background:var(--white);border:1px solid var(--border-soft);border-radius:12px;padding:16px;margin-bottom:10px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
 .workout-card-icon{width:44px;height:44px;border-radius:10px;background:rgba(232,130,12,.08);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--amber)}
-.workout-card-info{flex:1}
+.workout-card-info{flex:1;min-width:0}
 .workout-card-name{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:18px;margin-bottom:2px}
 .workout-card-meta{font-size:12px;color:var(--text-muted)}
-.workout-card-actions{display:flex;gap:6px}
+.workout-card-actions{display:flex;gap:6px;width:100%;justify-content:flex-end}
 
 /* Workout builder exercise row */
 .wex-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border-soft)}
@@ -677,10 +671,6 @@ a{color:inherit;text-decoration:none}
     </div>
     <div class="nav-divider"></div>
     <div class="nav-section-label">System</div>
-    <div class="nav-item" data-tab="equipment" onclick="switchTab('equipment')">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
-      <span>Equipment</span>
-    </div>
     <div class="nav-bottom">
       <div class="nav-item" data-tab="trash" onclick="switchTab('trash')">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
@@ -1035,17 +1025,6 @@ a{color:inherit;text-decoration:none}
   </div>
 
   <!-- Equipment -->
-  <div class="page" id="page-equipment">
-    <div class="page-title">Equipment</div>
-    <div style="margin-bottom:16px"><button class="btn-outline" onclick="promptAddEquipment()">+ Add Equipment</button></div>
-    <div class="eq-list" id="equipment-list"></div>
-    <div class="empty-state" id="equipment-empty" style="display:none">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
-      <h3>No equipment</h3>
-      <p>Track which equipment you have access to. Used to filter exercises.</p>
-    </div>
-  </div>
-
   <!-- Trash -->
   <div class="page" id="page-trash">
     <div class="page-title">Trash</div>
@@ -1082,7 +1061,7 @@ a{color:inherit;text-decoration:none}
       <div class="hint">Must support vision (e.g. gpt-4o, claude-haiku)</div>
     </div>
     <div class="settings-group">
-      <label>Available Equipment <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — guides AI generation)</span></label>
+      <label>My Equipment <span style="font-weight:400;text-transform:none;letter-spacing:0">(comma-separated — used by exercise filter and AI)</span></label>
       <input type="text" id="set-equipment" placeholder="Barbell, Dumbbells, Pull-up Bar">
     </div>
     <button class="btn-primary" onclick="saveSettings()" style="margin-top:4px">Save Settings</button>
@@ -1415,7 +1394,6 @@ function switchTab(tab) {
   else if (tab === 'staging') loadExercises('staged');
   else if (tab === 'trash') loadExercises('trashed');
   else if (tab === 'workouts') loadWorkouts();
-  else if (tab === 'equipment') loadEquipment();
   else if (tab === 'settings') loadSettings();
   else if (tab === 'generate') loadAiStatus();
   else if (tab === 'import') loadSeedFilters();
@@ -2047,43 +2025,6 @@ async function submitCamera() {
   clearCamera();
 }
 
-// ── Equipment ─────────────────────────────────────────────────────────────────
-async function loadEquipment() {
-  const res = await fetch('/api/equipment');
-  const list = await res.json();
-  const container = document.getElementById('equipment-list');
-  const empty = document.getElementById('equipment-empty');
-  if (!list.length) { container.innerHTML = ''; empty.style.display = ''; return; }
-  empty.style.display = 'none';
-  container.innerHTML = list.map(eq => `
-    <div class="eq-item">
-      <div class="eq-owned ${eq.owned ? 'yes' : ''}" onclick="toggleOwned(${eq.id}, ${eq.owned ? 0 : 1})">
-        ${eq.owned ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
-      </div>
-      <div class="eq-name">${esc(eq.name)}</div>
-      <div class="eq-cat">${esc(eq.category||'')}</div>
-      <button class="btn-danger" style="height:26px;padding:0 10px;font-size:11px" onclick="deleteEquipment(${eq.id})">Remove</button>
-    </div>`).join('');
-}
-
-function promptAddEquipment() {
-  const name = prompt('Equipment name:');
-  if (!name) return;
-  const category = prompt('Category (optional):') || null;
-  fetch('/api/equipment', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,category,owned:true})})
-    .then(() => loadEquipment());
-}
-
-async function toggleOwned(id, val) {
-  await fetch('/api/equipment/'+id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({owned:val})});
-  loadEquipment();
-}
-
-async function deleteEquipment(id) {
-  await fetch('/api/equipment/'+id, {method:'DELETE'});
-  loadEquipment();
-}
-
 // ── Settings ──────────────────────────────────────────────────────────────────
 async function loadSettings() {
   const res = await fetch('/api/settings');
@@ -2113,6 +2054,7 @@ async function saveSettings() {
       EQUIPMENT: document.getElementById('set-equipment').value,
     }),
   });
+  ownedEquipmentNames = null;
   document.getElementById('settings-status').textContent = 'Saved.';
   setTimeout(() => document.getElementById('settings-status').textContent = '', 2000);
 }
@@ -3445,9 +3387,10 @@ let ownedEquipmentNames = null;
 
 async function getOwnedEquipment() {
   if (ownedEquipmentNames !== null) return ownedEquipmentNames;
-  const res = await fetch('/api/equipment');
-  const list = await res.json();
-  ownedEquipmentNames = list.filter(e => e.owned).map(e => e.name.toLowerCase());
+  const res = await fetch('/api/settings');
+  const s = await res.json();
+  const raw = s.EQUIPMENT || '';
+  ownedEquipmentNames = raw.split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
   return ownedEquipmentNames;
 }
 
@@ -3455,10 +3398,10 @@ async function toggleEquipmentFilter() {
   filterEquipmentOwned = !filterEquipmentOwned;
   document.getElementById('eq-filter-toggle').classList.toggle('active', filterEquipmentOwned);
   if (filterEquipmentOwned) {
-    ownedEquipmentNames = null; // force refresh
+    ownedEquipmentNames = null;
     await getOwnedEquipment();
   }
-  renderGrid('active');
+  loadExercises('active');
 }
 
 // Patch renderGrid to respect equipment filter
@@ -3500,7 +3443,8 @@ loadExercises = async function(status) {
     const owned = await getOwnedEquipment();
     if (owned.length) {
       exercisesData = exercisesData.filter(e => {
-        const eqList = (e.equipment_list || []).map(eq => (typeof eq === 'string' ? eq : '').toLowerCase());
+        const eqList = (e.equipment_list || []).map(eq => (typeof eq === 'string' ? eq : '').toLowerCase()).filter(Boolean);
+        if (!eqList.length) return true;
         return eqList.some(eq => owned.includes(eq));
       });
     }
