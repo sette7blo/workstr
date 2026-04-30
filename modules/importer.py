@@ -50,7 +50,6 @@ def parse_exercise_json(path: Path) -> dict | None:
         "instructions": json.dumps(data.get("instructions", [])),
         "source_type": data.get("source_type", "manual"),
         "status": data.get("status", "active"),
-        "nostr_event_id": data.get("nostr_event_id"),
     }
 
 
@@ -71,12 +70,12 @@ def sync_all() -> dict:
                         (slug, name, description, json_path, image_url,
                          category, muscle_group, muscles, equipment_list,
                          difficulty, tags, instructions,
-                         source_type, status, nostr_event_id)
+                         source_type, status)
                     VALUES
                         (:slug, :name, :description, :json_path, :image_url,
                          :category, :muscle_group, :muscles, :equipment_list,
                          :difficulty, :tags, :instructions,
-                         :source_type, :status, :nostr_event_id)
+                         :source_type, :status)
                     ON CONFLICT(slug) DO UPDATE SET
                         name=excluded.name,
                         description=excluded.description,
@@ -90,7 +89,6 @@ def sync_all() -> dict:
                         instructions=excluded.instructions,
                         source_type=excluded.source_type,
                         status=excluded.status,
-                        nostr_event_id=COALESCE(excluded.nostr_event_id, exercises.nostr_event_id),
                         updated_at=datetime('now')
                 """, exercise)
                 synced += 1
@@ -127,12 +125,12 @@ def save_exercise_json(data: dict, status: str = "staged") -> Path | None:
                     (slug, name, description, json_path, image_url,
                      category, muscle_group, muscles, equipment_list,
                      difficulty, tags, instructions,
-                     source_type, status, nostr_event_id)
+                     source_type, status)
                 VALUES
                     (:slug, :name, :description, :json_path, :image_url,
                      :category, :muscle_group, :muscles, :equipment_list,
                      :difficulty, :tags, :instructions,
-                     :source_type, :status, :nostr_event_id)
+                     :source_type, :status)
                 ON CONFLICT(slug) DO UPDATE SET
                     name=excluded.name,
                     description=excluded.description,
@@ -142,7 +140,6 @@ def save_exercise_json(data: dict, status: str = "staged") -> Path | None:
                     equipment_list=excluded.equipment_list,
                     difficulty=excluded.difficulty,
                     status=excluded.status,
-                    nostr_event_id=COALESCE(excluded.nostr_event_id, exercises.nostr_event_id),
                     updated_at=datetime('now')
             """, parsed)
     return path

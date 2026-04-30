@@ -21,7 +21,7 @@ def _fetch() -> list:
     if _cache and (time.time() - _cache_time) < _CACHE_TTL:
         return _cache
 
-    req = urllib.request.Request(EXERCISES_URL, headers={"User-Agent": "workstr/1.0"})
+    req = urllib.request.Request(EXERCISES_URL, headers={"User-Agent": "liftme/1.0"})
     with urllib.request.urlopen(req, timeout=10) as resp:
         _cache = json.loads(resp.read().decode("utf-8"))
         _cache_time = time.time()
@@ -73,7 +73,7 @@ def get_one(seed_id: str) -> dict | None:
 
 
 def import_exercise(seed_id: str) -> dict | None:
-    """Import a seed exercise into workstr as staged."""
+    """Import a seed exercise as staged."""
     ex = get_one(seed_id)
     if not ex:
         return None
@@ -87,7 +87,7 @@ def import_exercise(seed_id: str) -> dict | None:
 
 
 def _format(ex: dict) -> dict:
-    """Map free-exercise-db format to workstr exercise JSON format."""
+    """Map free-exercise-db format to liftme exercise JSON format."""
     name = ex.get("name", "")
     slug = slugify(name)
 

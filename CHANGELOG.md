@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Workstr will be documented here.
+All notable changes to Liftme will be documented here.
 Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 - **MAJOR** — breaking changes (e.g. DB schema requires migration)
@@ -10,6 +10,27 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 ---
 
 ## [Unreleased]
+
+---
+
+## [v2.0.0] — 2026-04-30
+### Added
+- Statistics dashboard with weekly volume charts, muscle group distribution, personal records, and workout streaks
+- Weight unit preference in Settings (kg/lbs)
+- Workout sessions now store workout name directly for history resilience
+- Temporary workouts for quick/ad-hoc sessions
+- Delete session endpoint (replaces cancel-only behaviour)
+
+### Changed
+- Renamed project from Workstr to Liftme throughout (DB file, Docker image, user-agent, docs)
+- Database file renamed from `workstr.db` to `liftme.db` — existing users must rename manually
+- Compose file renamed from `docker-compose.yml` to `compose.yaml`
+- Docker image moved from `dockersette/workstr` to `dockersette/liftme`
+
+### Removed
+- Nostr backup, restore, identity, and note-signing features and all related API endpoints
+- `pynostr` dependency
+- `nostr_event_id` column from exercises schema
 
 ---
 
@@ -53,6 +74,7 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/workstr/compare/v1.1.0...HEAD
-[v1.1.0]: https://github.com/sette7blo/workstr/compare/v1.0.0...v1.1.0
-[v1.0.0]: https://github.com/sette7blo/workstr/releases/tag/v1.0.0
+[Unreleased]: https://github.com/sette7blo/liftme/compare/v2.0.0...HEAD
+[v2.0.0]: https://github.com/sette7blo/liftme/compare/v1.1.0...v2.0.0
+[v1.1.0]: https://github.com/sette7blo/liftme/compare/v1.0.0...v1.1.0
+[v1.0.0]: https://github.com/sette7blo/liftme/releases/tag/v1.0.0

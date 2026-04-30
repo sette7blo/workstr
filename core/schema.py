@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS exercises (
     source_type     TEXT DEFAULT 'manual',
     status          TEXT DEFAULT 'active',
     favorited       INTEGER DEFAULT 0,
-    nostr_event_id  TEXT,
     created_at      TEXT DEFAULT (datetime('now')),
     updated_at      TEXT DEFAULT (datetime('now'))
 );
@@ -67,11 +66,12 @@ CREATE TABLE IF NOT EXISTS workout_log (
 );
 
 CREATE TABLE IF NOT EXISTS workouts (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    name        TEXT NOT NULL,
-    description TEXT,
-    created_at  TEXT DEFAULT (datetime('now')),
-    updated_at  TEXT DEFAULT (datetime('now'))
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    name          TEXT NOT NULL,
+    description   TEXT,
+    is_temporary  INTEGER DEFAULT 0,
+    created_at    TEXT DEFAULT (datetime('now')),
+    updated_at    TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS workout_exercises (
@@ -90,11 +90,12 @@ CREATE TABLE IF NOT EXISTS workout_exercises (
 );
 
 CREATE TABLE IF NOT EXISTS workout_sessions (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    workout_id  INTEGER,
-    started_at  TEXT DEFAULT (datetime('now')),
-    finished_at TEXT,
-    notes       TEXT,
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    workout_id    INTEGER,
+    workout_name  TEXT,
+    started_at    TEXT DEFAULT (datetime('now')),
+    finished_at   TEXT,
+    notes         TEXT,
     FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE SET NULL
 );
 
@@ -152,6 +153,8 @@ CREATE INDEX IF NOT EXISTS idx_session_sets_slug ON workout_session_sets(exercis
 
 MIGRATIONS = [
     "ALTER TABLE workout_plan ADD COLUMN workout_id INTEGER REFERENCES workouts(id) ON DELETE SET NULL",
+    "ALTER TABLE workout_sessions ADD COLUMN workout_name TEXT",
+    "ALTER TABLE workouts ADD COLUMN is_temporary INTEGER DEFAULT 0",
 ]
 
 
@@ -165,7 +168,7 @@ def init_db():
         except Exception:
             pass
     conn.close()
-    print("Database initialized: workstr.db")
+    print("Database initialized: liftme.db")
 
 
 if __name__ == "__main__":

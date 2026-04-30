@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from contextlib import contextmanager
 
-DB_PATH = Path(__file__).parent.parent / "data" / "workstr.db"
+DB_PATH = Path(__file__).parent.parent / "data" / "liftme.db"
 
 
 def get_connection():

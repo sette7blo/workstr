@@ -1,6 +1,5 @@
-version: "3.9"
 services:
-  workstr:
+  liftme:
     build: .
     ports:
       - "5001:5001"

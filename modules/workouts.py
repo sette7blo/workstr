@@ -12,6 +12,7 @@ def list_workouts() -> list:
             """SELECT w.*, COUNT(we.id) as exercise_count
                FROM workouts w
                LEFT JOIN workout_exercises we ON we.workout_id = w.id
+               WHERE w.is_temporary = 0
                GROUP BY w.id ORDER BY w.name""",
         ).fetchall()
     return rows_to_list(rows)
@@ -24,7 +25,7 @@ def get_workout(workout_id: int) -> dict | None:
             return None
         w = row_to_dict(row)
         exrows = conn.execute(
-            """SELECT we.*, e.name as exercise_name, e.muscle_group, e.image_url,
+            """SELECT we.*, e.name as exercise_name, e.muscle_group, e.muscles, e.image_url,
                       e.difficulty, e.category
                FROM workout_exercises we
                LEFT JOIN exercises e ON e.slug = we.exercise_slug
@@ -35,9 +36,12 @@ def get_workout(workout_id: int) -> dict | None:
     return w
 
 
-def create_workout(name: str, description: str = None) -> dict:
+def create_workout(name: str, description: str = None, is_temporary: bool = False) -> dict:
     with db() as conn:
-        conn.execute("INSERT INTO workouts (name, description) VALUES (?, ?)", (name, description))
+        conn.execute(
+            "INSERT INTO workouts (name, description, is_temporary) VALUES (?, ?, ?)",
+            (name, description, 1 if is_temporary else 0)
+        )
         row = conn.execute("SELECT * FROM workouts ORDER BY id DESC LIMIT 1").fetchone()
     return row_to_dict(row)
 
@@ -111,9 +115,16 @@ def reorder_exercises(workout_id: int, ordered_ids: list) -> bool:
 
 # ── Session logging ────────────────────────────────────────────────────────────
 
-def start_session(workout_id: int = None) -> dict:
+def start_session(workout_id: int = None, workout_name: str = None) -> dict:
     with db() as conn:
-        conn.execute("INSERT INTO workout_sessions (workout_id) VALUES (?)", (workout_id,))
+        if not workout_name and workout_id:
+            row = conn.execute("SELECT name FROM workouts WHERE id=?", (workout_id,)).fetchone()
+            if row:
+                workout_name = row["name"]
+        conn.execute(
+            "INSERT INTO workout_sessions (workout_id, workout_name) VALUES (?, ?)",
+            (workout_id, workout_name)
+        )
         row = conn.execute("SELECT * FROM workout_sessions ORDER BY id DESC LIMIT 1").fetchone()
     return row_to_dict(row)
 
@@ -131,6 +142,12 @@ def finish_session(session_id: int, notes: str = None) -> dict | None:
 def cancel_session(session_id: int) -> bool:
     with db() as conn:
         cur = conn.execute("DELETE FROM workout_sessions WHERE id=? AND finished_at IS NULL", (session_id,))
+    return cur.rowcount > 0
+
+
+def delete_session(session_id: int) -> bool:
+    with db() as conn:
+        cur = conn.execute("DELETE FROM workout_sessions WHERE id=?", (session_id,))
     return cur.rowcount > 0
 
 
@@ -166,7 +183,8 @@ def log_set(session_id: int, exercise_slug: str, set_number: int,
 def get_session(session_id: int) -> dict | None:
     with db() as conn:
         row = conn.execute(
-            """SELECT ws.*, w.name as workout_name
+            """SELECT ws.*,
+               COALESCE(ws.workout_name, w.name) as workout_name
                FROM workout_sessions ws
                LEFT JOIN workouts w ON w.id = ws.workout_id
                WHERE ws.id=?""",
@@ -190,7 +208,8 @@ def get_session(session_id: int) -> dict | None:
 def list_sessions(limit: int = 50) -> list:
     with db() as conn:
         rows = conn.execute(
-            """SELECT ws.*, w.name as workout_name,
+            """SELECT ws.*,
+               COALESCE(ws.workout_name, w.name) as workout_name,
                COUNT(DISTINCT wss.exercise_slug) as exercise_count,
                ROUND(SUM(COALESCE(wss.actual_reps,0) * COALESCE(wss.actual_weight,0)), 1) as total_volume
                FROM workout_sessions ws

@@ -1,5 +1,5 @@
 """
-server.py — Workstr Flask application
+server.py — Liftme Flask application
 Run: python server.py
 """
 import csv
@@ -13,7 +13,7 @@ from flask import Flask, jsonify, request, send_from_directory, Response
 import core.config as config
 from core.schema import init_db
 from modules import importer, workout_log, workout_planner, workouts
-from modules import ai_generator, ai_planner, camera, seed_browser, nostr_backup, recovery
+from modules import ai_generator, ai_planner, camera, seed_browser, recovery
 from modules import mesocycles as meso_module
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
@@ -260,7 +260,11 @@ def api_list_workouts():
 @app.route("/api/workouts", methods=["POST"])
 def api_create_workout():
     data = request.get_json(force=True)
-    result = workouts.create_workout(name=data["name"], description=data.get("description"))
+    result = workouts.create_workout(
+        name=data["name"],
+        description=data.get("description"),
+        is_temporary=data.get("is_temporary", False),
+    )
     return jsonify(result), 201
 
 
@@ -343,7 +347,10 @@ def api_quick_workout():
 @app.route("/api/sessions", methods=["POST"])
 def api_start_session():
     data = request.get_json(force=True)
-    result = workouts.start_session(workout_id=data.get("workout_id"))
+    result = workouts.start_session(
+        workout_id=data.get("workout_id"),
+        workout_name=data.get("workout_name"),
+    )
     return jsonify(result), 201
 
 
@@ -371,8 +378,8 @@ def api_finish_session(sid):
 
 
 @app.route("/api/sessions/<int:sid>", methods=["DELETE"])
-def api_cancel_session(sid):
-    ok = workouts.cancel_session(sid)
+def api_delete_session(sid):
+    ok = workouts.delete_session(sid)
     return jsonify({"ok": ok}), 200 if ok else 404
 
 
@@ -428,6 +435,123 @@ def api_update_template(tid):
 def api_delete_template(tid):
     ok = workout_planner.delete_template(tid)
     return jsonify({"ok": ok}), 200 if ok else 404
+
+# ── Statistics ─────────────────────────────────────────────────────────────────
+
+@app.route("/api/stats")
+def api_stats():
+    from core.db import db, rows_to_list
+    weeks = int(request.args.get("weeks", 12))
+    with db() as conn:
+        # Weekly volume (last N weeks)
+        vol_rows = conn.execute("""
+            SELECT strftime('%%Y-%%W', ws.started_at) as week_key,
+                   MIN(date(ws.started_at)) as week_start,
+                   COUNT(DISTINCT ws.id) as session_count,
+                   ROUND(SUM(COALESCE(wss.actual_reps,0) * COALESCE(wss.actual_weight,0)), 1) as total_volume,
+                   COUNT(wss.id) as total_sets
+            FROM workout_sessions ws
+            LEFT JOIN workout_session_sets wss ON wss.session_id = ws.id
+            WHERE ws.finished_at IS NOT NULL
+              AND ws.started_at >= date('now', ? || ' days')
+            GROUP BY week_key
+            ORDER BY week_key ASC
+        """, (str(-weeks * 7),)).fetchall()
+        weekly_volume = rows_to_list(vol_rows)
+
+        # All finished session dates for streak / frequency
+        date_rows = conn.execute("""
+            SELECT DISTINCT date(started_at) as d
+            FROM workout_sessions
+            WHERE finished_at IS NOT NULL
+            ORDER BY d DESC
+        """).fetchall()
+        session_dates = [r["d"] for r in date_rows]
+
+        # Muscle group distribution (last 30 days)
+        muscle_rows = conn.execute("""
+            SELECT e.muscle_group, COUNT(DISTINCT wss.exercise_slug) as exercise_count,
+                   COUNT(wss.id) as set_count
+            FROM workout_session_sets wss
+            JOIN workout_sessions ws ON ws.id = wss.session_id
+            LEFT JOIN exercises e ON e.slug = wss.exercise_slug
+            WHERE ws.finished_at IS NOT NULL
+              AND ws.started_at >= date('now', '-30 days')
+              AND e.muscle_group IS NOT NULL
+            GROUP BY e.muscle_group
+            ORDER BY set_count DESC
+        """).fetchall()
+        muscle_distribution = rows_to_list(muscle_rows)
+
+        # Personal records (best estimated 1RM per exercise, all time)
+        pr_rows = conn.execute("""
+            SELECT wss.exercise_slug, e.name as exercise_name, e.muscle_group,
+                   wss.actual_reps, wss.actual_weight,
+                   ws.finished_at
+            FROM workout_session_sets wss
+            JOIN workout_sessions ws ON ws.id = wss.session_id
+            LEFT JOIN exercises e ON e.slug = wss.exercise_slug
+            WHERE ws.finished_at IS NOT NULL
+              AND wss.actual_weight > 0 AND wss.actual_reps > 0
+            ORDER BY wss.exercise_slug, ws.finished_at ASC
+        """).fetchall()
+
+        # Compute best 1RM per exercise and track when PR was set
+        pr_map = {}
+        for r in rows_to_list(pr_rows):
+            slug = r["exercise_slug"]
+            w, reps = r["actual_weight"], r["actual_reps"]
+            est_1rm = round(w * (1 + reps / 30), 1)
+            if slug not in pr_map or est_1rm > pr_map[slug]["best_1rm"]:
+                pr_map[slug] = {
+                    "exercise_slug": slug,
+                    "exercise_name": r["exercise_name"] or slug,
+                    "muscle_group": r["muscle_group"],
+                    "best_1rm": est_1rm,
+                    "weight": w,
+                    "reps": reps,
+                    "date": (r["finished_at"] or "")[:10],
+                }
+        personal_records = sorted(pr_map.values(), key=lambda x: x["best_1rm"], reverse=True)
+
+        # Per-exercise volume totals (for drill-down list)
+        ex_rows = conn.execute("""
+            SELECT wss.exercise_slug, e.name as exercise_name, e.muscle_group,
+                   COUNT(DISTINCT ws.id) as session_count,
+                   COUNT(wss.id) as total_sets,
+                   ROUND(SUM(COALESCE(wss.actual_reps,0) * COALESCE(wss.actual_weight,0)), 1) as total_volume
+            FROM workout_session_sets wss
+            JOIN workout_sessions ws ON ws.id = wss.session_id
+            LEFT JOIN exercises e ON e.slug = wss.exercise_slug
+            WHERE ws.finished_at IS NOT NULL
+            GROUP BY wss.exercise_slug
+            ORDER BY total_volume DESC
+        """).fetchall()
+        exercise_totals = rows_to_list(ex_rows)
+
+    # Compute streak
+    from datetime import date as dt_date, timedelta
+    today = dt_date.today()
+    streak = 0
+    check = today
+    date_set = set(session_dates)
+    # Allow today or yesterday as start
+    if check.isoformat() not in date_set:
+        check = today - timedelta(days=1)
+    while check.isoformat() in date_set:
+        streak += 1
+        check -= timedelta(days=1)
+
+    return jsonify({
+        "weekly_volume": weekly_volume,
+        "session_dates": session_dates,
+        "streak": streak,
+        "total_sessions": len(session_dates),
+        "muscle_distribution": muscle_distribution,
+        "personal_records": personal_records,
+        "exercise_totals": exercise_totals,
+    })
+
 
 # ── AI ────────────────────────────────────────────────────────────────────────
 
@@ -525,7 +649,7 @@ def api_seed_import():
 
 SETTINGS_KEYS = [
     "PPQ_API_KEY", "PPQ_BASE_URL", "PPQ_MODEL", "PPQ_IMAGE_MODEL", "PPQ_VISION_MODEL",
-    "EQUIPMENT",
+    "EQUIPMENT", "WEIGHT_UNIT",
 ]
 
 
@@ -544,96 +668,6 @@ def api_save_settings():
     if updates:
         config.save_env(updates)
     return jsonify({"ok": True})
-
-# ── Nostr backup ──────────────────────────────────────────────────────────────
-
-@app.route("/api/nostr/sign", methods=["POST"])
-def api_nostr_sign():
-    """Sign all active exercises as Nostr Kind 30078 events. Returns event list for client-side relay publish."""
-    nsec = config.get("NOSTR_NSEC", "").strip()
-    if not nsec:
-        return jsonify({"error": "NOSTR_NSEC not configured"}), 400
-    try:
-        events = nostr_backup.sign_all_exercises(nsec)
-        relay = config.get("NOSTR_RELAY", "")
-        return jsonify({"events": events, "relay": relay, "count": len(events)})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/nostr/restore", methods=["POST"])
-def api_nostr_restore():
-    """Restore exercises from a list of Nostr events (JSON array in body)."""
-    data = request.get_json(force=True)
-    events = data if isinstance(data, list) else data.get("events", [])
-    try:
-        result = nostr_backup.restore_from_events(events)
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# ── Nostr identity ────────────────────────────────────────────────────────────
-
-@app.route("/api/nostr/note", methods=["POST"])
-def api_nostr_note():
-    """Sign a Kind 1 note with the stored nsec. Returns signed event for client-side publishing."""
-    nsec = config.get("NOSTR_NSEC", "").strip()
-    if not nsec:
-        return jsonify({"error": "NOSTR_NSEC not configured"}), 400
-    data = request.get_json(force=True) or {}
-    content = data.get("content", "")
-    tags = data.get("tags", [])
-    try:
-        from pynostr.key import PrivateKey
-        from pynostr.event import Event
-        pk = PrivateKey.from_nsec(nsec) if nsec.startswith("nsec") else PrivateKey(bytes.fromhex(nsec))
-        event = Event(content=content, pubkey=pk.public_key.hex(), kind=1, tags=tags)
-        event.sign(pk.hex())
-        relay = config.get("NOSTR_RELAY", "")
-        return jsonify({"event": event.to_dict(), "relay": relay})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-@app.route("/api/nostr/identity", methods=["GET"])
-def api_nostr_identity_get():
-    nsec = config.get("NOSTR_NSEC", "").strip()
-    if not nsec:
-        return jsonify({"configured": False})
-    try:
-        from pynostr.key import PrivateKey
-        pk = PrivateKey.from_nsec(nsec) if nsec.startswith("nsec") else PrivateKey(bytes.fromhex(nsec))
-        pubkey_hex = pk.public_key.hex()
-        npub = pk.public_key.bech32()
-        relay = config.get("NOSTR_RELAY", "")
-        return jsonify({"configured": True, "pubkey_hex": pubkey_hex, "npub": npub, "relay": relay})
-    except Exception as e:
-        return jsonify({"configured": False, "error": str(e)})
-
-
-@app.route("/api/nostr/identity", methods=["POST"])
-def api_nostr_identity_post():
-    data = request.get_json(force=True) or {}
-    nsec = (data.get("nsec") or "").strip()
-    if not nsec:
-        return jsonify({"error": "nsec required"}), 400
-    try:
-        from pynostr.key import PrivateKey
-        pk = PrivateKey.from_nsec(nsec) if nsec.startswith("nsec") else PrivateKey(bytes.fromhex(nsec))
-        pubkey_hex = pk.public_key.hex()
-        npub = pk.public_key.bech32()
-        config.save_env({"NOSTR_NSEC": nsec})
-        relay = config.get("NOSTR_RELAY", "")
-        return jsonify({"ok": True, "pubkey_hex": pubkey_hex, "npub": npub, "relay": relay})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 400
-
-
-@app.route("/api/nostr/identity", methods=["DELETE"])
-def api_nostr_identity_delete():
-    config.save_env({"NOSTR_NSEC": ""})
-    return jsonify({"ok": True})
-
 
 # ── Mesocycles ─────────────────────────────────────────────────────────────────
 
