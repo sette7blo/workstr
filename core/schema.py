@@ -20,18 +20,8 @@ CREATE TABLE IF NOT EXISTS exercises (
     instructions    TEXT DEFAULT '[]',
     source_type     TEXT DEFAULT 'manual',
     status          TEXT DEFAULT 'active',
-    favorited       INTEGER DEFAULT 0,
     created_at      TEXT DEFAULT (datetime('now')),
     updated_at      TEXT DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS equipment (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    name        TEXT UNIQUE NOT NULL,
-    category    TEXT,
-    owned       INTEGER DEFAULT 0,
-    notes       TEXT,
-    updated_at  TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE IF NOT EXISTS workout_templates (

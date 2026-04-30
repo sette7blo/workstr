@@ -139,11 +139,6 @@ def finish_session(session_id: int, notes: str = None) -> dict | None:
     return row_to_dict(row) if row else None
 
 
-def cancel_session(session_id: int) -> bool:
-    with db() as conn:
-        cur = conn.execute("DELETE FROM workout_sessions WHERE id=? AND finished_at IS NULL", (session_id,))
-    return cur.rowcount > 0
-
 
 def delete_session(session_id: int) -> bool:
     with db() as conn:

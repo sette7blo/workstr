@@ -1237,11 +1237,7 @@ a{color:inherit;text-decoration:none}
 
 <!-- Bulk Action Bar -->
 <div class="bulk-bar" id="bulk-bar">
-  <button class="bulk-btn" id="bulk-fav-btn" onclick="bulkAction('favorite')">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-    Favorite
-  </button>
-  <button class="bulk-btn" id="bulk-approve-btn" onclick="bulkAction('approve')" style="display:none;background:rgba(122,144,104,.25);border-color:var(--sage)">
+<button class="bulk-btn" id="bulk-approve-btn" onclick="bulkAction('approve')" style="display:none;background:rgba(122,144,104,.25);border-color:var(--sage)">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
     Approve
   </button>
@@ -1699,8 +1695,7 @@ async function loadExercises(status) {
 
 function renderGrid(status) {
   let gridId, emptyId;
-  if (status === 'favorited') { gridId = 'favorites-grid'; emptyId = 'favorites-empty'; }
-  else if (status === 'staged') { gridId = 'staging-grid'; emptyId = 'staging-empty'; }
+  if (status === 'staged') { gridId = 'staging-grid'; emptyId = 'staging-empty'; }
   else if (status === 'trashed') { gridId = 'trash-grid'; emptyId = 'trash-empty'; }
   else { gridId = 'exercise-grid'; emptyId = 'exercises-empty'; }
 
@@ -1784,7 +1779,7 @@ function buildCard(e, status) {
 
 function onSearch() {
   searchQuery = document.getElementById('search-input').value.trim();
-  const statusMap = {exercises:'active',favorites:'favorited',staging:'staged',trash:'trashed'};
+  const statusMap = {exercises:'active',staging:'staged',trash:'trashed'};
   renderGrid(statusMap[currentTab] || 'active');
 }
 
@@ -2043,7 +2038,6 @@ async function bulkAction(action) {
     'approve': sl => fetch('/api/exercises/approve/'+sl, {method:'POST'}),
     'restore': sl => fetch('/api/exercises/restore/'+sl, {method:'POST'}),
     'perm-delete': sl => fetch('/api/exercises/permanent/'+sl, {method:'DELETE'}),
-    'favorite': sl => fetch('/api/exercises/'+sl+'/favorite', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({favorited:1})}),
   };
   const fn = handlers[action];
   if (!fn) return;
@@ -3795,7 +3789,6 @@ async function renderPickerContent() {
       fetch('/api/exercises/recent?limit=6').then(r => r.json()).catch(() => []),
     ]);
     const exercises = exRes.exercises || [];
-    const favoriteExs = exercises.filter(e => e.favorited).slice(0, 8);
 
     const _quickItem = (e) => {
       const img = e.image_url
@@ -3807,7 +3800,6 @@ async function renderPickerContent() {
     };
 
     const quickHtml = [
-      favoriteExs.length ? `<div class="picker-quick-label">Favorites</div><div class="picker-quick-row">${favoriteExs.map(_quickItem).join('')}</div>` : '',
       recentExs.length ? `<div class="picker-quick-label">Recent</div><div class="picker-quick-row">${recentExs.map(_quickItem).join('')}</div>` : '',
     ].join('');
 

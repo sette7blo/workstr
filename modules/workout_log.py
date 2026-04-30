@@ -36,19 +36,6 @@ def get_log_for_exercise(exercise_slug: str, limit: int = 20) -> list:
     return result
 
 
-def get_last_logged(slugs: list) -> dict:
-    if not slugs:
-        return {}
-    placeholders = ",".join("?" for _ in slugs)
-    with db() as conn:
-        rows = conn.execute(f"""
-            SELECT exercise_slug, MAX(logged_at) as last_logged
-            FROM workout_log
-            WHERE exercise_slug IN ({placeholders})
-            GROUP BY exercise_slug
-        """, slugs).fetchall()
-    return {r["exercise_slug"]: r["last_logged"] for r in rows}
-
 
 def get_history(limit: int = 50) -> list:
     """All recent log entries with exercise name/image for the history view."""

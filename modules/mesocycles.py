@@ -2,7 +2,7 @@
 modules/mesocycles.py — Mesocycle planner: multi-week training blocks
 """
 import json
-from datetime import date, timedelta
+from datetime import date
 from core.db import db, rows_to_list, row_to_dict
 
 

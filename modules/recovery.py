@@ -199,11 +199,11 @@ def get_quick_workout(duration_minutes: int = 45, min_recovery: int = 80) -> dic
     try:
         placeholders = ",".join("?" * len(ready_muscles))
         rows = conn.execute(f"""
-            SELECT slug, name, muscle_group, favorited, tags, image_url
+            SELECT slug, name, muscle_group, tags, image_url
             FROM exercises
             WHERE status = 'active'
               AND muscle_group IN ({placeholders})
-            ORDER BY favorited DESC, name ASC
+            ORDER BY name ASC
         """, ready_muscles).fetchall()
 
         logged_slugs = {
@@ -222,7 +222,7 @@ def get_quick_workout(duration_minutes: int = 45, min_recovery: int = 80) -> dic
             tags = json.loads(row["tags"] or "[]")
         except (json.JSONDecodeError, TypeError):
             tags = []
-        score = (2 if row["favorited"] else 0) + (1 if row["slug"] in logged_slugs else 0) + (1 if "compound" in tags else 0)
+        score = (1 if row["slug"] in logged_slugs else 0) + (1 if "compound" in tags else 0)
         entry = {
             "slug": row["slug"],
             "name": row["name"],

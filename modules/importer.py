@@ -164,11 +164,8 @@ def list_exercises(status: str = "active", page: int = 1, per_page: int = 24,
     conditions = []
     params = []
 
-    if status == "favorited":
-        conditions.append("status='active' AND favorited=1")
-    else:
-        conditions.append("status=?")
-        params.append(status)
+    conditions.append("status=?")
+    params.append(status)
 
     if category:
         conditions.append("category=?")
@@ -225,17 +222,6 @@ def update_exercise(slug: str, data: dict) -> dict | None:
 
     return get_exercise(slug)
 
-
-def toggle_favorite(slug: str) -> dict:
-    with db() as conn:
-        row = conn.execute(
-            "SELECT favorited FROM exercises WHERE slug=? AND status='active'", (slug,)
-        ).fetchone()
-        if not row:
-            return None
-        new_val = 0 if row["favorited"] else 1
-        conn.execute("UPDATE exercises SET favorited=? WHERE slug=?", (new_val, slug))
-    return {"favorited": bool(new_val)}
 
 
 def approve_exercise(slug: str) -> bool:

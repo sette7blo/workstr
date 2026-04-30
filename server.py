@@ -103,7 +103,7 @@ def api_exercises_recent():
     with db() as conn:
         rows = conn.execute("""
             SELECT e.slug, e.name, e.muscle_group, e.image_url,
-                   e.favorited, e.tags, e.difficulty,
+                   e.tags, e.difficulty,
                    3 as default_sets, '8-12' as default_reps, 90 as default_rest_sec
             FROM (
                 SELECT exercise_slug, MAX(ws.finished_at) as last_used
@@ -141,15 +141,6 @@ def api_update_exercise(slug):
         return jsonify({"error": "not found"}), 404
     return jsonify(result)
 
-
-@app.route("/api/exercises/<slug>/favorite", methods=["POST"])
-def api_toggle_favorite(slug):
-    data = request.get_json(force=True) or {}
-    from core.db import db
-    val = 1 if data.get("favorited") else 0
-    with db() as conn:
-        conn.execute("UPDATE exercises SET favorited=? WHERE slug=?", (val, slug))
-    return jsonify({"ok": True, "favorited": bool(val)})
 
 
 @app.route("/api/exercises/approve/<slug>", methods=["POST"])
