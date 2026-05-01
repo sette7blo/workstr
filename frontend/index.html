@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Liftme</title>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Liftme">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -23,10 +27,13 @@ a{color:inherit;text-decoration:none}
 .topbar{position:fixed;top:0;left:0;right:0;height:var(--topbar-h);background:var(--white);border-bottom:1px solid var(--border-soft);display:flex;flex-direction:column;padding:10px 16px 8px;z-index:100;gap:2px;box-shadow:0 1px 0 var(--border-soft)}
 .topbar-row1{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .topbar-row2{display:flex;align-items:center;flex:1}
-.logo-zone{flex:1;display:flex;flex-direction:column;justify-content:center}
-.logo-mark{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;color:var(--brown-dark);line-height:1}
+.logo-zone{flex:1;display:flex;align-items:center;gap:11px}
+.logo-icon{width:32px;height:32px;flex-shrink:0}
+.logo-text{display:flex;flex-direction:column;gap:1px}
+.logo-mark{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:24px;color:var(--brown-dark);line-height:1;letter-spacing:-0.3px}
 .logo-mark span{color:var(--amber)}
-.logo-tagline{font-family:'Jost',sans-serif;font-weight:500;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-muted);margin-top:2px}
+.logo-tagline{font-family:'Jost',sans-serif;font-weight:500;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--text-muted)}
+.logo-divider{display:block;width:100%;height:1px;background:var(--border-soft);margin-top:3px}
 .search-wrap{display:flex;align-items:center;gap:8px;background:var(--cream);border:1px solid var(--border-soft);border-radius:30px;padding:8px 16px;width:100%;transition:border-color .2s,box-shadow .2s}
 .search-wrap:focus-within{border-color:var(--amber);box-shadow:0 0 0 3px rgba(232,130,12,.08)}
 .search-wrap input{background:none;border:none;outline:none;color:var(--brown-dark);font-family:'Jost',sans-serif;font-size:13px;width:100%}
@@ -204,9 +211,8 @@ a{color:inherit;text-decoration:none}
 /* Settings */
 .settings-section{max-width:520px;margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border-soft)}
 .settings-section:last-of-type{border-bottom:none;margin-bottom:0}
-.settings-section-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:default}
-.settings-section-header.collapsible{cursor:pointer}
-.settings-section-header.collapsible:hover .settings-section-title{color:var(--amber)}
+.settings-section-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;cursor:pointer}
+.settings-section-header:hover .settings-section-title{color:var(--amber)}
 .settings-section-icon{width:32px;height:32px;border-radius:8px;background:var(--cream);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--text-mid)}
 .settings-section-title{font-family:'Cormorant Garamond',serif;font-weight:700;font-size:18px;color:var(--brown-dark)}
 .settings-section-chevron{width:16px;height:16px;color:var(--text-dim);margin-left:auto;transition:transform .2s}
@@ -444,6 +450,9 @@ a{color:inherit;text-decoration:none}
 .session-last{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:20px;font-style:italic}
 .session-sets{max-width:440px}
 .session-set-row{display:grid;grid-template-columns:28px 1fr 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.session-set-row.locked{opacity:.35;pointer-events:none}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.shake{animation:shake .3s ease}
 .session-set-num{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
 .session-set-num.done{background:var(--sage);border-color:var(--sage);color:#fff}
 .session-set-input{height:38px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:8px;padding:0 10px;color:#fff;font-size:14px;font-family:'Jost',sans-serif;outline:none;width:100%;text-align:center}
@@ -675,8 +684,15 @@ a{color:inherit;text-decoration:none}
 <header class="topbar">
   <div class="topbar-row1">
     <div class="logo-zone">
-      <div class="logo-mark">Lift<span>me</span></div>
-      <div class="logo-tagline">exercise intelligence</div>
+      <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="14" fill="#E8820C"/>
+        <path d="M10 22V10M22 22V10M10 16h12" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="logo-text">
+        <div class="logo-mark">Lift<span>me</span></div>
+        <div class="logo-tagline">exercise intelligence</div>
+        <span class="logo-divider"></span>
+      </div>
     </div>
     <div class="topbar-actions">
       <button class="btn-add" onclick="openAddModal()">
@@ -1152,11 +1168,12 @@ a{color:inherit;text-decoration:none}
 
     <!-- Gym section -->
     <div class="settings-section" id="settings-gym">
-      <div class="settings-section-header">
+      <div class="settings-section-header collapsible" onclick="this.parentElement.classList.toggle('collapsed')">
         <div class="settings-section-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
         </div>
         <div class="settings-section-title">Gym</div>
+        <svg class="settings-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="settings-section-body">
         <div class="settings-group">
@@ -3116,10 +3133,9 @@ async function _renderSessionEx() {
   // Compute progression suggestion from last session
   const prog = _calcProgression(lastSets, targetReps, ex.weight);
 
+  const doneSetsForLock = _sessionLoggedSets[slug] || new Set();
   const setRows = Array.from({length:numSets}, (_,i) => {
     const last = lastSets[i];
-    // Use progression suggestion as pre-fill, fall back to last session, then defaults
-    // All values from DB are in kg — convert for display
     const repsVal = prog ? prog.reps : (last?.actual_reps != null ? last.actual_reps : defaultReps);
     const rawWeight = prog ? prog.weight : (last?.actual_weight != null ? last.actual_weight : defaultWeight);
     const weightVal = rawWeight ? _wDisplay(rawWeight) : rawWeight;
@@ -3130,11 +3146,13 @@ async function _renderSessionEx() {
       ? `<span class="session-set-prog">suggested: ${prog.reps} reps @ ${_wFmt(prog.weight)} (${prog.note})</span>`
       : '';
     const phWeight = ex.weight ? _wDisplay(ex.weight) : _wLabel();
-    return `<div class="session-set-row">
+    const alreadyDone = doneSetsForLock.has(i);
+    const locked = !alreadyDone && i > 0 && !doneSetsForLock.has(i - 1);
+    return `<div class="session-set-row${locked ? ' locked' : ''}">
       <div class="session-set-num" id="snum-${i}">${i+1}</div>
-      <input class="session-set-input" id="sreps-${i}" type="number" placeholder="${targetReps}" value="${repsVal}" min="0">
-      <input class="session-set-input" id="sweight-${i}" type="number" placeholder="${phWeight}" value="${weightVal}" min="0" step="0.5">
-      <button class="session-log-btn" id="slog-${i}" onclick="logSessionSet(${i},${restSec},'${slug}','${targetReps}',${ex.weight||'null'})">Log</button>
+      <input class="session-set-input" id="sreps-${i}" type="number" placeholder="${targetReps}" value="${repsVal}" min="0"${locked ? ' disabled' : ''}>
+      <input class="session-set-input" id="sweight-${i}" type="number" placeholder="${phWeight}" value="${weightVal}" min="0" step="0.5"${locked ? ' disabled' : ''}>
+      <button class="session-log-btn" id="slog-${i}" onclick="logSessionSet(${i},${restSec},'${slug}','${targetReps}',${ex.weight||'null'})"${locked ? ' disabled' : ''}>Log</button>
     </div>${prevHint}${progHint}`;
   }).join('');
 
@@ -3168,7 +3186,7 @@ async function _renderSessionEx() {
     const numEl = document.getElementById('snum-'+i);
     const logBtn = document.getElementById('slog-'+i);
     if (numEl) numEl.classList.add('done');
-    if (logBtn) { logBtn.textContent = 'Done'; logBtn.classList.add('done'); }
+    if (logBtn) { logBtn.textContent = 'Done'; logBtn.classList.add('done'); logBtn.disabled = true; }
   });
 
   const isLast = _sessionExIdx >= _session.exercises.length - 1;
@@ -3182,7 +3200,11 @@ async function _renderSessionEx() {
 async function logSessionSet(setIdx, restSec, slug, prescReps, prescWeight) {
   const reps = parseInt(document.getElementById('sreps-'+setIdx)?.value) || null;
   const rawWeight = parseFloat(document.getElementById('sweight-'+setIdx)?.value) || null;
-  // Convert display unit back to kg for storage
+  if (!reps && !rawWeight) {
+    const inp = document.getElementById('sreps-'+setIdx);
+    if (inp) { inp.focus(); inp.classList.add('shake'); setTimeout(() => inp.classList.remove('shake'), 400); }
+    return;
+  }
   const weight = rawWeight != null ? _wStore(rawWeight) : null;
 
   await fetch(`/api/sessions/${_session.id}/sets`,{
@@ -3200,7 +3222,14 @@ async function logSessionSet(setIdx, restSec, slug, prescReps, prescWeight) {
   const numEl = document.getElementById('snum-'+setIdx);
   const logBtn = document.getElementById('slog-'+setIdx);
   if (numEl) numEl.classList.add('done');
-  if (logBtn) { logBtn.textContent='Done'; logBtn.classList.add('done'); }
+  if (logBtn) { logBtn.textContent='Done'; logBtn.classList.add('done'); logBtn.disabled = true; }
+
+  // Unlock next set
+  const nextRow = document.getElementById('slog-'+(setIdx+1))?.closest('.session-set-row');
+  if (nextRow && nextRow.classList.contains('locked')) {
+    nextRow.classList.remove('locked');
+    nextRow.querySelectorAll('input, button').forEach(el => el.disabled = false);
+  }
 
   // PR detection: Epley 1RM estimate
   if (reps && weight) {
@@ -3297,6 +3326,8 @@ function skipSessionRest() {
 
 async function finishSession() {
   if (!_session) return;
+  const totalLogged = Object.values(_sessionLoggedSets).reduce((n, s) => n + s.size, 0);
+  if (totalLogged === 0) { alert('Log at least one set before finishing.'); return; }
   clearInterval(_sessionElapsedTimer);
   const elapsedSec = _sessionStartTime ? Math.floor((Date.now() - _sessionStartTime) / 1000) : 0;
   await fetch(`/api/sessions/${_session.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});

@@ -45,7 +45,7 @@ def compress_and_cache(response):
     path = request.path
     if path.startswith('/images/'):
         response.headers['Cache-Control'] = 'public, max-age=86400'
-    elif path in ('/favicon.svg',):
+    elif path in ('/favicon.svg', '/apple-touch-icon.png'):
         response.headers['Cache-Control'] = 'public, max-age=604800'
     elif path == '/':
         response.headers['Cache-Control'] = 'no-cache'
@@ -66,6 +66,11 @@ def index():
 @app.route("/favicon.svg")
 def favicon():
     return send_from_directory("frontend", "favicon.svg")
+
+
+@app.route("/apple-touch-icon.png")
+def apple_touch_icon():
+    return send_from_directory("frontend", "apple-touch-icon.png")
 
 
 @app.route("/images/<path:filename>")

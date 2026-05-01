@@ -11,6 +11,13 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v2.1.0] — 2026-05-01
+
+### Added
+- Logo mark (dumbbell icon) in topbar header
+- iOS home screen support: apple-touch-icon, web app meta tags
+- All settings sections now collapsible with chevron toggle
+
 ---
 
 ## [v2.0.0] — 2026-04-30
