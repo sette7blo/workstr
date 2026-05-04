@@ -140,6 +140,18 @@ a{color:inherit;text-decoration:none}
 .instruction-list li{counter-increment:step;padding:8px 0 8px 32px;border-bottom:1px solid var(--border-soft);font-size:13px;line-height:1.6;color:var(--text-mid);position:relative}
 .instruction-list li::before{content:counter(step);position:absolute;left:0;top:9px;width:22px;height:22px;border-radius:50%;background:var(--amber);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
 .drawer-actions{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}
+.edit-field{margin-bottom:14px}
+.edit-field label{display:block;font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+.edit-field input,.edit-field textarea,.edit-field select{width:100%;border:1px solid var(--border-soft);border-radius:8px;padding:8px 10px;font-size:13px;outline:none;background:var(--white);font-family:inherit;resize:vertical}
+.edit-field input:focus,.edit-field textarea:focus,.edit-field select:focus{border-color:var(--amber)}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.d-img-regen{position:absolute;bottom:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.18);cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;z-index:3}
+.d-img-regen:hover{background:rgba(232,130,12,.82)}
+.d-img-regen:disabled{opacity:.5;cursor:not-allowed}
+.d-img-regen.loading svg{animation:spin .9s linear infinite}
+.d-img-shimmer{position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%);background-size:200% 100%;animation:shimmer 1.4s ease-in-out infinite;display:none;z-index:2}
+.d-img-shimmer.visible{display:block}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
 
 /* Buttons */
 .btn-primary{height:36px;padding:0 18px;border-radius:8px;background:var(--amber);color:#fff;font-weight:600;font-size:13px}
@@ -226,6 +238,12 @@ a{color:inherit;text-decoration:none}
 .settings-group .hint{font-size:11px;color:var(--text-muted);margin-top:3px}
 .settings-group select{width:100%;height:40px;border:1px solid var(--border-soft);border-radius:8px;padding:0 12px;font-size:13px;font-family:'Jost',sans-serif;background:var(--white);outline:none}
 .settings-group select:focus{border-color:var(--amber)}
+.settings-row{display:flex;gap:12px}
+.settings-row .settings-group{flex:1}
+.secret-wrap{position:relative;display:flex;align-items:center}
+.secret-wrap input{flex:1;padding-right:36px}
+.secret-eye{position:absolute;right:10px;background:none;border:none;cursor:pointer;color:var(--text-muted);padding:0;display:flex;align-items:center}
+.secret-eye:hover{color:var(--brown-dark)}
 
 /* Log history */
 .log-entry{padding:10px 0;border-bottom:1px solid var(--border-soft)}
@@ -341,15 +359,6 @@ a{color:inherit;text-decoration:none}
 .picker-item:hover{border-color:var(--amber);background:rgba(232,130,12,.04)}
 .picker-item .meta{font-size:11px;color:var(--text-muted);margin-top:2px}
 
-/* AI plan modal */
-.ai-plan-preview{margin-top:16px;border:1px solid var(--border-soft);border-radius:10px;overflow:hidden}
-.ai-plan-day{padding:10px 14px;border-bottom:1px solid var(--border-soft);display:flex;gap:10px;align-items:flex-start}
-.ai-plan-day:last-child{border-bottom:none}
-.ai-plan-date{font-weight:600;font-size:12px;min-width:80px;color:var(--text-mid)}
-.ai-plan-entries{flex:1;display:flex;flex-direction:column;gap:4px}
-.ai-plan-entry{font-size:12px;color:var(--brown-dark)}
-.ai-plan-slot{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-.ai-plan-summary{padding:12px 14px;background:var(--cream);font-size:12px;color:var(--text-mid);line-height:1.5}
 
 /* Progress chart */
 .progress-chart{margin-bottom:8px}
@@ -657,11 +666,42 @@ a{color:inherit;text-decoration:none}
 .stats-ex-meta{font-size:11px;color:var(--text-muted);margin-top:1px}
 .stats-ex-spark{flex-shrink:0;width:80px;height:30px}
 .stats-ex-spark canvas{width:100%;height:100%}
+/* Body tracking */
+.body-log-form{display:flex;gap:10px;margin-bottom:18px;align-items:flex-end}
+.body-log-form .form-group{flex:1;min-width:0}
+.body-log-form label{display:block;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted);margin-bottom:4px}
+.body-log-form input{width:100%;padding:8px 10px;border:1px solid var(--border-soft);border-radius:8px;font-size:13px;font-family:inherit;background:var(--white)}
+.body-log-form input:focus{outline:none;border-color:var(--amber)}
+.body-log-form button{padding:8px 18px;background:var(--amber);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;height:36px}
+.body-log-form button:hover{background:var(--amber-mid)}
+.bmi-zone-bar{position:relative;height:24px;border-radius:12px;overflow:hidden;display:flex;margin-bottom:6px}
+.bmi-zone{flex:1;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;letter-spacing:.3px;color:rgba(255,255,255,.9)}
+.bmi-zone.underweight{background:#5b9bd5}
+.bmi-zone.normal{background:var(--sage)}
+.bmi-zone.overweight{background:#e8a20c}
+.bmi-zone.obese{background:#d45050}
+.bmi-marker{position:absolute;top:-2px;width:3px;height:28px;background:var(--brown-dark);border-radius:2px;transform:translateX(-50%);z-index:2;box-shadow:0 0 0 2px var(--white)}
+.bmi-zone-labels{display:flex;font-size:9px;color:var(--text-muted);margin-bottom:14px}
+.bmi-zone-labels span{flex:1;text-align:center}
+.body-log-row{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-soft)}
+.body-log-row:last-child{border-bottom:none}
+.body-log-date{font-size:11px;color:var(--text-muted);min-width:70px}
+.body-log-val{font-weight:600;font-size:13px;color:var(--brown-dark);flex:1}
+.body-log-note{font-size:11px;color:var(--text-muted);flex:1;text-align:right}
+.body-log-del{background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;opacity:.5}
+.body-log-del:hover{opacity:1;color:#d45050}
+.body-goal-bar{position:relative;height:10px;background:var(--cream);border-radius:5px;overflow:hidden;margin:6px 0 4px}
+.body-goal-fill{height:100%;background:var(--sage);border-radius:5px;transition:width .4s}
+.body-goal-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted)}
+.body-chart-wrap{width:100%;overflow-x:auto}
+.body-chart-wrap svg{width:100%;display:block;overflow:visible}
 @media(max-width:600px){
   .stats-hero{grid-template-columns:repeat(3,1fr);gap:8px}
   .stats-hero-val{font-size:24px}
   .stats-muscle-row{flex-direction:column}
   .stats-muscle-map{flex:none;width:140px;margin:0 auto}
+  .body-log-form{flex-wrap:wrap}
+  .body-log-form .form-group{min-width:calc(50% - 5px)}
 }
 @media(max-width:768px){
   :root{--sidebar-w:0px}
@@ -973,9 +1013,6 @@ a{color:inherit;text-decoration:none}
         <span class="planner-week" id="planner-week-label"></span>
         <button onclick="plannerNextWeek()">&#8594;</button>
         <button onclick="plannerGoToday()" style="margin-left:4px;font-size:11px;padding:0 10px;width:auto">Today</button>
-        <button class="btn-outline" style="margin-left:auto;font-size:12px" onclick="openAiPlanModal()">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:middle;margin-right:4px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>AI Plan
-        </button>
       </div>
       <div class="planner-scroll">
         <div class="planner-grid" id="planner-grid"></div>
@@ -1003,56 +1040,97 @@ a{color:inherit;text-decoration:none}
   <div class="page" id="page-statistics">
     <div class="page-title">Statistics</div>
 
-    <div class="stats-hero" id="stats-hero">
-      <div class="stats-hero-card">
-        <div class="stats-hero-val" id="stats-streak">0</div>
-        <div class="stats-hero-label">Day Streak</div>
+    <div class="sub-tabs" id="statistics-sub-tabs">
+      <div class="sub-tab active" data-subtab="training" onclick="switchSubTab('statistics','training')">Training</div>
+      <div class="sub-tab" data-subtab="body" onclick="switchSubTab('statistics','body')">Body</div>
+    </div>
+
+    <div class="sub-panel active" id="sub-statistics-training">
+      <div class="stats-hero" id="stats-hero">
+        <div class="stats-hero-card">
+          <div class="stats-hero-val" id="stats-streak">0</div>
+          <div class="stats-hero-label">Day Streak</div>
+        </div>
+        <div class="stats-hero-card">
+          <div class="stats-hero-val" id="stats-total-sessions">0</div>
+          <div class="stats-hero-label">Total Sessions</div>
+        </div>
+        <div class="stats-hero-card">
+          <div class="stats-hero-val" id="stats-total-volume">0</div>
+          <div class="stats-hero-label">Total Volume</div>
+        </div>
       </div>
-      <div class="stats-hero-card">
-        <div class="stats-hero-val" id="stats-total-sessions">0</div>
-        <div class="stats-hero-label">Total Sessions</div>
+
+      <div class="stats-section">
+        <div class="stats-section-title">Last 30 Days</div>
+        <div class="stats-dots" id="stats-dots"></div>
+        <div class="stats-dots-legend" id="stats-dots-legend"></div>
       </div>
-      <div class="stats-hero-card">
-        <div class="stats-hero-val" id="stats-total-volume">0</div>
-        <div class="stats-hero-label">Total Volume</div>
+
+      <div class="stats-section">
+        <div class="stats-section-title">Weekly Volume</div>
+        <div class="stats-chart-wrap">
+          <canvas id="stats-volume-chart" height="180"></canvas>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <div class="stats-section-title">Muscle Distribution <span class="stats-section-sub">(last 30 days)</span></div>
+        <div class="stats-muscle-row">
+          <div class="stats-muscle-map" id="stats-muscle-map"></div>
+          <div class="stats-muscle-list" id="stats-muscle-list"></div>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <div class="stats-section-title">Personal Records</div>
+        <div id="stats-prs"></div>
+      </div>
+
+      <div class="stats-section">
+        <div class="stats-section-title">Exercise Breakdown</div>
+        <div id="stats-exercises"></div>
+      </div>
+
+      <div class="empty-state" id="stats-empty" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        <h3>No data yet</h3>
+        <p>Complete some workout sessions to see your statistics.</p>
       </div>
     </div>
 
-    <div class="stats-section">
-      <div class="stats-section-title">Last 30 Days</div>
-      <div class="stats-dots" id="stats-dots"></div>
-      <div class="stats-dots-legend" id="stats-dots-legend"></div>
-    </div>
-
-    <div class="stats-section">
-      <div class="stats-section-title">Weekly Volume</div>
-      <div class="stats-chart-wrap">
-        <canvas id="stats-volume-chart" height="180"></canvas>
+    <div class="sub-panel" id="sub-statistics-body">
+      <div class="body-log-form" id="body-log-form">
+        <div class="form-group">
+          <label>Date</label>
+          <input type="date" id="body-log-date">
+        </div>
+        <div class="form-group">
+          <label>Weight (<span id="body-weight-unit-label">kg</span>)</label>
+          <input type="number" id="body-log-weight" step="0.1" min="0" placeholder="75.0">
+        </div>
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="body-log-notes" placeholder="Optional">
+        </div>
+        <button onclick="logBodyWeight()">Log</button>
       </div>
-    </div>
 
-    <div class="stats-section">
-      <div class="stats-section-title">Muscle Distribution <span class="stats-section-sub">(last 30 days)</span></div>
-      <div class="stats-muscle-row">
-        <div class="stats-muscle-map" id="stats-muscle-map"></div>
-        <div class="stats-muscle-list" id="stats-muscle-list"></div>
+      <div id="body-stats-cards"></div>
+      <div id="body-bmi-section"></div>
+      <div id="body-chart-section"></div>
+      <div id="body-goal-section"></div>
+
+      <div class="stats-section" id="body-log-list-section" style="display:none">
+        <div class="stats-section-title">Log History</div>
+        <div id="body-log-list"></div>
       </div>
-    </div>
 
-    <div class="stats-section">
-      <div class="stats-section-title">Personal Records</div>
-      <div id="stats-prs"></div>
-    </div>
-
-    <div class="stats-section">
-      <div class="stats-section-title">Exercise Breakdown</div>
-      <div id="stats-exercises"></div>
-    </div>
-
-    <div class="empty-state" id="stats-empty" style="display:none">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-      <h3>No data yet</h3>
-      <p>Complete some workout sessions to see your statistics.</p>
+      <div class="empty-state" id="body-empty" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <h3>No body data yet</h3>
+        <p>Log your weight above to start tracking your progress.</p>
+      </div>
     </div>
   </div>
 
@@ -1193,54 +1271,76 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
 
-    <!-- AI section -->
+    <!-- AI Configuration -->
     <div class="settings-section collapsed" id="settings-ai">
       <div class="settings-section-header collapsible" onclick="this.parentElement.classList.toggle('collapsed')">
         <div class="settings-section-icon">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 2a4 4 0 014 4v1h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2V6a4 4 0 014-4z"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg>
         </div>
-        <div class="settings-section-title">AI Models</div>
+        <div class="settings-section-title">AI Configuration</div>
+        <span id="ai-status-badge" style="font-size:10px;font-weight:600;letter-spacing:.5px;padding:3px 9px;border-radius:20px;display:none"></span>
         <svg class="settings-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="settings-section-body">
         <div class="settings-group">
-          <label>PPQ API Key</label>
-          <input type="password" id="set-ppq-key" placeholder="sk-...">
+          <label>PPQ.ai API Key</label>
+          <div class="secret-wrap">
+            <input type="password" id="set-ppq-key" placeholder="Enter your key...">
+            <button type="button" class="secret-eye" onclick="toggleSecret('set-ppq-key',this)" tabindex="-1">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label>Credit ID <span style="opacity:.5;font-weight:300">(for balance check)</span></label>
+          <div class="secret-wrap">
+            <input type="password" id="set-ppq-credit-id" placeholder="Enter your credit ID...">
+            <button type="button" class="secret-eye" onclick="toggleSecret('set-ppq-credit-id',this)" tabindex="-1">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
         </div>
         <div class="settings-group">
           <label>Base URL</label>
           <input type="text" id="set-ppq-url" placeholder="https://api.ppq.ai/v1">
         </div>
-        <div class="settings-group">
-          <label>Text Model</label>
-          <input type="text" id="set-ppq-model" placeholder="gpt-4o-mini">
+        <div class="settings-row">
+          <div class="settings-group"><label>Exercise Model</label><input type="text" id="set-ppq-model" placeholder="gpt-4o-mini"></div>
+          <div class="settings-group"><label>Image Model</label><input type="text" id="set-ppq-img-model" placeholder="dall-e-3"></div>
+          <div class="settings-group"><label>Vision Model</label><input type="text" id="set-ppq-vis-model" placeholder="gpt-4o"></div>
         </div>
-        <div class="settings-group">
-          <label>Image Model</label>
-          <input type="text" id="set-ppq-img-model" placeholder="dall-e-3">
-        </div>
-        <div class="settings-group">
-          <label>Vision Model</label>
-          <input type="text" id="set-ppq-vis-model" placeholder="gpt-4o">
-          <div class="hint">Must support vision (e.g. gpt-4o, claude-haiku)</div>
+        <div class="hint" style="margin-bottom:10px">Vision model is used for Import from Image. Must support image inputs (e.g. gpt-4o).</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-outline" id="ai-test-btn" onclick="testAiConnection()">Test Connection</button>
+          <span id="ai-balance" style="font-size:12px;font-weight:600;color:var(--text-mid);display:none"></span>
+          <button class="btn-outline" id="topup-btn" onclick="openTopup()" style="display:none;font-size:11px;padding:0 10px;height:28px">Top Up</button>
         </div>
       </div>
     </div>
 
-    <!-- Data section -->
-    <div class="settings-section collapsed" id="settings-data">
+
+
+    <!-- Backup & Restore -->
+    <div class="settings-section collapsed" id="settings-backup">
       <div class="settings-section-header collapsible" onclick="this.parentElement.classList.toggle('collapsed')">
         <div class="settings-section-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M12 15l-4-4M12 15l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg>
         </div>
-        <div class="settings-section-title">Data</div>
+        <div class="settings-section-title">Backup & Restore</div>
         <svg class="settings-section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="settings-section-body">
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <a class="btn-outline" href="/api/export/log.json" download>Download Log (JSON)</a>
-          <a class="btn-outline" href="/api/export/log.csv" download>Download Log (CSV)</a>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">
+          Export all exercises, workouts, session history, and settings as a zip file. Includes the full database. Use restore to import a backup onto a new instance.
         </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <a class="btn-primary" href="/api/backup" download style="text-decoration:none;display:inline-block">Export Backup</a>
+          <label class="btn-outline" style="cursor:pointer;margin:0">
+            Restore Backup
+            <input type="file" accept=".zip" style="display:none" onchange="restoreBackup(this)">
+          </label>
+        </div>
+        <div id="backup-status" style="margin-top:10px;font-size:12px;color:var(--text-mid);display:none"></div>
       </div>
     </div>
 
@@ -1436,52 +1536,6 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
-<!-- AI Plan Modal -->
-<div class="modal-overlay" id="ai-plan-modal" onclick="if(event.target===this)closeAiPlanModal()">
-  <div class="modal" style="max-width:620px">
-    <div class="modal-header">
-      <div class="modal-title">Generate AI Workout Plan</div>
-      <button class="modal-close" onclick="closeAiPlanModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="modal-body">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-        <div class="modal-field">
-          <label>Goal</label>
-          <select id="aip-goal">
-            <option value="general fitness">General Fitness</option>
-            <option value="muscle building">Muscle Building</option>
-            <option value="weight loss">Weight Loss</option>
-            <option value="strength">Strength</option>
-            <option value="endurance">Endurance</option>
-          </select>
-        </div>
-        <div class="modal-field">
-          <label>Days per Week</label>
-          <select id="aip-days">
-            <option value="2">2 days</option>
-            <option value="3">3 days</option>
-            <option value="4" selected>4 days</option>
-            <option value="5">5 days</option>
-            <option value="6">6 days</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-field">
-        <label>Muscle Focus <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
-        <input type="text" id="aip-focus" placeholder="e.g. Chest, Back, Legs">
-      </div>
-      <div class="modal-field" style="display:flex;align-items:center;gap:10px">
-        <input type="checkbox" id="aip-use-equipment" style="width:16px;height:16px;cursor:pointer">
-        <label for="aip-use-equipment" style="font-size:13px;font-weight:400;letter-spacing:0;text-transform:none;cursor:pointer;color:var(--text-mid)">Filter to my owned equipment only</label>
-      </div>
-      <button class="btn-primary" id="aip-gen-btn" onclick="generateAiPlan()" style="width:100%">Generate Plan</button>
-      <div id="aip-result"></div>
-    </div>
-  </div>
-</div>
-
 <!-- Planner Picker Modal -->
 <div class="modal-overlay" id="picker-modal" onclick="if(event.target===this)closePicker()">
   <div class="modal">
@@ -1565,6 +1619,55 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<!-- Top Up Modal -->
+<div class="modal-overlay" id="topup-overlay" onclick="closeTopup()" style="z-index:300"></div>
+<div class="modal-overlay" id="topup-modal-wrap" style="z-index:301;background:none;display:none;align-items:center;justify-content:center">
+  <div style="background:var(--white);border-radius:14px;width:480px;max-width:90vw;box-shadow:0 12px 40px rgba(0,0,0,.15);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border-soft)">
+      <div style="font-family:'Cormorant Garamond',serif;font-weight:700;font-size:20px">Top Up Balance</div>
+      <button onclick="closeTopup()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px">
+        <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
+      </button>
+    </div>
+    <div style="padding:20px">
+      <div id="topup-step1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13px;color:var(--text-mid)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M5 17V9l7 7 7-7v8"/></svg>
+          Pay with Monero
+        </div>
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin-bottom:8px">Amount (USD)</div>
+        <div style="display:flex;gap:8px;margin-bottom:10px">
+          <button class="btn-outline" onclick="_topupAmount(5)">$5</button>
+          <button class="btn-outline" onclick="_topupAmount(10)">$10</button>
+          <button class="btn-outline" onclick="_topupAmount(25)">$25</button>
+        </div>
+        <input type="number" id="topup-amount" style="width:100%;height:38px;border:1px solid var(--border-soft);border-radius:8px;padding:0 12px;font-size:13px;outline:none;margin-bottom:6px" placeholder="Enter amount..." min="5" step="0.01" max="10000">
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:14px">Min $5 -- Max $10,000</div>
+        <div id="topup-err" style="font-size:12px;color:#c05040;margin-bottom:8px;display:none"></div>
+        <button class="btn-primary" id="topup-create-btn" onclick="createTopup()" style="width:100%">Create Invoice</button>
+      </div>
+      <div id="topup-step2" style="display:none">
+        <iframe id="topup-iframe" style="width:100%;height:420px;border:1px solid var(--border-soft);border-radius:8px;margin-bottom:10px" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--cream);border-radius:8px;margin-bottom:10px">
+          <div>
+            <div style="font-size:11px;color:var(--text-muted)">Amount</div>
+            <div id="topup-pay-amount" style="font-size:15px;font-weight:600;color:var(--brown-dark)">$0.00</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:11px;color:var(--text-muted)">Status</div>
+            <div id="topup-pay-status" style="font-size:13px;font-weight:600;color:var(--text-mid)">Waiting...</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:11px;color:var(--text-muted)">Expires</div>
+            <div id="topup-timer" style="font-size:15px;font-weight:600;color:var(--brown-dark)">--:--</div>
+          </div>
+        </div>
+        <button class="btn-outline" onclick="_topupBack()" style="width:100%">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Drawer -->
 <div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawerIfOverlay(event)">
   <div class="drawer" id="drawer">
@@ -1578,6 +1681,7 @@ a{color:inherit;text-decoration:none}
 <script>
 // ── State ────────────────────────────────────────────────────────────────────
 let _weightUnit = 'kg'; // 'kg' or 'lb' — loaded from settings on init
+let _drawerData = null;
 const KG_TO_LB = 2.20462;
 function _wLabel() { return _weightUnit; }
 function _wDisplay(kg) { if (kg == null || kg === 0) return kg; return _weightUnit === 'lb' ? Math.round(kg * KG_TO_LB * 10) / 10 : kg; }
@@ -1623,9 +1727,9 @@ function switchTab(tab) {
   if (tab === 'exercises') _loadSubContent('exercises', activeSubTab || 'library');
   else if (tab === 'workouts') _loadSubContent('workouts', activeSubTab || 'programs');
   else if (tab === 'planner') _loadSubContent('planner', activeSubTab || 'plan');
-  else if (tab === 'statistics') loadStatistics();
+  else if (tab === 'statistics') _loadSubContent('statistics', activeSubTab || 'training');
   else if (tab === 'settings') loadSettings();
-  else if (tab === 'generate') loadAiStatus();
+  else if (tab === 'generate') { loadAiStatus(); clearGenerateForm(); }
   else if (tab === 'import') loadSeedFilters();
 }
 
@@ -1664,6 +1768,9 @@ function _loadSubContent(parentTab, subTab) {
   } else if (parentTab === 'planner') {
     if (subTab === 'plan') loadPlanner();
     else if (subTab === 'history') loadHistory();
+  } else if (parentTab === 'statistics') {
+    if (subTab === 'training') loadStatistics();
+    else if (subTab === 'body') loadBodyStats();
   }
 }
 
@@ -1826,10 +1933,16 @@ async function openDrawer(slug) {
   const full = ex.full || {};
   const logData = await fetch('/api/log/' + slug).then(r => r.json());
 
-  const imgUrl = ex.image_url ? (ex.image_url.startsWith('http') ? ex.image_url : '/' + ex.image_url) : null;
-  const imgHtml = imgUrl
+  _drawerData = { slug, ex, full };
+
+  const rawImg = ex.image_url ? (ex.image_url.startsWith('http') ? ex.image_url : '/' + ex.image_url) : null;
+  const imgUrl = rawImg && !rawImg.startsWith('http') ? rawImg + '?t=' + Date.now() : rawImg;
+  const imgHtml = `<div style="position:relative">` + (imgUrl
     ? `<img class="drawer-img" src="${imgUrl}" alt="">`
-    : `<div class="drawer-img"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
+    : `<div class="drawer-img"><svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.2" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`)
+    + `<div class="d-img-shimmer" id="d-img-shimmer"></div>`
+    + `<button class="d-img-regen" id="d-img-regen-btn" style="display:none" onclick="regenImage()" title="Regenerate AI photo"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg></button>`
+    + `</div>`;
 
   const muscles = (ex.muscles||[]).map(m=>`<span class="tag-pill">${esc(m)}</span>`).join('');
   const equip = (ex.equipment_list||[]).map(e=>`<span class="tag-pill">${esc(e)}</span>`).join('');
@@ -1860,10 +1973,12 @@ async function openDrawer(slug) {
   let actions = '';
   if (ex.status === 'active') {
     actions = `
+      <button class="btn-outline" onclick="editDrawer()">Edit</button>
       <button class="btn-danger" onclick="trashExercise('${slug}')">Delete</button>`;
   } else if (ex.status === 'staged') {
     actions = `
       <button class="btn-sage" onclick="approveExercise('${slug}')">Approve</button>
+      <button class="btn-outline" onclick="editDrawer()">Edit</button>
       <button class="btn-danger" onclick="trashExercise('${slug}')">Discard</button>`;
   } else if (ex.status === 'trashed') {
     actions = `
@@ -1900,6 +2015,149 @@ async function openDrawer(slug) {
 
 function closeDrawer() { document.getElementById('drawer-overlay').classList.remove('open'); }
 function closeDrawerIfOverlay(e) { if (e.target === document.getElementById('drawer-overlay')) closeDrawer(); }
+
+function editDrawer() {
+  if (!_drawerData) return;
+  const { slug, ex, full } = _drawerData;
+
+  // Show regen button
+  const regenBtn = document.getElementById('d-img-regen-btn');
+  if (regenBtn) regenBtn.style.display = '';
+
+  const muscles = (full.muscles || ex.muscles || []).join('\n');
+  const equip = (full.equipment || ex.equipment_list || []).join('\n');
+  const tags = (full.tags || ex.tags || []).filter(t=>t).join(', ');
+  const instructions = (full.instructions || []).map(s => typeof s === 'string' ? s : (s.text||'')).join('\n');
+
+  document.getElementById('drawer-content').querySelector('.drawer-body').innerHTML = `
+    <div class="edit-field">
+      <label>Name</label>
+      <input id="ef-name" value="${esc(full.name || ex.name || '')}">
+    </div>
+    <div class="edit-field">
+      <label>Description</label>
+      <textarea id="ef-desc" rows="3">${esc(full.description || ex.description || '')}</textarea>
+    </div>
+    <div class="edit-grid">
+      <div class="edit-field">
+        <label>Category</label>
+        <select id="ef-category">
+          <option value="">--</option>
+          ${['strength','cardio','flexibility','balance','plyometrics'].map(c=>
+            `<option value="${c}"${(full.category||ex.category)===c?' selected':''}>${c}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="edit-field">
+        <label>Difficulty</label>
+        <select id="ef-difficulty">
+          <option value="">--</option>
+          ${['beginner','intermediate','advanced'].map(d=>
+            `<option value="${d}"${(full.difficulty||ex.difficulty)===d?' selected':''}>${d}</option>`
+          ).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="edit-field">
+      <label>Primary Muscle Group</label>
+      <input id="ef-muscle-group" value="${esc(full.muscle_group || ex.muscle_group || '')}">
+    </div>
+    <div class="edit-field">
+      <label>Muscles -- one per line</label>
+      <textarea id="ef-muscles" rows="3">${esc(muscles)}</textarea>
+    </div>
+    <div class="edit-field">
+      <label>Equipment -- one per line</label>
+      <textarea id="ef-equipment" rows="3">${esc(equip)}</textarea>
+    </div>
+    <div class="edit-field">
+      <label>Tags -- comma separated</label>
+      <input id="ef-tags" value="${esc(tags)}">
+    </div>
+    <div class="edit-grid">
+      <div class="edit-field">
+        <label>Default Sets</label>
+        <input id="ef-sets" type="number" min="1" value="${full.default_sets||3}">
+      </div>
+      <div class="edit-field">
+        <label>Default Reps</label>
+        <input id="ef-reps" value="${esc(full.default_reps||'8-12')}">
+      </div>
+    </div>
+    <div class="edit-field">
+      <label>Rest Between Sets (seconds)</label>
+      <input id="ef-rest" type="number" min="0" value="${full.default_rest_sec||90}">
+    </div>
+    <div class="edit-field">
+      <label>Instructions -- one step per line</label>
+      <textarea id="ef-instructions" rows="8">${esc(instructions)}</textarea>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-primary" onclick="saveDrawer()" style="height:32px;font-size:12px">Save</button>
+      <button class="btn-outline" onclick="openDrawer('${slug}')">Cancel</button>
+    </div>`;
+}
+
+async function saveDrawer() {
+  if (!_drawerData) return;
+  const slug = _drawerData.slug;
+  const name = document.getElementById('ef-name').value.trim();
+  if (!name) { alert('Name is required'); return; }
+
+  const data = {
+    name,
+    description: document.getElementById('ef-desc').value.trim(),
+    category: document.getElementById('ef-category').value,
+    difficulty: document.getElementById('ef-difficulty').value,
+    muscle_group: document.getElementById('ef-muscle-group').value.trim(),
+    muscles: document.getElementById('ef-muscles').value.split('\n').map(l=>l.trim()).filter(Boolean),
+    equipment: document.getElementById('ef-equipment').value.split('\n').map(l=>l.trim()).filter(Boolean),
+    tags: document.getElementById('ef-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    default_sets: parseInt(document.getElementById('ef-sets').value) || 3,
+    default_reps: document.getElementById('ef-reps').value.trim() || '8-12',
+    default_rest_sec: parseInt(document.getElementById('ef-rest').value) || 90,
+    instructions: document.getElementById('ef-instructions').value.split('\n').map(l=>l.trim()).filter(Boolean),
+  };
+
+  try {
+    const res = await fetch('/api/exercises/' + slug, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) throw new Error('Save failed');
+    openDrawer(slug);
+    loadExercises();
+  } catch(e) { alert(e.message); }
+}
+
+async function regenImage() {
+  if (!_drawerData) return;
+  const slug = _drawerData.slug;
+  const btn = document.getElementById('d-img-regen-btn');
+  const shimmer = document.getElementById('d-img-shimmer');
+  if (btn) { btn.disabled = true; btn.classList.add('loading'); }
+  if (shimmer) shimmer.classList.add('visible');
+  try {
+    const res = await fetch('/api/exercises/' + slug + '/regenerate-image', { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Image generation failed');
+    if (data.image) {
+      const src = '/' + data.image + '?t=' + Date.now();
+      const img = document.getElementById('drawer-content').querySelector('.drawer-img');
+      if (img && img.tagName === 'IMG') { img.src = src; }
+      else if (img) { img.innerHTML = `<img class="drawer-img" src="${src}" alt="" style="width:100%;height:100%;object-fit:cover">`; }
+      // Update card in grid
+      const card = document.querySelector(`.exercise-card[data-slug="${slug}"] img`);
+      if (card) card.src = src;
+      _drawerData.ex.image_url = data.image;
+    }
+  } catch(e) { alert(e.message || 'Image generation failed'); }
+  finally {
+    if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
+    if (shimmer) shimmer.classList.remove('visible');
+  }
+}
 
 // Map raw muscle names to the canonical data-muscle values used in the SVG body map
 const _MUSCLE_ALIASES = {
@@ -2095,6 +2353,17 @@ async function discardAll() {
 }
 
 // ── AI Generate ───────────────────────────────────────────────────────────────
+function clearGenerateForm() {
+  const prompt = document.getElementById('gen-prompt');
+  if (prompt) prompt.value = '';
+  ['gen-category','gen-difficulty','gen-muscle','gen-equipment'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const result = document.getElementById('gen-result');
+  if (result) result.innerHTML = '';
+}
+
 async function loadAiStatus() {
   const bar = document.getElementById('ai-status-bar');
   bar.innerHTML = '<div class="ai-status unknown">Checking AI connection...</div>';
@@ -2150,7 +2419,7 @@ async function generateExercise() {
       ${muscles ? `<div class="tag-row" style="margin-bottom:8px">${muscles}</div>` : ''}
       ${equips ? `<div class="tag-row" style="margin-bottom:12px">${equips}</div>` : ''}
       <div style="display:flex;gap:8px">
-        <button class="btn-sage" onclick="approveExercise('${data.slug}')">Approve</button>
+        <button class="btn-sage" onclick="approveExercise('${data.slug}');document.getElementById('gen-result').innerHTML='<div style=&quot;color:var(--sage);font-size:13px;padding:12px&quot;>Approved and added to library.</div>'">Approve</button>
         <button class="btn-outline" onclick="generateExercise()">Regenerate</button>
         <button class="btn-danger" onclick="trashExercise('${data.slug}');document.getElementById('gen-result').innerHTML=''">Discard</button>
       </div>
@@ -2390,6 +2659,7 @@ async function loadSettings() {
   const res = await fetch('/api/settings');
   const s = await res.json();
   document.getElementById('set-ppq-key').value = s.PPQ_API_KEY||'';
+  document.getElementById('set-ppq-credit-id').value = s.PPQ_CREDIT_ID||'';
   document.getElementById('set-ppq-url').value = s.PPQ_BASE_URL||'';
   document.getElementById('set-ppq-model').value = s.PPQ_MODEL||'';
   document.getElementById('set-ppq-img-model').value = s.PPQ_IMAGE_MODEL||'';
@@ -2397,11 +2667,160 @@ async function loadSettings() {
   document.getElementById('set-equipment').value = s.EQUIPMENT||'';
   document.getElementById('set-weight-unit').value = s.WEIGHT_UNIT||'kg';
   _weightUnit = s.WEIGHT_UNIT || 'kg';
+  _setAiStatusBadge(s.PPQ_API_KEY ? 'unchecked' : 'none');
+  if (s.PPQ_CREDIT_ID) _fetchBalance();
 
   fetch('/api/version').then(r => r.json()).then(d => {
     const el = document.getElementById('version-label');
     if (el) el.textContent = 'Liftme ' + (d.version||'dev');
   }).catch(() => {});
+}
+
+function toggleSecret(fieldId, btn) {
+  const input = document.getElementById(fieldId);
+  const showing = input.type === 'text';
+  input.type = showing ? 'password' : 'text';
+  btn.querySelector('svg').innerHTML = showing
+    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+    : '<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+}
+
+function _setAiStatusBadge(state, model) {
+  const badge = document.getElementById('ai-status-badge');
+  if (state === 'none') {
+    badge.style.display = 'inline-block';
+    badge.textContent = 'No key set';
+    badge.style.background = '#fde8e8'; badge.style.color = '#c05040';
+  } else if (state === 'ok') {
+    badge.style.display = 'inline-block';
+    badge.textContent = 'Connected' + (model ? ' \u00b7 ' + model : '');
+    badge.style.background = '#e8f5e9'; badge.style.color = '#3a6a40';
+  } else if (state === 'err') {
+    badge.style.display = 'inline-block';
+    badge.textContent = 'Connection failed';
+    badge.style.background = '#fde8e8'; badge.style.color = '#c05040';
+  } else {
+    badge.style.display = 'inline-block';
+    badge.textContent = 'Key saved';
+    badge.style.background = '#fff4e0'; badge.style.color = '#9a6010';
+  }
+}
+
+async function _fetchBalance() {
+  const el = document.getElementById('ai-balance');
+  const topupBtn = document.getElementById('topup-btn');
+  try {
+    const r = await fetch('/api/ai/balance').then(r=>r.json());
+    if (r.ok) {
+      el.textContent = 'Balance: $' + r.balance.toFixed(2);
+      el.style.display = '';
+      el.style.color = r.balance < 1 ? '#c05040' : 'var(--text-mid)';
+      if (topupBtn) topupBtn.style.display = '';
+    } else { el.style.display = 'none'; if (topupBtn) topupBtn.style.display = 'none'; }
+  } catch { el.style.display = 'none'; if (topupBtn) topupBtn.style.display = 'none'; }
+}
+
+async function testAiConnection() {
+  const btn = document.getElementById('ai-test-btn');
+  btn.disabled = true; btn.textContent = 'Testing...';
+  try {
+    const r = await fetch('/api/ai/test').then(r=>r.json());
+    const modelLabel = r.ok ? r.model + ' \u00b7 ' + r.image_model + ' \u00b7 ' + r.vision_model : '';
+    _setAiStatusBadge(r.ok ? 'ok' : 'err', modelLabel);
+  } catch {
+    _setAiStatusBadge('err');
+  }
+  btn.disabled = false; btn.textContent = 'Test Connection';
+}
+
+let _topupState = { invoiceId: null, pollTimer: null, countdownTimer: null };
+
+function openTopup() {
+  _topupState = { invoiceId: null, pollTimer: null, countdownTimer: null };
+  document.getElementById('topup-step1').style.display = '';
+  document.getElementById('topup-step2').style.display = 'none';
+  document.getElementById('topup-amount').value = '';
+  document.getElementById('topup-err').style.display = 'none';
+  document.getElementById('topup-overlay').style.display = 'block';
+  document.getElementById('topup-modal-wrap').style.display = 'flex';
+}
+
+function closeTopup() {
+  document.getElementById('topup-overlay').style.display = 'none';
+  document.getElementById('topup-modal-wrap').style.display = 'none';
+  document.getElementById('topup-iframe').src = '';
+  if (_topupState.pollTimer) clearInterval(_topupState.pollTimer);
+  if (_topupState.countdownTimer) clearInterval(_topupState.countdownTimer);
+}
+
+function _topupAmount(val) {
+  document.getElementById('topup-amount').value = val;
+}
+
+async function createTopup() {
+  const amount = parseFloat(document.getElementById('topup-amount').value);
+  const errEl = document.getElementById('topup-err');
+  if (!amount || isNaN(amount)) { errEl.textContent = 'Enter an amount'; errEl.style.display = ''; return; }
+  if (amount < 5 || amount > 10000) { errEl.textContent = 'Amount must be $5-$10,000'; errEl.style.display = ''; return; }
+  errEl.style.display = 'none';
+  const btn = document.getElementById('topup-create-btn');
+  btn.disabled = true; btn.textContent = 'Creating...';
+  try {
+    const r = await fetch('/api/ai/topup', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({method:'xmr',amount,currency:'USD'})}).then(r=>r.json());
+    if (!r.ok) { errEl.textContent = r.error || 'Failed'; errEl.style.display = ''; return; }
+    _topupState.invoiceId = r.invoice_id;
+    document.getElementById('topup-step1').style.display = 'none';
+    document.getElementById('topup-step2').style.display = '';
+    if (r.checkout_url) document.getElementById('topup-iframe').src = r.checkout_url;
+    document.getElementById('topup-pay-amount').textContent = '$' + amount.toFixed(2);
+    document.getElementById('topup-pay-status').textContent = 'Waiting for payment...';
+    document.getElementById('topup-pay-status').style.color = 'var(--text-mid)';
+    const expiresAt = r.expires_at * 1000;
+    _topupState.countdownTimer = setInterval(() => {
+      const remaining = Math.max(0, expiresAt - Date.now());
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      const timerEl = document.getElementById('topup-timer');
+      timerEl.textContent = String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+      timerEl.style.color = remaining < 120000 ? '#c05040' : 'var(--brown-dark)';
+      if (remaining <= 0) {
+        clearInterval(_topupState.countdownTimer);
+        clearInterval(_topupState.pollTimer);
+        document.getElementById('topup-pay-status').textContent = 'Expired';
+        document.getElementById('topup-pay-status').style.color = '#c05040';
+      }
+    }, 1000);
+    _topupState.pollTimer = setInterval(async () => {
+      try {
+        const st = await fetch('/api/ai/topup/status/' + _topupState.invoiceId).then(r=>r.json());
+        if (st.status === 'Settled' || st.status === 'Complete') {
+          clearInterval(_topupState.pollTimer);
+          clearInterval(_topupState.countdownTimer);
+          document.getElementById('topup-pay-status').textContent = 'Paid';
+          document.getElementById('topup-pay-status').style.color = '#3a6a40';
+          _fetchBalance();
+          setTimeout(closeTopup, 1500);
+        } else if (st.status === 'Expired' || st.status === 'Invalid') {
+          clearInterval(_topupState.pollTimer);
+          clearInterval(_topupState.countdownTimer);
+          document.getElementById('topup-pay-status').textContent = st.status;
+          document.getElementById('topup-pay-status').style.color = '#c05040';
+        }
+      } catch {}
+    }, 5000);
+  } catch(e) {
+    errEl.textContent = e.message || 'Failed'; errEl.style.display = '';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Invoice';
+  }
+}
+
+function _topupBack() {
+  if (_topupState.pollTimer) clearInterval(_topupState.pollTimer);
+  if (_topupState.countdownTimer) clearInterval(_topupState.countdownTimer);
+  document.getElementById('topup-iframe').src = '';
+  document.getElementById('topup-step1').style.display = '';
+  document.getElementById('topup-step2').style.display = 'none';
 }
 
 async function saveSettings() {
@@ -2410,6 +2829,7 @@ async function saveSettings() {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
       PPQ_API_KEY: document.getElementById('set-ppq-key').value,
+      PPQ_CREDIT_ID: document.getElementById('set-ppq-credit-id').value,
       PPQ_BASE_URL: document.getElementById('set-ppq-url').value,
       PPQ_MODEL: document.getElementById('set-ppq-model').value,
       PPQ_IMAGE_MODEL: document.getElementById('set-ppq-img-model').value,
@@ -2422,6 +2842,34 @@ async function saveSettings() {
   ownedEquipmentNames = null;
   document.getElementById('settings-status').textContent = 'Saved.';
   setTimeout(() => document.getElementById('settings-status').textContent = '', 2000);
+}
+
+async function restoreBackup(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (!confirm('This will overwrite your database, exercises, and settings with the backup contents. Continue?')) {
+    input.value = '';
+    return;
+  }
+  const status = document.getElementById('backup-status');
+  status.style.display = 'block';
+  status.textContent = 'Restoring backup...';
+  const form = new FormData();
+  form.append('backup', file);
+  try {
+    const resp = await fetch('/api/backup/restore', { method: 'POST', body: form });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Restore failed');
+    const parts = [];
+    if (data.db_restored) parts.push('database');
+    if (data.exercises) parts.push(data.exercises + ' exercise' + (data.exercises === 1 ? '' : 's'));
+    if (data.images) parts.push(data.images + ' image' + (data.images === 1 ? '' : 's'));
+    status.textContent = 'Restored: ' + (parts.join(', ') || 'no data found');
+    loadSettings();
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+  }
+  input.value = '';
 }
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
@@ -3255,7 +3703,12 @@ async function logSessionSet(setIdx, restSec, slug, prescReps, prescWeight) {
     }
   }
 
-  startSessionRest(restSec);
+  // Check if all sets for this exercise are done — auto-advance after rest
+  const totalSetsForEx = _sessionSetCounts[slug] || 0;
+  const loggedSetsForEx = _sessionLoggedSets[slug]?.size || 0;
+  const allSetsDone = loggedSetsForEx >= totalSetsForEx && totalSetsForEx > 0;
+
+  startSessionRest(restSec, allSetsDone);
 }
 
 function _findNextInSuperset(group, currentIdx) {
@@ -3289,7 +3742,7 @@ function jumpSessionEx(i) {
   _renderSessionEx();
 }
 
-function startSessionRest(sec) {
+function startSessionRest(sec, autoAdvance) {
   const overlay = document.getElementById('session-rest-overlay');
   overlay.classList.add('show');
   _sessionRestTotal = sec;
@@ -3299,7 +3752,16 @@ function startSessionRest(sec) {
   _sessionRestTimer = setInterval(() => {
     _sessionRestRemaining--;
     _updateRestDisplay();
-    if (_sessionRestRemaining <= 0) { clearInterval(_sessionRestTimer); overlay.classList.remove('show'); }
+    if (_sessionRestRemaining <= 0) {
+      clearInterval(_sessionRestTimer);
+      overlay.classList.remove('show');
+      if (autoAdvance && _session?.exercises) {
+        const nextIdx = _sessionExIdx + 1;
+        if (nextIdx < _session.exercises.length) {
+          jumpSessionEx(nextIdx);
+        }
+      }
+    }
   }, 1000);
 }
 
@@ -3793,6 +4255,273 @@ async function _openExerciseStats(slug) {
   openDrawer(ex);
 }
 
+// ── Body Tracking ────────────────────────────────────────────────────────────
+
+async function loadBodyStats() {
+  document.getElementById('body-log-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('body-weight-unit-label').textContent = _wLabel();
+
+  const data = await fetch('/api/body?limit=90').then(r => r.json()).catch(() => []);
+  const heightCm = parseFloat(localStorage.getItem('_bodyHeightCm') || '0');
+  const targetKg = parseFloat(localStorage.getItem('_bodyTargetKg') || '0');
+
+  const empty = document.getElementById('body-empty');
+  const listSection = document.getElementById('body-log-list-section');
+  const cardsEl = document.getElementById('body-stats-cards');
+  const bmiEl = document.getElementById('body-bmi-section');
+  const chartEl = document.getElementById('body-chart-section');
+  const goalEl = document.getElementById('body-goal-section');
+
+  if (!data.length) {
+    empty.style.display = '';
+    listSection.style.display = 'none';
+    cardsEl.innerHTML = '';
+    bmiEl.innerHTML = '';
+    chartEl.innerHTML = '';
+    goalEl.innerHTML = '';
+    _renderBodySetup(heightCm, targetKg);
+    return;
+  }
+  empty.style.display = 'none';
+
+  const sorted = data.slice().sort((a, b) => a.date.localeCompare(b.date));
+  const latest = sorted[sorted.length - 1];
+  const latestW = latest.weight_kg;
+  const first = sorted[0];
+
+  // 7-day rolling average
+  const last7 = sorted.slice(-7);
+  const avg7 = last7.reduce((s, e) => s + e.weight_kg, 0) / last7.length;
+
+  // Change from first entry
+  const totalChange = latestW - first.weight_kg;
+  const prev = sorted.length >= 2 ? sorted[sorted.length - 2] : null;
+  const lastChange = prev ? latestW - prev.weight_kg : 0;
+
+  // Stat cards
+  let cardsHtml = '<div class="stats-hero">';
+  cardsHtml += `<div class="stats-hero-card">
+    <div class="stats-hero-val">${_wDisplay(latestW).toFixed(1)}</div>
+    <div class="stats-hero-label">Current (${_wLabel()})</div>
+  </div>`;
+  cardsHtml += `<div class="stats-hero-card">
+    <div class="stats-hero-val">${_wDisplay(avg7).toFixed(1)}</div>
+    <div class="stats-hero-label">7-Day Avg</div>
+  </div>`;
+  cardsHtml += `<div class="stats-hero-card">
+    <div class="stats-hero-val" style="color:${totalChange > 0 ? '#d45050' : totalChange < 0 ? 'var(--sage)' : 'var(--brown-dark)'}">${totalChange > 0 ? '+' : ''}${_wDisplay(totalChange).toFixed(1)}</div>
+    <div class="stats-hero-label">Total Change</div>
+  </div>`;
+  cardsHtml += '</div>';
+  cardsEl.innerHTML = cardsHtml;
+
+  // BMI section
+  if (heightCm > 0) {
+    const heightM = heightCm / 100;
+    const bmi = latestW / (heightM * heightM);
+    _renderBMI(bmiEl, bmi);
+  } else {
+    bmiEl.innerHTML = '';
+  }
+
+  // Weight trend chart (SVG sparkline)
+  _renderBodyChart(chartEl, sorted);
+
+  // Goal progress
+  if (targetKg > 0) {
+    const startW = first.weight_kg;
+    const totalNeeded = targetKg - startW;
+    const current = latestW - startW;
+    const pct = totalNeeded !== 0 ? Math.min(100, Math.max(0, (current / totalNeeded) * 100)) : 100;
+    const remaining = targetKg - latestW;
+    goalEl.innerHTML = `<div class="stats-section">
+      <div class="stats-section-title">Goal Progress</div>
+      <div class="body-goal-bar"><div class="body-goal-fill" style="width:${pct.toFixed(0)}%"></div></div>
+      <div class="body-goal-labels">
+        <span>${_wDisplay(startW).toFixed(1)} ${_wLabel()}</span>
+        <span>${remaining > 0 ? '+' : ''}${_wDisplay(remaining).toFixed(1)} ${_wLabel()} remaining</span>
+        <span>${_wDisplay(targetKg).toFixed(1)} ${_wLabel()}</span>
+      </div>
+    </div>`;
+  } else {
+    goalEl.innerHTML = '';
+  }
+
+  // Setup section (height + target)
+  _renderBodySetup(heightCm, targetKg);
+
+  // Log list
+  listSection.style.display = '';
+  const listEl = document.getElementById('body-log-list');
+  listEl.innerHTML = data.slice(0, 30).map(e => {
+    const d = new Date(e.date + 'T00:00:00');
+    const dateStr = d.toLocaleDateString('en', {month: 'short', day: 'numeric', year: 'numeric'});
+    return `<div class="body-log-row">
+      <span class="body-log-date">${dateStr}</span>
+      <span class="body-log-val">${_wDisplay(e.weight_kg).toFixed(1)} ${_wLabel()}</span>
+      <span class="body-log-note">${esc(e.notes || '')}</span>
+      <button class="body-log-del" onclick="deleteBodyLog(${e.id})" title="Delete">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function _renderBMI(container, bmi) {
+  const barMin = 15, barMax = 40;
+  const zones = [
+    {name: 'Underweight', cls: 'underweight', min: barMin, max: 18.5},
+    {name: 'Normal', cls: 'normal', min: 18.5, max: 25},
+    {name: 'Overweight', cls: 'overweight', min: 25, max: 30},
+    {name: 'Obese', cls: 'obese', min: 30, max: barMax},
+  ];
+  const totalRange = barMax - barMin;
+  const clampedBmi = Math.max(barMin, Math.min(barMax, bmi));
+  const pct = ((clampedBmi - barMin) / totalRange) * 100;
+
+  container.innerHTML = `<div class="stats-section">
+    <div class="stats-section-title">BMI <span class="stats-section-sub">${bmi.toFixed(1)}</span></div>
+    <div class="bmi-zone-bar">
+      ${zones.map(z => {
+        const w = ((z.max - z.min) / totalRange) * 100;
+        return `<div class="bmi-zone ${z.cls}" style="flex:0 0 ${w.toFixed(1)}%">${z.name}</div>`;
+      }).join('')}
+      <div class="bmi-marker" style="left:${pct.toFixed(1)}%"></div>
+    </div>
+    <div class="bmi-zone-labels">
+      <span>&lt;18.5</span><span>18.5</span><span>25</span><span>30</span><span>40+</span>
+    </div>
+  </div>`;
+}
+
+function _renderBodyChart(container, sorted) {
+  if (sorted.length < 2) { container.innerHTML = ''; return; }
+  const W = 400, H = 120, pad = 30;
+  const vals = sorted.map(e => e.weight_kg);
+  const min = Math.min(...vals) * 0.995;
+  const max = Math.max(...vals) * 1.005;
+  const range = max - min || 1;
+  const n = vals.length;
+
+  const pts = vals.map((v, i) => {
+    const x = pad + (i / (n - 1)) * (W - pad * 2);
+    const y = pad / 2 + (1 - (v - min) / range) * (H - pad);
+    return [x.toFixed(1), y.toFixed(1)];
+  });
+
+  const polyline = pts.map(p => p.join(',')).join(' ');
+  const areaPath = `M${pts[0].join(',')} ${pts.slice(1).map(p => 'L' + p.join(',')).join(' ')} L${pts[n-1][0]},${H - pad/2} L${pts[0][0]},${H - pad/2} Z`;
+  const dots = pts.map(([x, y], i) => {
+    const d = new Date(sorted[i].date + 'T00:00:00');
+    const label = d.toLocaleDateString('en', {month: 'short', day: 'numeric'});
+    const wt = _wDisplay(sorted[i].weight_kg).toFixed(1);
+    return `<circle cx="${x}" cy="${y}" r="3" fill="var(--amber)" stroke="var(--white)" stroke-width="1.5">
+      <title>${label}: ${wt} ${_wLabel()}</title>
+    </circle>`;
+  }).join('');
+
+  // Y-axis labels
+  const ySteps = 5;
+  let yLabels = '';
+  for (let i = 0; i <= ySteps; i++) {
+    const v = min + (range * i / ySteps);
+    const y = pad / 2 + (1 - i / ySteps) * (H - pad);
+    yLabels += `<text x="${pad - 4}" y="${y}" text-anchor="end" font-size="9" fill="#b0a090" dominant-baseline="middle">${_wDisplay(v).toFixed(0)}</text>`;
+    yLabels += `<line x1="${pad}" y1="${y}" x2="${W - pad}" y2="${y}" stroke="#f0ebe0" stroke-width="0.5"/>`;
+  }
+
+  // X-axis: first and last date
+  const firstDate = new Date(sorted[0].date + 'T00:00:00').toLocaleDateString('en', {month: 'short', day: 'numeric'});
+  const lastDate = new Date(sorted[n-1].date + 'T00:00:00').toLocaleDateString('en', {month: 'short', day: 'numeric'});
+
+  container.innerHTML = `<div class="stats-section">
+    <div class="stats-section-title">Weight Trend</div>
+    <div class="body-chart-wrap">
+      <svg viewBox="0 0 ${W} ${H + 16}" height="${H + 16}">
+        ${yLabels}
+        <path d="${areaPath}" fill="var(--amber)" opacity=".08"/>
+        <polyline points="${polyline}" fill="none" stroke="var(--amber)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        ${dots}
+        <text x="${pad}" y="${H + 10}" font-size="9" fill="#b0a090">${firstDate}</text>
+        <text x="${W - pad}" y="${H + 10}" font-size="9" fill="#b0a090" text-anchor="end">${lastDate}</text>
+      </svg>
+    </div>
+  </div>`;
+}
+
+function _renderBodySetup(heightCm, targetKg) {
+  const existing = document.getElementById('body-setup-section');
+  if (existing) existing.remove();
+
+  const section = document.createElement('div');
+  section.id = 'body-setup-section';
+  section.className = 'stats-section';
+  section.innerHTML = `
+    <div class="stats-section-title">Settings</div>
+    <div class="body-log-form" style="margin-bottom:0">
+      <div class="form-group">
+        <label>Height (cm)</label>
+        <input type="number" id="body-height-input" value="${heightCm || ''}" step="1" min="100" max="250" placeholder="175">
+      </div>
+      <div class="form-group">
+        <label>Target Weight (${_wLabel()})</label>
+        <input type="number" id="body-target-input" value="${targetKg ? _wDisplay(targetKg).toFixed(1) : ''}" step="0.1" min="0" placeholder="75.0">
+      </div>
+      <button onclick="saveBodySettings()">Save</button>
+    </div>`;
+
+  const parent = document.getElementById('sub-statistics-body');
+  const logList = document.getElementById('body-log-list-section');
+  parent.insertBefore(section, logList);
+}
+
+async function logBodyWeight() {
+  const dateVal = document.getElementById('body-log-date').value;
+  const weightInput = parseFloat(document.getElementById('body-log-weight').value);
+  const notes = document.getElementById('body-log-notes').value.trim();
+  if (!weightInput || isNaN(weightInput)) return;
+
+  const weightKg = _wStore(weightInput);
+  await fetch('/api/body', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({date: dateVal, weight_kg: weightKg, notes})
+  });
+  document.getElementById('body-log-weight').value = '';
+  document.getElementById('body-log-notes').value = '';
+  loadBodyStats();
+}
+
+async function deleteBodyLog(id) {
+  await fetch('/api/body/' + id, {method: 'DELETE'});
+  loadBodyStats();
+}
+
+function saveBodySettings() {
+  const heightCm = parseFloat(document.getElementById('body-height-input').value) || 0;
+  const targetDisplay = parseFloat(document.getElementById('body-target-input').value) || 0;
+  const targetKg = _wStore(targetDisplay);
+  localStorage.setItem('_bodyHeightCm', heightCm.toString());
+  localStorage.setItem('_bodyTargetKg', targetKg.toString());
+  // Also save to server settings for backup
+  fetch('/api/settings', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({USER_HEIGHT_CM: heightCm.toString(), BODY_WEIGHT_TARGET_KG: targetKg.toString()})
+  });
+  loadBodyStats();
+}
+
+// Load height/target from server on init
+async function _initBodySettings() {
+  try {
+    const s = await fetch('/api/settings').then(r => r.json());
+    if (s.USER_HEIGHT_CM) localStorage.setItem('_bodyHeightCm', s.USER_HEIGHT_CM);
+    if (s.BODY_WEIGHT_TARGET_KG) localStorage.setItem('_bodyTargetKg', s.BODY_WEIGHT_TARGET_KG);
+  } catch(e) {}
+}
+_initBodySettings();
+
 // ── Planner picker (with workout tab) ─────────────────────────────────────────
 let _pickerTab = 'workout';
 
@@ -4017,127 +4746,6 @@ loadExercises = async function(status) {
   }
   renderGrid(status);
 };
-
-// ── AI Plan ───────────────────────────────────────────────────────────────────
-let _aiPlanData = null;
-
-function openAiPlanModal() {
-  _aiPlanData = null;
-  document.getElementById('aip-result').innerHTML = '';
-  document.getElementById('ai-plan-modal').classList.add('open');
-}
-
-function closeAiPlanModal() {
-  document.getElementById('ai-plan-modal').classList.remove('open');
-  _aiPlanData = null;
-}
-
-async function generateAiPlan() {
-  const goal = document.getElementById('aip-goal').value;
-  const days = parseInt(document.getElementById('aip-days').value);
-  const focusRaw = document.getElementById('aip-focus').value.trim();
-  const useEquipment = document.getElementById('aip-use-equipment').checked;
-  const weekStart = plannerWeekStart.toISOString().slice(0,10);
-
-  let equipmentFilter = null;
-  if (useEquipment) {
-    const owned = await getOwnedEquipment();
-    equipmentFilter = owned.length ? owned : null;
-  }
-
-  const muscleArr = focusRaw ? focusRaw.split(',').map(s => s.trim()).filter(Boolean) : null;
-
-  const btn = document.getElementById('aip-gen-btn');
-  const result = document.getElementById('aip-result');
-  btn.disabled = true;
-  result.innerHTML = '<div class="gen-loading" style="margin-top:16px"><div class="spinner"></div>Generating plan...</div>';
-
-  try {
-    const res = await fetch('/api/ai/plan', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        week_start: weekStart,
-        days_per_week: days,
-        goal,
-        equipment_filter: equipmentFilter,
-        muscle_focus: muscleArr,
-      }),
-    });
-    const data = await res.json();
-    btn.disabled = false;
-
-    if (data.error) {
-      result.innerHTML = `<div style="color:#c44;font-size:13px;margin-top:12px">${esc(data.error)}</div>`;
-      return;
-    }
-
-    _aiPlanData = data;
-    result.innerHTML = renderAiPlanPreview(data, weekStart);
-  } catch(e) {
-    btn.disabled = false;
-    result.innerHTML = `<div style="color:#c44;font-size:13px;margin-top:12px">Failed to generate plan.</div>`;
-  }
-}
-
-function renderAiPlanPreview(data, weekStart) {
-  const plan = data.plan || [];
-  const summary = data.summary || '';
-
-  // Group by date
-  const byDate = {};
-  plan.forEach(e => {
-    if (!byDate[e.date]) byDate[e.date] = [];
-    byDate[e.date].push(e);
-  });
-
-  const start = new Date(weekStart + 'T00:00:00');
-  const dateRows = [];
-  for (let i=0; i<7; i++) {
-    const d = new Date(start); d.setDate(d.getDate()+i);
-    const iso = d.toISOString().slice(0,10);
-    const entries = byDate[iso] || [];
-    if (!entries.length) {
-      dateRows.push(`<div class="ai-plan-day"><div class="ai-plan-date">${d.toLocaleDateString('en',{weekday:'short',month:'short',day:'numeric'})}</div><div class="ai-plan-entries" style="color:var(--text-muted);font-size:11px">Rest day</div></div>`);
-    } else {
-      const entriesHtml = entries.map(e => `<div class="ai-plan-entry"><span class="ai-plan-slot">${esc(e.slot)}</span> ${esc(e.exercise_slug)}${e.notes ? ' <span style="color:var(--text-muted)">— ' + esc(e.notes) + '</span>' : ''}</div>`).join('');
-      dateRows.push(`<div class="ai-plan-day"><div class="ai-plan-date">${d.toLocaleDateString('en',{weekday:'short',month:'short',day:'numeric'})}</div><div class="ai-plan-entries">${entriesHtml}</div></div>`);
-    }
-  }
-
-  return `<div style="margin-top:16px">
-    <div class="ai-plan-preview">
-      ${dateRows.join('')}
-      ${summary ? `<div class="ai-plan-summary">${esc(summary)}</div>` : ''}
-    </div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn-sage" onclick="acceptAiPlan()">Accept Plan</button>
-      <button class="btn-outline" onclick="generateAiPlan()">Regenerate</button>
-    </div>
-  </div>`;
-}
-
-async function acceptAiPlan() {
-  if (!_aiPlanData?.plan?.length) return;
-  const btn = document.querySelector('#aip-result .btn-sage');
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
-
-  for (const entry of _aiPlanData.plan) {
-    await fetch('/api/plan', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        date: entry.date,
-        slot: entry.slot,
-        exercise_slug: entry.exercise_slug,
-        notes: entry.notes || null,
-      }),
-    });
-  }
-
-  closeAiPlanModal();
-  loadPlanner();
-}
 
 // ── Exercise progress ─────────────────────────────────────────────────────────
 async function loadExerciseProgress(slug, container) {

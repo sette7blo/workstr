@@ -102,6 +102,14 @@ CREATE TABLE IF NOT EXISTS workout_session_sets (
     FOREIGN KEY (session_id) REFERENCES workout_sessions(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS body_log (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    date        TEXT NOT NULL UNIQUE,
+    weight_kg   REAL NOT NULL,
+    notes       TEXT,
+    created_at  TEXT DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS settings (
     key         TEXT PRIMARY KEY,
     value       TEXT
@@ -139,6 +147,7 @@ CREATE INDEX IF NOT EXISTS idx_workout_exercises_workout ON workout_exercises(wo
 CREATE INDEX IF NOT EXISTS idx_workout_sessions_started ON workout_sessions(started_at);
 CREATE INDEX IF NOT EXISTS idx_session_sets_session ON workout_session_sets(session_id);
 CREATE INDEX IF NOT EXISTS idx_session_sets_slug ON workout_session_sets(exercise_slug);
+CREATE INDEX IF NOT EXISTS idx_body_log_date ON body_log(date);
 """
 
 MIGRATIONS = [

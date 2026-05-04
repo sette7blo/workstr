@@ -2,7 +2,6 @@
 server.py — Liftme Flask application
 Run: python server.py
 """
-import csv
 import gzip
 import io
 import json
@@ -13,7 +12,7 @@ from flask import Flask, jsonify, request, send_from_directory, Response
 import core.config as config
 from core.schema import init_db
 from modules import importer, workout_log, workout_planner, workouts
-from modules import ai_generator, ai_planner, camera, seed_browser, recovery
+from modules import ai_generator, camera, seed_browser, recovery
 from modules import mesocycles as meso_module
 
 app = Flask(__name__, static_folder="frontend", static_url_path="")
@@ -145,6 +144,29 @@ def api_update_exercise(slug):
     if not result:
         return jsonify({"error": "not found"}), 404
     return jsonify(result)
+
+
+@app.route("/api/exercises/<slug>/regenerate-image", methods=["POST"])
+def api_regenerate_image(slug):
+    api_key = config.get("PPQ_API_KEY")
+    if not api_key:
+        return jsonify({"error": "No API key configured"}), 400
+    ex = importer.get_exercise(slug)
+    if not ex:
+        return jsonify({"error": "Exercise not found"}), 404
+    base_url = config.get("PPQ_BASE_URL", "https://api.ppq.ai/v1")
+    image_model = config.get("PPQ_IMAGE_MODEL", "dall-e-3")
+    full = ex.get("full", {})
+    full.setdefault("name", ex.get("name", slug))
+    try:
+        image_path = ai_generator._generate_image(full, slug, api_key, base_url, image_model)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    if not image_path:
+        return jsonify({"error": "Image generation failed"}), 500
+    rel = f"images/{image_path.name}"
+    importer.update_exercise(slug, {"image": rel})
+    return jsonify({"ok": True, "image": rel})
 
 
 
@@ -556,6 +578,74 @@ def api_ai_test():
     return jsonify(ai_generator.test_connection())
 
 
+@app.route("/api/ai/balance")
+def api_ai_balance():
+    credit_id = config.get("PPQ_CREDIT_ID", "")
+    if not credit_id:
+        return jsonify({"ok": False, "error": "No credit ID configured"})
+    try:
+        import urllib.request as _ur, json as _json
+        body = _json.dumps({"credit_id": credit_id}).encode()
+        rq = _ur.Request("https://api.ppq.ai/credits/balance",
+                         data=body, headers={"Content-Type": "application/json"}, method="POST")
+        with _ur.urlopen(rq, timeout=10) as resp:
+            data = _json.loads(resp.read())
+        return jsonify({"ok": True, "balance": data.get("balance", 0)})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)})
+
+
+TOPUP_METHODS = {"xmr": {"min": 5, "max": 10000}}
+
+
+@app.route("/api/ai/topup", methods=["POST"])
+def api_ai_topup():
+    api_key = config.get("PPQ_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "No API key configured"}), 400
+    data = request.get_json(force=True)
+    method = data.get("method", "")
+    amount = data.get("amount")
+    currency = data.get("currency", "USD")
+    if method not in TOPUP_METHODS:
+        return jsonify({"ok": False, "error": f"Unsupported method. Use: {', '.join(TOPUP_METHODS)}"}), 400
+    try:
+        amount = float(amount)
+    except (TypeError, ValueError):
+        return jsonify({"ok": False, "error": "Invalid amount"}), 400
+    limits = TOPUP_METHODS[method]
+    if currency == "USD" and (amount < limits["min"] or amount > limits["max"]):
+        return jsonify({"ok": False, "error": f"Amount must be ${limits['min']}-${limits['max']} for {method}"}), 400
+    try:
+        import urllib.request as _ur, json as _json
+        body = _json.dumps({"amount": amount, "currency": currency}).encode()
+        rq = _ur.Request(f"https://api.ppq.ai/topup/create/{method}",
+                         data=body,
+                         headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
+                         method="POST")
+        with _ur.urlopen(rq, timeout=15) as resp:
+            result = _json.loads(resp.read())
+        return jsonify({"ok": True, **result})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/ai/topup/status/<invoice_id>")
+def api_ai_topup_status(invoice_id):
+    api_key = config.get("PPQ_API_KEY", "")
+    if not api_key:
+        return jsonify({"ok": False, "error": "No API key configured"}), 400
+    try:
+        import urllib.request as _ur, json as _json
+        rq = _ur.Request(f"https://api.ppq.ai/topup/status/{invoice_id}",
+                         headers={"Authorization": f"Bearer {api_key}"}, method="GET")
+        with _ur.urlopen(rq, timeout=10) as resp:
+            result = _json.loads(resp.read())
+        return jsonify({"ok": True, **result})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
 @app.route("/api/ai/generate", methods=["POST"])
 def api_ai_generate():
     data = request.get_json(force=True)
@@ -564,24 +654,6 @@ def api_ai_generate():
         return jsonify({"error": "prompt is required"}), 400
     try:
         result = ai_generator.generate_exercise(prompt)
-        return jsonify(result)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/api/ai/plan", methods=["POST"])
-def api_ai_plan():
-    data = request.get_json(force=True)
-    week_start = data.get("week_start")
-    if not week_start:
-        return jsonify({"error": "week_start required"}), 400
-    try:
-        result = ai_planner.generate_plan(
-            week_start=week_start,
-            days_per_week=int(data.get("days_per_week", 4)),
-            goal=data.get("goal", "general fitness"),
-            equipment_filter=data.get("equipment_filter") or None,
-            muscle_focus=data.get("muscle_focus") or None,
-        )
         return jsonify(result)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -644,8 +716,8 @@ def api_seed_import():
 # ── Settings ──────────────────────────────────────────────────────────────────
 
 SETTINGS_KEYS = [
-    "PPQ_API_KEY", "PPQ_BASE_URL", "PPQ_MODEL", "PPQ_IMAGE_MODEL", "PPQ_VISION_MODEL",
-    "EQUIPMENT", "WEIGHT_UNIT",
+    "PPQ_API_KEY", "PPQ_CREDIT_ID", "PPQ_BASE_URL", "PPQ_MODEL", "PPQ_IMAGE_MODEL", "PPQ_VISION_MODEL",
+    "EQUIPMENT", "WEIGHT_UNIT", "USER_HEIGHT_CM", "BODY_WEIGHT_TARGET_KG",
 ]
 
 
@@ -721,41 +793,157 @@ def api_upsert_mesocycle_week(mid, week_num):
     return jsonify(result)
 
 
-# ── Export ─────────────────────────────────────────────────────────────────────
+# ── Body Tracking ─────────────────────────────────────────────────────────────
 
-@app.route("/api/export/log.json")
-def api_export_log_json():
-    limit = int(request.args.get("limit", 10000))
-    entries = workout_log.get_history(limit)
-    payload = json.dumps(entries, ensure_ascii=False, indent=2)
-    return Response(
-        payload,
-        mimetype="application/json",
-        headers={"Content-Disposition": "attachment; filename=workout_log.json"},
-    )
+@app.route("/api/body")
+def api_body_log():
+    from core.db import db, rows_to_list
+    limit = int(request.args.get("limit", 90))
+    with db() as conn:
+        rows = conn.execute(
+            "SELECT id, date, weight_kg, notes FROM body_log ORDER BY date DESC LIMIT ?",
+            (limit,)
+        ).fetchall()
+    return jsonify(rows_to_list(rows))
 
 
-@app.route("/api/export/log.csv")
-def api_export_log_csv():
-    limit = int(request.args.get("limit", 10000))
-    entries = workout_log.get_history(limit)
-    buf = io.StringIO()
-    writer = csv.writer(buf)
-    writer.writerow(["id", "date", "exercise_slug", "exercise_name", "set_number", "reps", "weight_kg", "duration_sec", "notes"])
-    for e in entries:
-        sets = e.get("sets") or []
-        if not sets:
-            writer.writerow([e["id"], (e.get("logged_at") or "")[:10], e.get("exercise_slug", ""), e.get("exercise_name", ""), "", "", "", e.get("duration_sec", ""), e.get("notes", "")])
-        else:
-            for i, s in enumerate(sets, 1):
-                if not s:
-                    continue
-                writer.writerow([e["id"], (e.get("logged_at") or "")[:10], e.get("exercise_slug", ""), e.get("exercise_name", ""), i, s.get("reps", ""), s.get("weight", ""), e.get("duration_sec", ""), e.get("notes", "")])
+@app.route("/api/body", methods=["POST"])
+def api_body_log_add():
+    from core.db import db
+    data = request.get_json(force=True)
+    weight = data.get("weight_kg")
+    log_date = data.get("date", date.today().isoformat())
+    notes = data.get("notes", "")
+    if not weight:
+        return jsonify({"error": "weight_kg required"}), 400
+    try:
+        weight = float(weight)
+    except (TypeError, ValueError):
+        return jsonify({"error": "invalid weight"}), 400
+    with db() as conn:
+        conn.execute(
+            """INSERT INTO body_log (date, weight_kg, notes)
+               VALUES (?, ?, ?)
+               ON CONFLICT(date) DO UPDATE SET weight_kg=excluded.weight_kg, notes=excluded.notes""",
+            (log_date, weight, notes),
+        )
+    return jsonify({"ok": True}), 201
+
+
+@app.route("/api/body/<int:entry_id>", methods=["DELETE"])
+def api_body_log_delete(entry_id):
+    from core.db import db
+    with db() as conn:
+        cur = conn.execute("DELETE FROM body_log WHERE id=?", (entry_id,))
+    return jsonify({"ok": cur.rowcount > 0}), 200 if cur.rowcount else 404
+
+
+# ── Backup & Restore ─────────────────────────────────────────────────────────
+
+@app.route("/api/backup")
+def api_download_backup():
+    import zipfile
+    import shutil
+    base = Path(__file__).parent
+    db_path = base / "data" / "liftme.db"
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        # Database — copy first to avoid locking issues
+        if db_path.exists():
+            tmp = base / "data" / "liftme-backup-tmp.db"
+            try:
+                from core.db import db
+                with db() as conn:
+                    conn.execute("BEGIN IMMEDIATE")
+                    shutil.copy2(str(db_path), str(tmp))
+                    conn.rollback()
+                zf.write(tmp, "liftme.db")
+            finally:
+                tmp.unlink(missing_ok=True)
+        # Exercise JSON files
+        exercises_dir = base / "exercises"
+        if exercises_dir.exists():
+            for f in exercises_dir.iterdir():
+                if f.is_file() and f.suffix == '.json':
+                    zf.write(f, f"exercises/{f.name}")
+        # Images
+        images_dir = base / "images"
+        if images_dir.exists():
+            for f in images_dir.iterdir():
+                if f.is_file():
+                    zf.write(f, f"images/{f.name}")
+        # Settings (exclude secrets)
+        settings = {}
+        env_path = base / ".env"
+        if env_path.exists():
+            with open(env_path) as ef:
+                for line in ef:
+                    line = line.strip()
+                    if not line or line.startswith("#") or "=" not in line:
+                        continue
+                    k, _, v = line.partition("=")
+                    k = k.strip()
+                    if k in ("FLASK_SECRET",):
+                        continue
+                    settings[k] = v.strip()
+        if settings:
+            zf.writestr("settings.json", json.dumps(settings, indent=2))
+    buf.seek(0)
+    from datetime import datetime
+    ts = datetime.now().strftime("%Y%m%d-%H%M%S")
     return Response(
         buf.getvalue(),
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment; filename=workout_log.csv"},
+        mimetype="application/zip",
+        headers={"Content-Disposition": f"attachment; filename=liftme-backup-{ts}.zip"},
     )
+
+
+@app.route("/api/backup/restore", methods=["POST"])
+def api_restore_backup():
+    import zipfile
+    f = request.files.get("backup")
+    if not f:
+        return jsonify({"error": "No file uploaded"}), 400
+    if not f.filename.endswith(".zip"):
+        return jsonify({"error": "File must be a .zip"}), 400
+    buf = io.BytesIO(f.read())
+    try:
+        zf = zipfile.ZipFile(buf, 'r')
+    except zipfile.BadZipFile:
+        return jsonify({"error": "Invalid zip file"}), 400
+    base = Path(__file__).parent
+    exercises_restored = 0
+    images_restored = 0
+    db_restored = False
+    for name in zf.namelist():
+        if name == "liftme.db":
+            target = base / "data" / "liftme.db"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(zf.read(name))
+            db_restored = True
+        elif name.startswith("exercises/") and not name.endswith("/"):
+            target = base / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(zf.read(name))
+            exercises_restored += 1
+        elif name.startswith("images/") and not name.endswith("/"):
+            target = base / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(zf.read(name))
+            images_restored += 1
+        elif name == "settings.json":
+            restored_settings = json.loads(zf.read(name))
+            config.save_env(restored_settings)
+    zf.close()
+    if db_restored:
+        init_db()
+    return jsonify({
+        "ok": True,
+        "exercises": exercises_restored,
+        "images": images_restored,
+        "db_restored": db_restored,
+    })
+
 
 # ── Version ────────────────────────────────────────────────────────────────────
 

@@ -11,6 +11,30 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v2.2.0] — 2026-05-04
+
+### Added
+- Body tracking: log weight, BMI zone bar, weight trend chart, goal progress, 7-day rolling average
+- Body sub-tab in Statistics (Training / Body toggle)
+- Backup & restore: export database, exercises, images, and settings as a zip file
+- Exercise edit drawer: edit all fields inline, regenerate AI image
+- AI Configuration settings: eye toggles, credit ID, test connection, balance display, Monero top-up
+- Auto-advance to next exercise after rest timer when all sets are logged
+
+### Changed
+- AI image generation prompt now produces single cover photos instead of step-by-step collages
+- Equipment from exercise data now included in AI image generation prompt
+- Gunicorn timeout increased to 300s for AI image generation
+
+### Fixed
+- Approve button in generate result now shows confirmation instead of leaving card open
+- Generate form clears when switching tabs
+- Drawer image updates immediately after regeneration (cache busting)
+
+### Removed
+- AI Plan feature (placed individual exercises, not full workouts)
+- Data export section in settings (replaced by backup)
+
 ## [v2.1.0] — 2026-05-01
 
 ### Added

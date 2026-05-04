@@ -95,13 +95,13 @@ def _generate_image(data: dict, slug: str, api_key: str, base_url: str, model: s
     dest = IMAGES_DIR / f"{slug}.png"
 
     name = data.get("name", "exercise")
-    muscle = data.get("muscle_group", "")
-    category = data.get("category", "")
+    equipment = data.get("equipment", [])
+    equip_str = ", ".join(equipment) if equipment else ""
     prompt = (
-        f"Professional fitness photography demonstrating {name}"
-        + (f", targeting {muscle}" if muscle else "")
-        + (f", {category} exercise" if category else "")
-        + ". Clean gym background, athlete in athletic wear, clear form demonstration, high resolution."
+        f"A single photo of an athlete performing {name}"
+        + (f" using {equip_str}" if equip_str and equip_str != "Body Weight" else "")
+        + " in a gym. Mid-action pose, athletic wear, clean background."
+        " No text, no labels, no step-by-step, no collage, no split frames."
     )
 
     try:
