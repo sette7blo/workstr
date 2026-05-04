@@ -3524,8 +3524,41 @@ async function startWorkoutSession(workoutId) {
 }
 
 
+// Keep screen awake during workout — uses silent video trick for HTTP compatibility (iOS/Brave)
+let _wakeLockVideo = null;
+function _requestWakeLock() {
+  if (_wakeLockVideo) return;
+  const v = document.createElement('video');
+  v.setAttribute('playsinline','');
+  v.setAttribute('loop','');
+  v.setAttribute('muted','');
+  v.muted = true;
+  v.style.position = 'fixed';
+  v.style.top = '-1px';
+  v.style.left = '-1px';
+  v.style.width = '1px';
+  v.style.height = '1px';
+  v.style.opacity = '0.01';
+  // Tiny base64-encoded silent mp4
+  v.src = 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAARttZGF0AAACrQYF//+p3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE1MiByMjg1NCBlOWE1OTAzIC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAxNyAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYWRzPTMgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIGJfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMAAAAAAPZYiEAD//8m+P5OXfBeLGOfKE3wvXEj8FmHIR8FegAQAAABhiYgAz//DZ35J/KAAADAAAT8JeOjY0UQAAAAMAEAAAAMBZYE9QSwAAAAZBmiRsQP/+nhAAAAAJQZpCPAn/FIAAAAAJQZ5gSgn/FoAAAAAMAZ6CRCH/DoAzAAAADAGegkQh/wrAkIAAAAwBnqBEIf8KrJGAAAAbUGahEmoQWiZTAhn//6eECAAAAAlBnoJFNEwn/FIAAAAJQZqjSeEKUmUwIZ/+nhAAAAAA';
+  document.body.appendChild(v);
+  v.play().catch(()=>{});
+  _wakeLockVideo = v;
+}
+function _releaseWakeLock() {
+  if (_wakeLockVideo) {
+    _wakeLockVideo.pause();
+    _wakeLockVideo.remove();
+    _wakeLockVideo = null;
+  }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && _session) _requestWakeLock();
+});
+
 function _openSessionOverlay() {
   document.getElementById('session-overlay').classList.add('open');
+  _requestWakeLock();
   _sessionStartTime = Date.now();
   clearInterval(_sessionElapsedTimer);
   _sessionElapsedTimer = setInterval(() => {
@@ -3981,6 +4014,7 @@ async function confirmCancelSession() {
 function _closeSessionOverlay() {
   clearInterval(_sessionRestTimer);
   clearInterval(_sessionElapsedTimer);
+  _releaseWakeLock();
   document.getElementById('session-rest-overlay').classList.remove('show');
   document.getElementById('session-overlay').classList.remove('open');
   document.getElementById('session-elapsed').textContent = '';

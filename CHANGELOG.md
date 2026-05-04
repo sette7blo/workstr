@@ -11,6 +11,12 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v2.2.1] — 2026-05-04
+
+### Added
+- Screen wake lock during active workout sessions (keeps phone awake over HTTP)
+- README with features overview and self-hosting quick start
+
 ## [v2.2.0] — 2026-05-04
 
 ### Added
@@ -105,7 +111,9 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/liftme/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/sette7blo/liftme/compare/v2.2.1...HEAD
+[v2.2.1]: https://github.com/sette7blo/liftme/compare/v2.2.0...v2.2.1
+[v2.2.0]: https://github.com/sette7blo/liftme/compare/v2.0.0...v2.2.0
 [v2.0.0]: https://github.com/sette7blo/liftme/compare/v1.1.0...v2.0.0
 [v1.1.0]: https://github.com/sette7blo/liftme/compare/v1.0.0...v1.1.0
 [v1.0.0]: https://github.com/sette7blo/liftme/releases/tag/v1.0.0
