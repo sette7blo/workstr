@@ -5,40 +5,40 @@ import json
 from datetime import datetime, timezone
 from core.db import get_connection
 
-# Canonical muscle groups: base recovery hours by size
+# 10 canonical muscle groups with base recovery hours
 MUSCLE_CONFIG = {
     "Chest":       72,
     "Back":        72,
-    "Quadriceps":  72,
-    "Hamstrings":  72,
-    "Lower Back":  72,
     "Shoulders":   48,
-    "Glutes":      48,
-    "Core":        48,
-    "Traps":       48,
     "Biceps":      36,
     "Triceps":     36,
-    "Forearms":    36,
+    "Core":        48,
+    "Quadriceps":  72,
+    "Hamstrings":  72,
+    "Glutes":      48,
     "Calves":      36,
 }
 
-# Normalize raw muscle names from the DB to canonical names
+# Map any raw muscle name from DB/AI/seed to one of the 10 canonical groups.
+# Raw data is never modified — this runs at display/calculation time only.
 _ALIASES = {
-    "chest": "Chest", "pectorals": "Chest", "pecs": "Chest",
+    "chest": "Chest", "pectorals": "Chest", "pecs": "Chest", "upper chest": "Chest",
     "back": "Back", "lats": "Back", "latissimus dorsi": "Back",
-    "upper back": "Back", "mid back": "Back",
-    "quadriceps": "Quadriceps", "quads": "Quadriceps", "legs": "Quadriceps",
-    "hamstrings": "Hamstrings", "hamstring": "Hamstrings",
-    "lower back": "Lower Back", "lumbar": "Lower Back", "erector spinae": "Lower Back",
+    "upper back": "Back", "mid back": "Back", "middle back": "Back",
+    "lower back": "Back", "lumbar": "Back", "erector spinae": "Back",
+    "traps": "Back", "trapezius": "Back",
     "shoulders": "Shoulders", "deltoids": "Shoulders", "deltoid": "Shoulders",
     "anterior deltoid": "Shoulders", "posterior deltoid": "Shoulders",
-    "lateral deltoid": "Shoulders",
-    "glutes": "Glutes", "glute": "Glutes", "gluteus maximus": "Glutes",
-    "core": "Core", "abs": "Core", "abdominals": "Core", "obliques": "Core",
-    "traps": "Traps", "trapezius": "Traps",
-    "biceps": "Biceps", "bicep": "Biceps",
+    "lateral deltoid": "Shoulders", "supraspinatus": "Shoulders",
+    "biceps": "Biceps", "bicep": "Biceps", "brachialis": "Biceps",
+    "brachioradialis": "Biceps", "forearms": "Biceps", "forearm": "Biceps",
+    "arms": "Biceps",
     "triceps": "Triceps", "tricep": "Triceps",
-    "forearms": "Forearms", "forearm": "Forearms",
+    "core": "Core", "abs": "Core", "abdominals": "Core", "obliques": "Core",
+    "full body": "Core",
+    "quadriceps": "Quadriceps", "quads": "Quadriceps", "legs": "Quadriceps",
+    "hamstrings": "Hamstrings", "hamstring": "Hamstrings",
+    "glutes": "Glutes", "glute": "Glutes", "gluteus maximus": "Glutes",
     "calves": "Calves", "calf": "Calves",
 }
 
@@ -195,16 +195,19 @@ def get_quick_workout(duration_minutes: int = 45, min_recovery: int = 80) -> dic
     if not ready_muscles:
         return {"exercises": [], "pool": {}, "target_muscle_groups": [], "estimated_duration_min": 0}
 
+    ready_set = set(ready_muscles)
+
     conn = get_connection()
     try:
-        placeholders = ",".join("?" * len(ready_muscles))
-        rows = conn.execute(f"""
-            SELECT slug, name, muscle_group, tags, image_url
-            FROM exercises
-            WHERE status = 'active'
-              AND muscle_group IN ({placeholders})
-            ORDER BY name ASC
-        """, ready_muscles).fetchall()
+        rows = [
+            r for r in conn.execute("""
+                SELECT slug, name, muscle_group, tags, image_url
+                FROM exercises
+                WHERE status = 'active' AND muscle_group IS NOT NULL
+                ORDER BY name ASC
+            """).fetchall()
+            if _canon(r["muscle_group"]) in ready_set
+        ]
 
         logged_slugs = {
             r["exercise_slug"] for r in conn.execute(
@@ -214,10 +217,10 @@ def get_quick_workout(duration_minutes: int = 45, min_recovery: int = 80) -> dic
     finally:
         conn.close()
 
-    # Score and bucket exercises by muscle group
+    # Score and bucket exercises by canonical muscle group
     by_muscle: dict[str, list] = {}
     for row in rows:
-        mg = row["muscle_group"]
+        mg = _canon(row["muscle_group"]) or row["muscle_group"]
         try:
             tags = json.loads(row["tags"] or "[]")
         except (json.JSONDecodeError, TypeError):

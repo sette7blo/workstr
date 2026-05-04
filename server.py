@@ -486,7 +486,7 @@ def api_stats():
         """).fetchall()
         session_dates = [r["d"] for r in date_rows]
 
-        # Muscle group distribution (last 30 days)
+        # Muscle group distribution (last 30 days) — aggregated by canonical group
         muscle_rows = conn.execute("""
             SELECT e.muscle_group, COUNT(DISTINCT wss.exercise_slug) as exercise_count,
                    COUNT(wss.id) as set_count
@@ -499,7 +499,14 @@ def api_stats():
             GROUP BY e.muscle_group
             ORDER BY set_count DESC
         """).fetchall()
-        muscle_distribution = rows_to_list(muscle_rows)
+        agg = {}
+        for r in muscle_rows:
+            canon = recovery._canon(r["muscle_group"]) or r["muscle_group"]
+            if canon not in agg:
+                agg[canon] = {"muscle_group": canon, "exercise_count": 0, "set_count": 0}
+            agg[canon]["exercise_count"] += r["exercise_count"]
+            agg[canon]["set_count"] += r["set_count"]
+        muscle_distribution = sorted(agg.values(), key=lambda x: x["set_count"], reverse=True)
 
         # Personal records (best estimated 1RM per exercise, all time)
         pr_rows = conn.execute("""

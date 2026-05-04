@@ -11,6 +11,18 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v2.3.0] — 2026-05-04
+
+### Changed
+- Consolidated muscle groups from 13 to 10 canonical groups (Lower Back/Traps merged into Back, Forearms into Biceps)
+- Recovery, stats, body map, and workout summary all use the same equivalency aliases
+- Exercises keep their original muscle names — aliases resolve at display time only
+
+### Fixed
+- Screen wake lock now uses video file fallback (works on Brave/iOS over HTTP)
+- Muscle names from seed/AI imports (Middle Back, Abdominals, Arms, etc.) now correctly map to canonical groups
+- Quick workout generator now matches exercises by canonical group instead of raw DB names
+
 ## [v2.2.1] — 2026-05-04
 
 ### Added
@@ -111,7 +123,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/liftme/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/sette7blo/liftme/compare/v2.3.0...HEAD
+[v2.3.0]: https://github.com/sette7blo/liftme/compare/v2.2.1...v2.3.0
 [v2.2.1]: https://github.com/sette7blo/liftme/compare/v2.2.0...v2.2.1
 [v2.2.0]: https://github.com/sette7blo/liftme/compare/v2.0.0...v2.2.0
 [v2.0.0]: https://github.com/sette7blo/liftme/compare/v1.1.0...v2.0.0
