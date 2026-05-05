@@ -11,6 +11,18 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v2.4.0] — 2026-05-05
+
+### Added
+- Estimated workout duration on workout cards (e.g. "4 exercises · ~26 min")
+- Muscle distribution percentages in statistics (e.g. "Chest — 24 sets 28%")
+- Carry weight and reps forward to next set after logging
+
+### Changed
+- Streak display: replaced 30-day dot timeline with flame icon + streak count
+- Session set fields start empty with last session values as placeholders instead of pre-filled
+- Progression suggestions now snap to real plate increments (5 lb / 2.5 kg)
+
 ## [v2.3.0] — 2026-05-04
 
 ### Changed

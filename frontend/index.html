@@ -634,14 +634,7 @@ a{color:inherit;text-decoration:none}
 .stats-section-sub{font-weight:400;font-size:11px;color:var(--text-muted)}
 .stats-chart-wrap{width:100%;overflow-x:auto}
 .stats-chart-wrap canvas{width:100%;display:block}
-.stats-dots{display:flex;gap:5px;justify-content:center;flex-wrap:nowrap;overflow-x:auto;padding:2px 0}
-.stats-dot{width:14px;height:14px;border-radius:50%;background:var(--cream);border:1.5px solid var(--border-soft);flex-shrink:0;position:relative;cursor:default;transition:transform .1s}
-.stats-dot.active{background:var(--amber);border-color:var(--amber)}
-.stats-dot.today{box-shadow:0 0 0 2.5px var(--cream),0 0 0 4px var(--amber)}
-.stats-dot:hover{transform:scale(1.3)}
-.stats-dot-tip{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--brown-dark);color:#fff;font-size:10px;padding:3px 8px;border-radius:5px;white-space:nowrap;display:none;z-index:5;pointer-events:none}
-.stats-dot:hover .stats-dot-tip{display:block}
-.stats-dots-legend{display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--text-muted)}
+.stats-streak-flame-active{fill:var(--amber);stroke:var(--amber)}
 .stats-muscle-row{display:flex;gap:20px;align-items:flex-start}
 .stats-muscle-map{flex:0 0 180px}
 .stats-muscle-map svg{width:100%;height:auto}
@@ -1048,7 +1041,10 @@ a{color:inherit;text-decoration:none}
     <div class="sub-panel active" id="sub-statistics-training">
       <div class="stats-hero" id="stats-hero">
         <div class="stats-hero-card">
-          <div class="stats-hero-val" id="stats-streak">0</div>
+          <div class="stats-hero-val" style="display:flex;align-items:center;justify-content:center;gap:6px">
+            <svg id="stats-streak-flame" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M12 22c-4-2.5-7-6.5-7-11 0-3 2-5.5 4-7 .5 2.5 2 4 4 5 0-3 1.5-6 3-8 1.5 2 3 5 3 8 2-1 3.5-2.5 4-5 1.5 2.5 1 6-1 9s-5.5 5.5-10 9z"/></svg>
+            <span id="stats-streak">0</span>
+          </div>
           <div class="stats-hero-label">Day Streak</div>
         </div>
         <div class="stats-hero-card">
@@ -1059,12 +1055,6 @@ a{color:inherit;text-decoration:none}
           <div class="stats-hero-val" id="stats-total-volume">0</div>
           <div class="stats-hero-label">Total Volume</div>
         </div>
-      </div>
-
-      <div class="stats-section">
-        <div class="stats-section-title">Last 30 Days</div>
-        <div class="stats-dots" id="stats-dots"></div>
-        <div class="stats-dots-legend" id="stats-dots-legend"></div>
       </div>
 
       <div class="stats-section">
@@ -3133,7 +3123,7 @@ async function loadWorkouts() {
         </div>
         <div class="workout-card-info">
           <div class="workout-card-name">${esc(w.name)}</div>
-          <div class="workout-card-meta">${w.exercise_count||0} exercise${w.exercise_count!==1?'s':''}${w.description?' · '+esc(w.description):''}</div>
+          <div class="workout-card-meta" id="wk-meta-${w.id}">${w.exercise_count||0} exercise${w.exercise_count!==1?'s':''}${w.description?' · '+esc(w.description):''}</div>
           <div class="workout-card-muscles" id="wk-muscles-${w.id}"></div>
         </div>
         <svg class="workout-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
@@ -3143,6 +3133,17 @@ async function loadWorkouts() {
 
   // Load body maps for all workout cards
   list.forEach(w => _loadWorkoutCardMap(w.id));
+}
+
+function _estimateWorkoutMin(exercises) {
+  const SET_SEC = 45;
+  let total = 0;
+  exercises.forEach(e => {
+    const sets = e.sets || 3;
+    const rest = e.rest_sec || 90;
+    total += sets * SET_SEC + (sets - 1) * rest;
+  });
+  return Math.round(total / 60);
 }
 
 async function _loadWorkoutCardMap(wid) {
@@ -3172,6 +3173,17 @@ async function _loadWorkoutCardMap(wid) {
   if (muscleEl) {
     const groups = [...new Set(exercises.map(e => e.muscle_group).filter(Boolean))];
     muscleEl.textContent = groups.join(', ');
+  }
+
+  // Show estimated duration on card meta
+  if (exercises.length) {
+    const metaEl = document.getElementById('wk-meta-' + wid);
+    if (metaEl) {
+      const mins = _estimateWorkoutMin(exercises);
+      const timeStr = mins >= 60 ? Math.floor(mins/60) + 'h ' + (mins%60 ? mins%60 + ' min' : '') : mins + ' min';
+      const existing = metaEl.textContent;
+      metaEl.textContent = existing + ' · ~' + timeStr.trim();
+    }
   }
 }
 
@@ -3613,32 +3625,26 @@ async function _renderSessionEx() {
 
   const imgUrl = ex.image_url ? (ex.image_url.startsWith('http') ? ex.image_url : '/'+ex.image_url) : null;
 
-  // Defaults to pre-fill when no previous session data exists
-  const defaultReps = parseInt(targetReps) || '';
-  const defaultWeight = ex.weight || '';
-
   // Compute progression suggestion from last session
   const prog = _calcProgression(lastSets, targetReps, ex.weight);
 
   const doneSetsForLock = _sessionLoggedSets[slug] || new Set();
   const setRows = Array.from({length:numSets}, (_,i) => {
     const last = lastSets[i];
-    const repsVal = prog ? prog.reps : (last?.actual_reps != null ? last.actual_reps : defaultReps);
-    const rawWeight = prog ? prog.weight : (last?.actual_weight != null ? last.actual_weight : defaultWeight);
-    const weightVal = rawWeight ? _wDisplay(rawWeight) : rawWeight;
     const prevHint = last
       ? `<span class="session-set-prev">prev: ${last.actual_reps||'?'}${last.actual_weight?' @ '+_wFmt(last.actual_weight):''}</span>`
       : '';
     const progHint = prog
       ? `<span class="session-set-prog">suggested: ${prog.reps} reps @ ${_wFmt(prog.weight)} (${prog.note})</span>`
       : '';
-    const phWeight = ex.weight ? _wDisplay(ex.weight) : _wLabel();
+    const phReps = last?.actual_reps != null ? last.actual_reps : targetReps;
+    const phWeight = last?.actual_weight ? _wDisplay(last.actual_weight) : (ex.weight ? _wDisplay(ex.weight) : _wLabel());
     const alreadyDone = doneSetsForLock.has(i);
     const locked = !alreadyDone && i > 0 && !doneSetsForLock.has(i - 1);
     return `<div class="session-set-row${locked ? ' locked' : ''}">
       <div class="session-set-num" id="snum-${i}">${i+1}</div>
-      <input class="session-set-input" id="sreps-${i}" type="number" placeholder="${targetReps}" value="${repsVal}" min="0"${locked ? ' disabled' : ''}>
-      <input class="session-set-input" id="sweight-${i}" type="number" placeholder="${phWeight}" value="${weightVal}" min="0" step="0.5"${locked ? ' disabled' : ''}>
+      <input class="session-set-input" id="sreps-${i}" type="number" placeholder="${phReps}" value="" min="0"${locked ? ' disabled' : ''}>
+      <input class="session-set-input" id="sweight-${i}" type="number" placeholder="${phWeight}" value="" min="0" step="0.5"${locked ? ' disabled' : ''}>
       <button class="session-log-btn" id="slog-${i}" onclick="logSessionSet(${i},${restSec},'${slug}','${targetReps}',${ex.weight||'null'})"${locked ? ' disabled' : ''}>Log</button>
     </div>${prevHint}${progHint}`;
   }).join('');
@@ -3711,12 +3717,16 @@ async function logSessionSet(setIdx, restSec, slug, prescReps, prescWeight) {
   if (numEl) numEl.classList.add('done');
   if (logBtn) { logBtn.textContent='Done'; logBtn.classList.add('done'); logBtn.disabled = true; }
 
-  // Unlock next set
+  // Unlock next set and carry weight forward
   const nextRow = document.getElementById('slog-'+(setIdx+1))?.closest('.session-set-row');
   if (nextRow && nextRow.classList.contains('locked')) {
     nextRow.classList.remove('locked');
     nextRow.querySelectorAll('input, button').forEach(el => el.disabled = false);
   }
+  const nextWeightEl = document.getElementById('sweight-'+(setIdx+1));
+  if (nextWeightEl && !nextWeightEl.value && rawWeight) nextWeightEl.value = rawWeight;
+  const nextRepsEl = document.getElementById('sreps-'+(setIdx+1));
+  if (nextRepsEl && !nextRepsEl.value && reps) nextRepsEl.value = reps;
 
   // PR detection: Epley 1RM estimate
   if (reps && weight) {
@@ -4040,22 +4050,23 @@ function _calcProgression(lastSets, targetReps, prescribedWeight) {
   // Returns {reps, weight, note} or null when no history
   if (!lastSets || !lastSets.length) return null;
   const {lo, hi} = _parseRepRange(targetReps);
-  // Use median weight and check if all sets hit the top of rep range
   const weights = lastSets.map(s => s.actual_weight || prescribedWeight || 0).filter(Boolean);
   const reps = lastSets.map(s => s.actual_reps || 0);
   if (!weights.length || !reps.length) return null;
   const baseWeight = weights.reduce((a, b) => a + b, 0) / weights.length;
+  // Round to nearest real plate increment: 2.5kg for kg users, 5lb for lb users
+  const stepKg = _weightUnit === 'lb' ? 5 / KG_TO_LB : 2.5;
+  function _snapWeight(kg) { return Math.round(kg / stepKg) * stepKg; }
   const allHitTop = reps.every(r => r >= hi);
   if (allHitTop) {
-    // Increase weight, reset to bottom of rep range
-    const step = baseWeight >= 60 ? 2.5 : (baseWeight >= 20 ? 2.5 : 1.25);
-    return {reps: lo, weight: Math.round((baseWeight + step) * 2) / 2, note: `+${_wFmt(step)}`};
+    const newWeight = _snapWeight(baseWeight + stepKg);
+    const stepDisplay = Math.round(_wDisplay(stepKg) * 10) / 10;
+    return {reps: lo, weight: newWeight, note: `+${stepDisplay}${_wLabel()}`};
   }
-  // Suggest 1 more rep (up to top), keep weight
   const avgReps = Math.round(reps.reduce((a, b) => a + b, 0) / reps.length);
   const sugReps = Math.min(hi, avgReps + 1);
-  if (sugReps === avgReps) return null; // already at top but not all sets — keep same
-  return {reps: sugReps, weight: Math.round(baseWeight * 2) / 2, note: `+1 rep`};
+  if (sugReps === avgReps) return null;
+  return {reps: sugReps, weight: _snapWeight(baseWeight), note: `+1 rep`};
 }
 
 // ── Statistics ────────────────────────────────────────────────────────────────
@@ -4078,49 +4089,19 @@ async function loadStatistics() {
 
   // Hero cards
   document.getElementById('stats-streak').textContent = data.streak;
+  const flame = document.getElementById('stats-streak-flame');
+  if (data.streak > 0) { flame.classList.add('stats-streak-flame-active'); }
+  else { flame.classList.remove('stats-streak-flame-active'); }
   document.getElementById('stats-total-sessions').textContent = data.total_sessions;
   const allVol = data.weekly_volume.reduce((a, w) => a + (w.total_volume || 0), 0);
   const volStr = allVol > 0 ? Math.round(_wDisplay(allVol)).toLocaleString() + ' ' + _wLabel() : '0';
   document.getElementById('stats-total-volume').textContent = volStr;
-
-  _renderStatsDots(data.session_dates);
   _renderVolumeChart(data.weekly_volume);
   _renderMuscleDistribution(data.muscle_distribution);
   _renderPRs(data.personal_records);
   _renderExerciseBreakdown(data.exercise_totals);
 }
 
-function _renderStatsDots(sessionDates) {
-  const el = document.getElementById('stats-dots');
-  const legend = document.getElementById('stats-dots-legend');
-  const dateSet = new Set(sessionDates);
-  const today = new Date();
-  today.setHours(0,0,0,0);
-  const todayIso = today.toISOString().slice(0, 10);
-
-  let html = '';
-  let trainedCount = 0;
-  const d = new Date(today);
-  d.setDate(d.getDate() - 29);
-
-  for (let i = 0; i < 30; i++) {
-    const iso = d.toISOString().slice(0, 10);
-    const isToday = iso === todayIso;
-    const hasSession = dateSet.has(iso);
-    if (hasSession) trainedCount++;
-    let cls = 'stats-dot';
-    if (hasSession) cls += ' active';
-    if (isToday) cls += ' today';
-    const label = d.toLocaleDateString('en', {weekday: 'short', month: 'short', day: 'numeric'});
-    html += `<div class="${cls}"><div class="stats-dot-tip">${label}${hasSession ? ' — trained' : ''}</div></div>`;
-    d.setDate(d.getDate() + 1);
-  }
-  el.innerHTML = html;
-
-  const startLabel = new Date(today.getTime() - 29 * 86400000).toLocaleDateString('en', {month: 'short', day: 'numeric'});
-  const todayLabel = today.toLocaleDateString('en', {month: 'short', day: 'numeric'});
-  legend.innerHTML = `<span>${startLabel}</span><span>${trainedCount} of 30 days</span><span>${todayLabel}</span>`;
-}
 
 function _renderVolumeChart(weeklyVolume) {
   const canvas = document.getElementById('stats-volume-chart');
@@ -4205,12 +4186,14 @@ function _renderMuscleDistribution(muscles) {
   const listEl = document.getElementById('stats-muscle-list');
   if (!muscles.length) { listEl.innerHTML = '<div style="font-size:12px;color:var(--text-muted)">No data</div>'; return; }
   const maxSets = Math.max(...muscles.map(m => m.set_count));
+  const totalSets = muscles.reduce((a, m) => a + m.set_count, 0);
   listEl.innerHTML = muscles.map(m => {
-    const pct = Math.round((m.set_count / maxSets) * 100);
+    const barPct = Math.round((m.set_count / maxSets) * 100);
+    const sharePct = Math.round((m.set_count / totalSets) * 100);
     return `<div class="stats-muscle-bar">
       <div class="stats-muscle-bar-name">${esc(m.muscle_group || 'Other')}</div>
-      <div class="stats-muscle-bar-track"><div class="stats-muscle-bar-fill" style="width:${pct}%"></div></div>
-      <div class="stats-muscle-bar-val">${m.set_count} sets</div>
+      <div class="stats-muscle-bar-track"><div class="stats-muscle-bar-fill" style="width:${barPct}%"></div></div>
+      <div class="stats-muscle-bar-val">${m.set_count} sets <span style="color:var(--text-muted)">${sharePct}%</span></div>
     </div>`;
   }).join('');
 }
