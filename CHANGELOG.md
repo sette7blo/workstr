@@ -11,6 +11,16 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v2.5.0] — 2026-05-07
+
+### Changed
+- Split monolithic index.html (5,261 lines) into 9 modular files: app.css, core.js, exercises.js, workouts.js, generate.js, planner.js, stats.js, settings.js
+- Self-hosted fonts (Jost, Cormorant Garamond) — removed Google Fonts dependency
+
+### Fixed
+- Initial page load white screen on iOS caused by render-blocking external font fetch
+- Exercise library not loading on first visit (script load order)
+
 ## [v2.4.0] — 2026-05-05
 
 ### Added
@@ -135,7 +145,9 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ---
 
-[Unreleased]: https://github.com/sette7blo/liftme/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/sette7blo/liftme/compare/v2.5.0...HEAD
+[v2.5.0]: https://github.com/sette7blo/liftme/compare/v2.4.0...v2.5.0
+[v2.4.0]: https://github.com/sette7blo/liftme/compare/v2.3.0...v2.4.0
 [v2.3.0]: https://github.com/sette7blo/liftme/compare/v2.2.1...v2.3.0
 [v2.2.1]: https://github.com/sette7blo/liftme/compare/v2.2.0...v2.2.1
 [v2.2.0]: https://github.com/sette7blo/liftme/compare/v2.0.0...v2.2.0
