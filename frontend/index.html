@@ -976,5 +976,15 @@
 <script src="/planner.js"></script>
 <script src="/stats.js"></script>
 <script src="/settings.js"></script>
+<script>
+(function() {
+  var src = document.getElementById('body-map-svg');
+  var target = document.getElementById('recovery-map-container');
+  if (src && target) target.insertBefore(src, target.firstChild);
+})();
+fetch('/api/settings').then(function(r){return r.json()}).then(function(s){ _weightUnit = s.WEIGHT_UNIT || 'kg'; }).catch(function(){});
+refreshCounts();
+switchTab('exercises');
+</script>
 </body>
 </html>

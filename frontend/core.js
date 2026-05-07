@@ -99,15 +99,3 @@ function esc(s) {
   const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML;
 }
 
-// ── Init ─────────────────────────────────────────────────────────────────────
-
-// Move body map SVG into recovery sub-panel
-(function() {
-  const src = document.getElementById('body-map-svg');
-  const target = document.getElementById('recovery-map-container');
-  if (src && target) target.insertBefore(src, target.firstChild);
-})();
-
-fetch('/api/settings').then(r=>r.json()).then(s=>{ _weightUnit = s.WEIGHT_UNIT || 'kg'; }).catch(()=>{});
-refreshCounts();
-switchTab('exercises');
