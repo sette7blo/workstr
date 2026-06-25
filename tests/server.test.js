@@ -102,7 +102,7 @@ test('connect config exposes the required Idenstr scopes', async () => {
   await withServer(async (base) => {
     const [status, body] = await get(base, '/api/v1/connect');
     assert.equal(status, 200);
-    assert.deepEqual(body.requiredScopes, ['profile:read', 'relays:read', 'sign:kind:30078', 'sign:kind:33401', 'sign:kind:27235', 'publish:kind:1', 'publish:kind:30078', 'publish:kind:33401']);
+    assert.deepEqual(body.requiredScopes, ['profile:read', 'relays:read', 'sign:kind:30078', 'sign:kind:27235', 'publish:kind:1', 'publish:kind:33401']);
   });
 });
 

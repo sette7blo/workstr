@@ -16,10 +16,9 @@ const envFile = process.env.WORKSTR_ENV_FILE ?? join(root, '.env');
 // - sign:kind:30078  → sign the private sheet event kept in the vault
 // - publish:kind:1   → sign AND publish the workout summary note
 // - sign:kind:27235  → NIP-98 auth header for nostr.build image uploads
-// - publish:kind:30078 → sign AND broadcast a private sheet copy (legacy/sheets)
 // - publish:kind:33401 → sign AND broadcast a shared exercise as a NIP-101e template
 // - relays:read      → read the public relay list for discovery
-export const REQUIRED_SCOPES = ['profile:read', 'relays:read', 'sign:kind:30078', 'sign:kind:33401', 'sign:kind:27235', 'publish:kind:1', 'publish:kind:30078', 'publish:kind:33401'];
+export const REQUIRED_SCOPES = ['profile:read', 'relays:read', 'sign:kind:30078', 'sign:kind:27235', 'publish:kind:1', 'publish:kind:33401'];
 
 let config = readConfig();
 
