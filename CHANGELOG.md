@@ -11,6 +11,10 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 
+## [v0.1.1] — 2026-06-25
+### Changed
+- Trimmed the Idenstr scopes Workstr requests to only the ones it actually uses: dropped `sign:kind:33401` and `publish:kind:30078` (never exercised — exercises publish via `publish:kind:33401`, sheets sign via `sign:kind:30078`). A least-privilege Workstr token now needs six scopes instead of eight, all selectable as checkboxes in Idenstr.
+
 ## [v0.1.0] — 2026-06-25
 ### Changed
 - Backend hardening and efficiency pass: prepared SQL statements are cached and reused, the session list is built with one grouped query instead of an aggregate per session, Idenstr requests time out instead of hanging when Idenstr is unreachable, request bodies are size-capped, static assets are gzip-compressed, and relay discovery is bounded by a small connection pool. Removed unused code.
@@ -71,5 +75,6 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 - Weight unit (kg/lbs) is a display label in this version; stored values are not converted when the unit is switched.
 - AI features (exercise/image/vision generation) are deferred to a later phase.
 
-[Unreleased]: https://github.com/sette7blo/workstr/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/sette7blo/workstr/compare/v0.1.1...HEAD
+[v0.1.1]: https://github.com/sette7blo/workstr/compare/v0.1.0...v0.1.1
 [v0.1.0]: https://github.com/sette7blo/workstr/releases/tag/v0.1.0
