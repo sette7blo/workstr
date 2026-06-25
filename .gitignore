@@ -1,0 +1,20 @@
+# Claude Code — internal files, never publish
+CLAUDE.md
+AGENT.md
+.claude/
+
+# Environment / secrets
+.env
+
+# Runtime data
+data/
+*.db
+*.db-*
+*.backup.*
+
+# Node
+node_modules/
+npm-debug.log
+
+# Build artifact — injected by CI
+VERSION

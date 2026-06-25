@@ -1,0 +1,14 @@
+{
+  "name": "workstr",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Sovereign self-hosted workout tracker. Signs and publishes through Idenstr.",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

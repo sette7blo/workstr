@@ -1,0 +1,21 @@
+# Workstr local/self-hosted compose.
+#
+# Each *str app owns its own compose file and is independently deployable.
+# Cross-app integration happens through URL + API token, not shared compose.
+# Workstr links to Idenstr (signing + publishing) over URL + token, set in .env.
+
+services:
+  workstr:
+    build: .
+    container_name: workstr
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      WORKSTR_BIND_HOST: 0.0.0.0
+    ports:
+      - "${WORKSTR_HOST_BIND:-0.0.0.0}:${WORKSTR_HOST_PORT:-3003}:3003"
+    volumes:
+      - ./.env:/app/.env
+      - ./data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

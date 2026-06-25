@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Workstr — Sovereign Workout Tracker</title>
+  <meta name="description" content="A self-hosted, sovereign workout tracker and planner. Signs and publishes through Idenstr." />
+  <meta name="theme-color" content="#7c3cff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Workstr" />
+  <style>
+    html { background: #090512; color: #ede7dc; }
+    body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top left, rgba(124,60,255,.18), transparent 34rem), #090512; color: #ede7dc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .topbar, .sidebar, .content { opacity: 1; }
+    .topbar { min-height: 64px; }
+  </style>
+  <link rel="stylesheet" href="./styles.css?v=16" />
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="cyber-grid"></div>
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="logo-zone">
+      <span class="glyph">W</span>
+      <div class="logo-text">
+        <div class="logo-mark">Work<span>str</span></div>
+        <div class="logo-tagline">sovereign training</div>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <small id="live-status">loading</small>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="nav-items">
+      <div class="nav-item active" data-tab="exercises">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
+        <span>Exercises</span>
+      </div>
+      <div class="nav-item" data-tab="workouts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>
+        <span>Workouts</span>
+      </div>
+      <div class="nav-item" data-tab="statistics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        <span>Statistics</span>
+      </div>
+      <div class="nav-bottom">
+        <div class="nav-item" data-tab="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span>Settings</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- EXERCISES -->
+    <div class="page active" id="page-exercises">
+      <div class="page-title">Exercises</div>
+      <div class="sub-tabs">
+        <div class="sub-tab active" data-parent="exercises" data-subtab="library">Library</div>
+        <div class="sub-tab" data-parent="exercises" data-subtab="discover">Discover</div>
+      </div>
+
+      <div class="sub-panel active" id="sub-exercises-library">
+        <div class="panel">
+          <div class="panel-head"><span>Exercise library</span><button class="button primary small" id="new-exercise">+ New exercise</button></div>
+          <div class="filter-bar">
+            <input class="grow" id="ex-search" placeholder="Search exercises..." autocomplete="off" />
+            <select id="ex-cat"><option value="">All categories</option></select>
+            <select id="ex-muscle"><option value="">All muscles</option></select>
+            <select id="ex-diff"><option value="">All levels</option></select>
+          </div>
+          <div id="ex-grid" class="ex-grid"></div>
+          <div id="ex-empty" class="empty" style="display:none">No exercises match.</div>
+        </div>
+      </div>
+
+      <div class="sub-panel" id="sub-exercises-discover">
+        <div class="panel">
+          <div class="panel-head"><span>Discover exercises</span><button class="button ghost" id="discover-refresh">Search relays</button></div>
+          <p class="section-help">Browse exercises shared on your relays. Importing an exercise saves it into your local library so it can be used in programs and workouts.</p>
+          <div class="filter-bar">
+            <input class="grow" id="discover-search" placeholder="Search exercises..." autocomplete="off" />
+            <select id="discover-cat"><option value="">All categories</option></select>
+            <select id="discover-muscle"><option value="">All muscles</option></select>
+            <select id="discover-diff"><option value="">All levels</option></select>
+          </div>
+          <div id="discover-status" class="discover-status"></div>
+          <div id="discover-grid" class="ex-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKOUTS (Sheets · Train) -->
+    <div class="page" id="page-workouts">
+      <div class="page-title">Workouts</div>
+      <div class="sub-tabs">
+        <div class="sub-tab active" data-parent="workouts" data-subtab="programs">Programs</div>
+        <div class="sub-tab" data-parent="workouts" data-subtab="history">History</div>
+        <div class="sub-tab" data-parent="workouts" data-subtab="recovery">Recovery</div>
+      </div>
+
+      <div class="sub-panel active" id="sub-workouts-programs">
+        <div class="panel">
+          <div class="panel-head"><span>Programs</span><button class="button primary small" id="new-program">+ New program</button></div>
+          <p class="section-help">A program is the routine you take to the gym. Expand one to review its exercises, then hit Start to open the live logger. Publish a program as a private, editable Nostr event (kind 30078) — signed and stored in your vault by Idenstr.</p>
+          <div id="resume-slot"></div>
+          <div id="program-list" class="list empty">No programs yet.</div>
+        </div>
+      </div>
+
+      <div class="sub-panel" id="sub-workouts-history">
+        <div class="panel">
+          <div class="panel-head"><span>Workout history</span></div>
+          <p class="section-help">Every completed session, newest first. Expand one to see the exercises and sets you logged; delete it to remove it from your history and stats.</p>
+          <div id="history-list" class="list empty">No completed sessions yet.</div>
+        </div>
+      </div>
+
+      <div class="sub-panel" id="sub-workouts-recovery">
+        <div class="panel">
+          <div class="panel-head"><span>Muscle recovery</span><strong id="recovery-overall">—</strong></div>
+          <p class="section-help">Estimated readiness per muscle group from your completed sessions over the last 10 days. Bigger groups recover slower; higher training volume extends recovery. <span id="recovery-ready" class="section-label"></span></p>
+          <div class="recovery-layout">
+            <div class="recovery-map">
+              <svg viewBox="0 0 230 230" xmlns="http://www.w3.org/2000/svg" id="recovery-body">
+              <!-- FRONT (anterior) -->
+              <text x="50" y="225" text-anchor="middle" font-size="6" font-family="Jost,sans-serif" fill="#c0a880" letter-spacing="1.5" font-weight="600">FRONT</text>
+              <g transform="translate(0,0)">
+              <!-- Head (decorative) -->
+              <polygon points="42.4489796,2.85714286 40,11.8367347 42.0408163,19.5918367 46.122449,23.2653061 49.7959184,25.3061224 54.6938776,22.4489796 57.5510204,19.1836735 59.1836735,10.2040816 57.1428571,2.44897959 49.7959184,0" fill="#ede7dc" stroke="#d8cfc4" stroke-width="0.5"/>
+              <!-- Upper traps (front) — fold into Back, matching the back-view traps and the Traps->Back alias -->
+              <polygon points="55.5102041,23.6734694 50.6122449,33.4693878 50.6122449,39.1836735 61.6326531,40 70.6122449,44.8979592 69.3877551,36.7346939 63.2653061,35.1020408 58.3673469,30.6122449" data-muscle="Back" fill="#ede7dc"/>
+              <polygon points="28.9795918,44.8979592 30.2040816,37.1428571 36.3265306,35.1020408 41.2244898,30.2040816 44.4897959,24.4897959 48.9795918,33.877551 48.5714286,39.1836735 37.9591837,39.5918367" data-muscle="Back" fill="#ede7dc"/>
+              <!-- Shoulders -->
+              <polygon points="78.3673469,53.0612245 79.5918367,47.755102 79.1836735,41.2244898 75.9183673,37.9591837 71.0204082,36.3265306 72.244898,42.8571429 71.4285714,47.3469388" data-muscle="Shoulders" fill="#ede7dc"/>
+              <polygon points="28.1632653,47.3469388 21.2244898,53.0612245 20,47.755102 20.4081633,40.8163265 24.4897959,37.1428571 28.5714286,37.1428571 26.9387755,43.2653061" data-muscle="Shoulders" fill="#ede7dc"/>
+              <!-- Chest -->
+              <polygon points="51.8367347,41.6326531 51.0204082,55.1020408 57.9591837,57.9591837 67.755102,55.5102041 70.6122449,47.3469388 62.0408163,41.6326531" data-muscle="Chest" fill="#ede7dc"/>
+              <polygon points="29.7959184,46.5306122 31.4285714,55.5102041 40.8163265,57.9591837 48.1632653,55.1020408 47.755102,42.0408163 37.5510204,42.0408163" data-muscle="Chest" fill="#ede7dc"/>
+              <!-- Core (abs) -->
+              <polygon points="56.3265306,59.1836735 57.9591837,64.0816327 58.3673469,77.9591837 58.3673469,92.6530612 56.3265306,98.3673469 55.1020408,104.081633 51.4285714,107.755102 51.0204082,84.4897959 50.6122449,67.3469388 51.0204082,57.1428571" data-muscle="Core" fill="#ede7dc"/>
+              <polygon points="43.6734694,58.7755102 48.5714286,57.1428571 48.9795918,67.3469388 48.5714286,84.4897959 48.1632653,107.346939 44.4897959,103.673469 40.8163265,91.4285714 40.8163265,78.3673469 41.2244898,64.4897959" data-muscle="Core" fill="#ede7dc"/>
+              <!-- Core (obliques) -->
+              <polygon points="68.5714286,63.2653061 67.3469388,57.1428571 58.7755102,59.5918367 60,64.0816327 60.4081633,83.2653061 65.7142857,78.7755102 66.5306122,69.7959184" data-muscle="Core" fill="#ede7dc"/>
+              <polygon points="33.877551,78.3673469 33.0612245,71.8367347 31.0204082,63.2653061 32.244898,57.1428571 40.8163265,59.1836735 39.1836735,63.2653061 39.1836735,83.6734694" data-muscle="Core" fill="#ede7dc"/>
+              <!-- Biceps -->
+              <polygon points="16.7346939,68.1632653 17.9591837,71.4285714 22.8571429,66.122449 28.9795918,53.877551 27.755102,49.3877551 20.4081633,55.9183673" data-muscle="Biceps" fill="#ede7dc"/>
+              <polygon points="71.4285714,49.3877551 70.2040816,54.6938776 76.3265306,66.122449 81.6326531,71.8367347 82.8571429,68.9795918 78.7755102,55.5102041" data-muscle="Biceps" fill="#ede7dc"/>
+              <!-- Triceps -->
+              <polygon points="69.3877551,55.5102041 69.3877551,61.6326531 75.9183673,72.6530612 77.5510204,70.2040816 75.5102041,67.3469388" data-muscle="Triceps" fill="#ede7dc"/>
+              <polygon points="22.4489796,69.3877551 29.7959184,55.5102041 29.7959184,60.8163265 22.8571429,73.0612245" data-muscle="Triceps" fill="#ede7dc"/>
+              <!-- Forearms -->
+              <polygon points="6.12244898,88.5714286 10.2040816,75.1020408 14.6938776,70.2040816 16.3265306,74.2857143 19.1836735,73.4693878 4.48979592,97.5510204 0,100" data-muscle="Biceps" fill="#ede7dc"/>
+              <polygon points="84.4897959,69.7959184 83.2653061,73.4693878 80,73.0612245 95.1020408,98.3673469 100,100.408163 93.4693878,89.3877551 89.7959184,76.3265306" data-muscle="Biceps" fill="#ede7dc"/>
+              <polygon points="77.5510204,72.244898 77.5510204,77.5510204 80.4081633,84.0816327 85.3061224,89.7959184 92.244898,101.22449 94.6938776,99.5918367" data-muscle="Biceps" fill="#ede7dc"/>
+              <polygon points="6.93877551,101.22449 13.4693878,90.6122245 18.7755102,84.0816327 21.6326531,77.1428571 21.2244898,71.8367347 4.89795918,98.7755102" data-muscle="Biceps" fill="#ede7dc"/>
+              <!-- Quadriceps -->
+              <polygon points="34.6938776,98.7755102 37.1428571,108.163265 37.1428571,127.755102 34.2857143,137.142857 31.0204082,132.653061 29.3877551,120 28.1632653,111.428571 29.3877551,100.816327 32.244898,94.6938776" data-muscle="Quadriceps" fill="#ede7dc"/>
+              <polygon points="63.2653061,105.714286 64.4897959,100 66.9387755,94.6938776 70.2040816,101.22449 71.0204082,111.836735 68.1632653,133.061224 65.3061224,137.55102 62.4489796,128.571429 62.0408163,111.428571" data-muscle="Quadriceps" fill="#ede7dc"/>
+              <polygon points="38.7755102,129.387755 38.3673469,112.244898 41.2244898,118.367347 44.4897959,129.387755 42.8571429,135.102041 40,146.122449 36.3265306,146.530612 35.5102041,140" data-muscle="Quadriceps" fill="#ede7dc"/>
+              <polygon points="59.5918367,145.714286 55.5102041,128.979592 60.8163265,113.877551 61.2244898,130.204082 64.0816327,139.591837 62.8571429,146.530612" data-muscle="Quadriceps" fill="#ede7dc"/>
+              <polygon points="32.6530612,138.367347 26.5306122,145.714286 25.7142857,136.734694 25.7142857,127.346939 26.9387755,114.285714 29.3877551,133.469388" data-muscle="Quadriceps" fill="#ede7dc"/>
+              <polygon points="71.8367347,113.061224 73.877551,124.081633 73.877551,140.408163 72.6530612,145.714286 66.5306122,138.367347 70.2040816,133.469388" data-muscle="Quadriceps" fill="#ede7dc"/>
+              <!-- Quadriceps (abductors) -->
+              <polygon points="52.6530612,110.204082 54.2857143,124.897959 60,110.204082 62.0408163,100 64.8979592,94.2857143 60,92.6530612 56.7346939,104.489796" data-muscle="Quadriceps" fill="#ede7dc"/>
+              <polygon points="47.755102,110.612245 44.8979592,125.306122 42.0408163,115.918367 40.4081633,113.061224 39.5918367,107.346939 37.9591837,102.44898 34.6938776,93.877551 39.5918367,92.244898 41.6326531,99.1836735 43.6734694,105.306122" data-muscle="Quadriceps" fill="#ede7dc"/>
+              <!-- Knees (decorative) -->
+              <polygon points="33.877551,140 34.6938776,143.265306 35.5102041,147.346939 36.3265306,151.020408 35.1020408,156.734694 29.7959184,156.734694 27.3469388,152.653061 27.3469388,147.346939 30.2040816,144.081633" fill="#ede7dc"/>
+              <polygon points="65.7142857,140 72.244898,147.755102 72.244898,152.244898 69.7959184,157.142857 64.8979592,156.734694 62.8571429,151.020408" fill="#ede7dc"/>
+              <!-- Calves -->
+              <polygon points="71.4285714,160.408163 73.4693878,153.469388 76.7346939,161.22449 79.5918367,167.755102 78.3673469,187.755102 79.5918367,195.510204 74.6938776,195.510204" data-muscle="Calves" fill="#ede7dc"/>
+              <polygon points="24.8979592,194.693878 27.755102,164.897959 28.1632653,160.408163 26.122449,154.285714 24.8979592,157.55102 22.4489796,161.632653 20.8163265,167.755102 22.0408163,188.163265 20.8163265,195.510204" data-muscle="Calves" fill="#ede7dc"/>
+              <polygon points="72.6530612,195.102041 69.7959184,159.183673 65.3061224,158.367347 64.0816327,162.44898 64.0816327,165.306122 65.7142857,177.142857" data-muscle="Calves" fill="#ede7dc"/>
+              <polygon points="35.5102041,158.367347 35.9183673,162.44898 35.9183673,166.938776 35.1020408,172.244898 35.1020408,176.734694 32.244898,182.040816 30.6122449,187.346939 26.9387755,194.693878 27.3469388,187.755102 28.1632653,180.408163 28.5714286,175.510204 28.9795918,169.795918 29.7959184,164.081633 30.2040816,158.77551" data-muscle="Calves" fill="#ede7dc"/>
+              </g>
+              <!-- BACK (posterior) -->
+              <text x="180" y="225" text-anchor="middle" font-size="6" font-family="Jost,sans-serif" fill="#c0a880" letter-spacing="1.5" font-weight="600">BACK</text>
+              <g transform="translate(130,0)">
+              <!-- Head (decorative) -->
+              <polygon points="50.6382979,0 45.9574468,0.85106383 40.8510638,5.53191489 40.4255319,12.7659574 45.106383,20 55.7446809,20 59.1489362,13.6170213 59.5744681,4.68085106 55.7446809,1.27659574" fill="#ede7dc" stroke="#d8cfc4" stroke-width="0.5"/>
+              <!-- Traps -->
+              <polygon points="44.6808511,21.7021277 47.6595745,21.7021277 47.2340426,38.2978723 47.6595745,64.6808511 38.2978723,53.1914894 35.3191489,40.8510638 31.0638298,36.5957447 39.1489362,33.1914894 43.8297872,27.2340426" data-muscle="Back" fill="#ede7dc"/>
+              <polygon points="52.3404255,21.7021277 55.7446809,21.7021277 56.5957447,27.2340426 60.8510638,32.7659574 68.9361702,36.5957447 64.6808511,40.4255319 61.7021277,53.1914894 52.3404255,64.6808511 53.1914894,38.2978723" data-muscle="Back" fill="#ede7dc"/>
+              <!-- Shoulders (back deltoids) -->
+              <polygon points="29.3617021,37.0212766 22.9787234,39.1489362 17.4468085,44.2553191 18.2978723,53.6170213 24.2553191,49.3617021 27.2340426,46.3829787" data-muscle="Shoulders" fill="#ede7dc"/>
+              <polygon points="71.0638298,37.0212766 78.2978723,39.5744681 82.5531915,44.6808511 81.7021277,53.6170213 74.893617,48.9361702 72.3404255,45.106383" data-muscle="Shoulders" fill="#ede7dc"/>
+              <!-- Back (upper back) -->
+              <polygon points="31.0638298,38.7234043 28.0851064,48.9361702 28.5106383,55.3191489 34.0425532,75.3191489 47.2340426,71.0638298 47.2340426,66.3829787 36.5957447,54.0425532 33.6170213,41.2765957" data-muscle="Back" fill="#ede7dc"/>
+              <polygon points="68.9361702,38.7234043 71.9148936,49.3617021 71.4893617,56.1702128 65.9574468,75.3191489 52.7659574,71.0638298 52.7659574,66.3829787 63.4042553,54.4680851 66.3829787,41.7021277" data-muscle="Back" fill="#ede7dc"/>
+              <!-- Triceps -->
+              <polygon points="26.8085106,49.787234 17.8723404,55.7446809 14.4680851,72.3404255 16.5957447,81.7021277 21.7021277,63.8297872 26.8085106,55.7446809" data-muscle="Triceps" fill="#ede7dc"/>
+              <polygon points="73.6170213,50.212766 82.1276596,55.7446809 85.9574468,73.1914894 83.4042553,82.1276596 77.8723404,62.9787234 73.1914894,55.7446809" data-muscle="Triceps" fill="#ede7dc"/>
+              <polygon points="26.8085106,58.2978723 26.8085106,68.5106383 22.9787234,75.3191489 19.1489362,77.4468085 22.5531915,65.5319149" data-muscle="Triceps" fill="#ede7dc"/>
+              <polygon points="72.7659574,58.2978723 77.0212766,64.6808511 80.4255319,77.4468085 76.5957447,75.3191489 72.7659574,68.9361702" data-muscle="Triceps" fill="#ede7dc"/>
+              <!-- Lower Back -->
+              <polygon points="47.6595745,72.7659574 34.4680851,77.0212766 35.3191489,83.4042553 49.3617021,102.12766 46.8085106,82.9787234" data-muscle="Back" fill="#ede7dc"/>
+              <polygon points="52.3404255,72.7659574 65.5319149,77.0212766 64.6808511,83.4042553 50.6382979,102.12766 53.1914894,83.8297872" data-muscle="Back" fill="#ede7dc"/>
+              <!-- Forearms -->
+              <polygon points="86.3829787,75.7446809 91.0638298,83.4042553 93.1914894,94.0425532 100,106.382979 96.1702128,104.255319 88.0851064,89.3617021 84.2553191,83.8297872" data-muscle="Biceps" fill="#ede7dc"/>
+              <polygon points="13.6170213,75.7446809 8.93617021,83.8297872 6.80851064,93.6170213 0,106.382979 3.82978723,104.255319 12.3404255,88.5106383 15.7446809,82.9787234" data-muscle="Biceps" fill="#ede7dc"/>
+              <polygon points="81.2765957,79.5744681 77.4468085,77.8723404 79.1489362,84.6808511 91.0638298,103.829787 93.1914894,108.93617 94.4680851,104.680851" data-muscle="Biceps" fill="#ede7dc"/>
+              <polygon points="18.7234043,79.5744681 22.1276596,77.8723404 20.8510638,84.2553191 9.36170213,102.978723 6.80851064,108.510638 5.10638298,104.680851" data-muscle="Biceps" fill="#ede7dc"/>
+              <!-- Glutes -->
+              <polygon points="44.6808511,99.5744681 30.212766,108.510638 29.787234,118.723404 31.4893617,125.957447 47.2340426,121.276596 49.3617021,114.893617" data-muscle="Glutes" fill="#ede7dc"/>
+              <polygon points="55.3191489,99.1489362 51.0638298,114.468085 52.3404255,120.851064 68.0851064,125.957447 69.787234,119.148936 69.3617021,108.510638" data-muscle="Glutes" fill="#ede7dc"/>
+              <!-- Hamstrings -->
+              <polygon points="28.9361702,122.12766 31.0638298,129.361702 36.5957447,125.957447 35.3191489,135.319149 34.4680851,150.212766 29.3617021,158.297872 28.9361702,146.808511 27.6595745,141.276596 27.2340426,131.489362" data-muscle="Hamstrings" fill="#ede7dc"/>
+              <polygon points="71.4893617,121.702128 69.3617021,128.93617 63.8297872,125.957447 65.5319149,136.595745 66.3829787,150.212766 71.0638298,158.297872 71.4893617,147.659574 72.7659574,142.12766 73.6170213,131.914894" data-muscle="Hamstrings" fill="#ede7dc"/>
+              <polygon points="38.7234043,125.531915 44.2553191,145.957447 40.4255319,166.808511 36.1702128,152.765957 37.0212766,135.319149" data-muscle="Hamstrings" fill="#ede7dc"/>
+              <polygon points="61.7021277,125.531915 63.4042553,136.170213 64.2553191,153.191489 60,166.808511 56.1702128,146.382979" data-muscle="Hamstrings" fill="#ede7dc"/>
+              <!-- Hamstrings (abductors) -->
+              <polygon points="48.0851064,122.978723 44.6808511,122.978723 41.2765957,125.531915 45.106383,144.255319 48.5106383,135.744681 48.9361702,129.361702" data-muscle="Hamstrings" fill="#ede7dc"/>
+              <polygon points="51.9148936,122.553191 55.7446809,123.404255 59.1489362,125.957447 54.893617,144.255319 51.9148936,136.170213 51.0638298,129.361702" data-muscle="Hamstrings" fill="#ede7dc"/>
+              <!-- Knees (decorative) -->
+              <polygon points="34.4680851,153.191489 31.0638298,159.148936 33.6170213,166.382979 37.4468085,162.553191" fill="#ede7dc"/>
+              <polygon points="66.3829787,153.617021 62.9787234,162.978723 66.8085106,166.382979 69.3617021,159.148936" fill="#ede7dc"/>
+              <!-- Calves -->
+              <polygon points="29.3617021,160.425532 28.5106383,167.234043 24.6808511,179.574468 23.8297872,192.765957 25.5319149,197.021277 28.5106383,193.191489 29.787234,180 31.9148936,171.06383 31.9148936,166.808511" data-muscle="Calves" fill="#ede7dc"/>
+              <polygon points="37.4468085,165.106383 35.3191489,167.659574 33.1914894,171.914894 31.0638298,180.425532 30.212766,191.914894 34.0425532,200 38.7234043,190.638298 39.1489362,168.93617" data-muscle="Calves" fill="#ede7dc"/>
+              <polygon points="62.9787234,165.106383 61.2765957,168.510638 61.7021277,190.638298 66.3829787,199.574468 70.6382979,191.914894 68.9361702,179.574468 66.8085106,170.212766" data-muscle="Calves" fill="#ede7dc"/>
+              <polygon points="70.6382979,160.425532 72.3404255,168.510638 75.7446809,179.148936 76.5957447,192.765957 74.4680851,196.595745 72.3404255,193.617021 70.6382979,179.574468 68.0851064,168.085106" data-muscle="Calves" fill="#ede7dc"/>
+              <!-- Soleus (calves) -->
+              <polygon points="28.5106383,195.744681 30.212766,195.744681 33.6170213,201.702128 30.6382979,220 28.5106383,213.617021 26.8085106,198.297872" data-muscle="Calves" fill="#ede7dc"/>
+              <polygon points="69.787234,195.744681 71.9148936,195.744681 73.6170213,198.297872 71.9148936,213.191489 70.212766,219.574468 67.2340426,202.12766" data-muscle="Calves" fill="#ede7dc"/>
+              </g>
+              </svg>
+              <div class="recovery-legend">
+                <span class="rl ready">Ready</span>
+                <span class="rl partial">Partial</span>
+                <span class="rl recovering">Recovering</span>
+                <span class="rl untrained">Untrained</span>
+              </div>
+              <div id="recovery-tip" class="recovery-tip" hidden></div>
+            </div>
+            <div id="recovery-list" class="recovery empty">No completed sessions yet — train to see recovery.</div>
+          </div>
+        </div>
+
+        <div class="panel" id="quick-workout-panel">
+          <div class="panel-head"><span>Quick workout</span>
+            <div class="qw-duration" id="qw-duration">
+              <button class="qw-dur-btn" data-qw-dur="20">20</button>
+              <button class="qw-dur-btn" data-qw-dur="30">30</button>
+              <button class="qw-dur-btn active" data-qw-dur="45">45</button>
+              <button class="qw-dur-btn" data-qw-dur="60">60</button>
+              <span class="qw-dur-unit">min</span>
+            </div>
+          </div>
+          <p class="section-help">Generates a balanced session from exercises whose muscle groups are recovered (ready, ≥80%). Pick a duration, then swap or drop any exercise before you start.</p>
+          <button class="button primary" id="qw-generate" style="width:100%">Generate from recovered muscles</button>
+          <div id="qw-result" class="qw-result" hidden>
+            <div class="qw-meta" id="qw-meta"></div>
+            <div class="qw-list" id="qw-list"></div>
+            <div class="qw-actions">
+              <button class="button gold" id="qw-start">Start workout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATISTICS (Training · Body) -->
+    <div class="page" id="page-statistics">
+      <div class="page-title">Statistics</div>
+      <div class="sub-tabs">
+        <div class="sub-tab active" data-parent="statistics" data-subtab="training">Training</div>
+        <div class="sub-tab" data-parent="statistics" data-subtab="body">Body</div>
+      </div>
+
+      <div class="sub-panel active" id="sub-statistics-training">
+        <div class="panel">
+          <div class="panel-head"><span>Weekly volume</span><strong id="prog-total">0</strong></div>
+          <div id="prog-bars" class="bars"></div>
+          <div class="subsection-head"><span>Muscle distribution</span><small>by working sets</small></div>
+          <div id="prog-dist" class="dist empty">No logged sets yet.</div>
+          <div class="subsection-head"><span>Personal records</span><small>best estimated 1RM (Epley)</small></div>
+          <div id="prog-prs" class="list empty">No records yet.</div>
+        </div>
+      </div>
+
+      <div class="sub-panel" id="sub-statistics-body">
+        <div class="panel">
+          <div class="panel-head"><span>Body weight</span><span class="section-label" id="body-unit">kg</span></div>
+          <form id="body-form" class="form-grid">
+            <label>Date<input type="date" name="date" /></label>
+            <label><span>Weight (<span class="body-unit-lbl">kg</span>)</span><input type="number" name="weightKg" step="0.1" placeholder="e.g. 80" /></label>
+            <div class="form-actions span-2"><button class="button primary" type="submit">Log weight</button></div>
+          </form>
+          <div id="body-list" class="list empty">No entries yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS (Connect · Vault · Units) -->
+    <div class="page" id="page-settings">
+      <div class="page-title">Settings</div>
+      <div class="panel">
+        <div class="panel-head"><span>Idenstr connection</span><span id="connect-pill" class="status-pill">checking</span></div>
+        <p class="section-help">Idenstr is the Chief: it holds your key, signs your workout sheet, and publishes your workout summaries to your relays. Generate a token in Idenstr (API tokens) with scopes <code>profile:read</code>, <code>sign:kind:30078</code>, <code>publish:kind:1</code>.</p>
+        <form id="connect-form" class="form-grid">
+          <label class="span-2">Idenstr URL<input name="idenstrUrl" placeholder="http://your-idenstr-host:3000" autocomplete="off" /></label>
+          <label class="span-2">API token<input name="idenstrToken" placeholder="idstr_... (leave blank to keep current)" autocomplete="off" /></label>
+          <label class="span-2">Local relay (read-only vault)<input name="localRelayUrl" placeholder="ws://your-idenstr-host:7777" autocomplete="off" /></label>
+          <div class="form-actions span-2">
+            <button class="button primary" type="submit">Save connection</button>
+            <button class="button ghost" type="button" id="test-connect">Test connection</button>
+          </div>
+        </form>
+        <div id="connect-status" class="terminal-mini">Not checked yet.</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>Local vault — read-only</span><span class="section-label">kind:30078</span></div>
+        <p class="section-help">Sheets Idenstr has signed and stored in the write-ahead vault. Workstr reads these directly from the local relay; it cannot write (the relay is pinned to your key).</p>
+        <div id="vault-sheets" class="list empty">Checking vault…</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><span>Preferences</span></div>
+        <label style="max-width:240px">Weight unit
+          <select id="unit-select"><option value="kg">Kilograms (kg)</option><option value="lbs">Pounds (lbs)</option></select>
+        </label>
+      </div>
+    </div>
+  </main>
+
+  <div class="session-overlay" id="session-overlay" aria-live="polite">
+    <div class="session-bg"></div>
+    <div class="session-header">
+      <div class="session-head-main">
+        <div class="session-eyebrow">Live session</div>
+        <div class="session-title" id="session-title">Workout</div>
+        <div class="session-meta-line">
+          <span class="session-meta" id="session-meta"></span>
+          <span class="session-elapsed-chip">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <span class="session-elapsed" id="session-elapsed">00:00</span>
+          </span>
+        </div>
+      </div>
+      <button class="session-close-btn" id="cancel-session">End</button>
+    </div>
+    <div class="session-progress"><div class="session-progress-fill" id="session-progress-fill"></div></div>
+    <div class="session-ex-nav" id="session-ex-nav"></div>
+    <div class="session-body" id="session-body"></div>
+    <div class="session-footer" id="session-footer"></div>
+    <div class="pr-toast" id="pr-toast" aria-live="assertive"></div>
+  </div>
+
+  <div class="session-rest-overlay" id="session-rest-overlay" aria-live="assertive">
+    <div class="rest-label">Rest</div>
+    <div class="rest-timer-wrap">
+      <svg class="rest-ring" viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="rest-ring-bg" cx="60" cy="60" r="54" stroke-width="8" />
+        <circle class="rest-ring-fg" id="rest-ring-fg" cx="60" cy="60" r="54" stroke-width="8" stroke-dasharray="339.3" stroke-dashoffset="0" />
+      </svg>
+      <div class="rest-timer-val" id="session-rest-val">90</div>
+    </div>
+    <div class="rest-nextup" id="rest-nextup"></div>
+    <div class="rest-adjust-btns">
+      <button class="rest-adjust-btn" data-rest-adjust="-15">−15s</button>
+      <button class="rest-adjust-btn" data-rest-adjust="15">+15s</button>
+    </div>
+    <button class="rest-skip-btn" id="skip-session-rest">Skip rest</button>
+  </div>
+
+  <div class="modal" id="modal"><div class="modal-card"><button class="modal-close" id="modal-close">×</button><div id="modal-body"></div></div></div>
+  <div id="toast"></div>
+
+  <script type="module" src="./app.js?v=22"></script>
+</body>
+</html>
