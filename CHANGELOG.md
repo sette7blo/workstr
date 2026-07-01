@@ -10,6 +10,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 ---
 
 ## [Unreleased]
+
+## [v0.2.0] — 2026-07-01
 ### Added
 - A proper **Workstr app logo**, in the same family as Idenstr and Feedstr: a dark-purple squircle with a `wk` monogram, the glowing "str" orbit arc, and a small dumbbell accent (the fitness counterpart to Idenstr's key and Feedstr's feed-lines). It now appears in the header, the browser tab (favicon), and as the PWA / iOS home-screen icon. Adds `favicon.ico`, a 32px favicon, header logo, 192/512 maskable PWA icons, an opaque apple-touch icon, and a `manifest.webmanifest` so Workstr installs as a standalone app. Branding assets are served without authentication (like Idenstr) so the icon still loads on the Basic-auth challenge instead of falling back to a generated letter tile.
 - The **Statistics → Body** tab is now a full body-tracking page rather than just a weight log. From your logged weights it shows three summary cards (current weight, 7-day rolling average, total change since the first entry), a **BMI** zone bar (underweight / normal / overweight / obese) with a marker at your current value, a **weight-trend** chart, and a **goal-progress** bar. A new **Profile** form captures your height (cm) and target weight; BMI needs the height and goal progress needs the target, and both are stored server-side in the app DB so they survive backups and follow your weight unit (kg/lbs). Mirrors the Body page from the original Liftme app.
@@ -83,6 +85,7 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 - Weight unit (kg/lbs) is a display label in this version; stored values are not converted when the unit is switched.
 - AI features (exercise/image/vision generation) are deferred to a later phase.
 
-[Unreleased]: https://github.com/sette7blo/workstr/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/sette7blo/workstr/compare/v0.2.0...HEAD
+[v0.2.0]: https://github.com/sette7blo/workstr/compare/v0.1.1...v0.2.0
 [v0.1.1]: https://github.com/sette7blo/workstr/compare/v0.1.0...v0.1.1
 [v0.1.0]: https://github.com/sette7blo/workstr/releases/tag/v0.1.0
