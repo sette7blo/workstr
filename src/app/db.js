@@ -44,6 +44,20 @@ function migrate(db) {
   if (!seCols.includes('weight')) db.exec('ALTER TABLE sheet_exercises ADD COLUMN weight REAL');
   const sheetCols = db.prepare('PRAGMA table_info(sheets)').all().map((c) => c.name);
   if (!sheetCols.includes('is_temporary')) db.exec('ALTER TABLE sheets ADD COLUMN is_temporary INTEGER NOT NULL DEFAULT 0');
+  // Programs are now public NIP-101e workout templates (kind:33402), addressable
+  // like exercises. Adding the coordinate columns: any pre-existing row was only
+  // ever "published" as the old private kind:30078, which no longer applies, so
+  // clear its stale publish state (runs once, when the column is first added).
+  if (!sheetCols.includes('nostr_address')) {
+    db.exec('ALTER TABLE sheets ADD COLUMN nostr_pubkey TEXT');
+    db.exec('ALTER TABLE sheets ADD COLUMN nostr_address TEXT');
+    db.exec('UPDATE sheets SET nostr_event_id = NULL, nostr_published_at = NULL');
+  }
+  // Stable d-tag for the addressable program event; backfill existing rows once.
+  if (!sheetCols.includes('slug')) {
+    db.exec('ALTER TABLE sheets ADD COLUMN slug TEXT');
+    db.exec("UPDATE sheets SET slug = 'program-' || id WHERE slug IS NULL OR slug = ''");
+  }
   const exCols = db.prepare('PRAGMA table_info(exercises)').all().map((c) => c.name);
   if (!exCols.includes('nostr_event_id')) db.exec('ALTER TABLE exercises ADD COLUMN nostr_event_id TEXT');
   if (!exCols.includes('nostr_pubkey')) db.exec('ALTER TABLE exercises ADD COLUMN nostr_pubkey TEXT');
@@ -82,15 +96,19 @@ CREATE TABLE IF NOT EXISTS exercises (
   updated_at    TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- A workout sheet: the routine you take to the gym. Published as kind:30078.
+-- A workout sheet (program): the routine you take to the gym. Optionally shared
+-- as a public NIP-101e workout template (kind:33402), addressable by its slug.
 CREATE TABLE IF NOT EXISTS sheets (
   id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug                TEXT,
   name                TEXT NOT NULL,
   description         TEXT DEFAULT '',
   is_temporary        INTEGER NOT NULL DEFAULT 0,
   created_at          TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at          TEXT NOT NULL DEFAULT (datetime('now')),
   nostr_event_id      TEXT,
+  nostr_pubkey        TEXT,
+  nostr_address       TEXT,
   nostr_published_at  TEXT
 );
 

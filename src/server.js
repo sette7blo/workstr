@@ -6,7 +6,6 @@ import { extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as store from './app/store.js';
 import * as idenstr from './app/idenstr.js';
-import * as vault from './app/vault.js';
 import * as discover from './app/discover.js';
 import { localizeImage } from './app/images.js';
 
@@ -69,7 +68,7 @@ async function route(req, res) {
     if (m === 'DELETE' && id) return sendJson(res, store.deleteExercise(id) ? 200 : 404, { deleted: true });
   }
 
-  // Discover & import exercises shared on the public relays
+  // Discover & import exercises and programs shared on the public relays
   if (resource === 'discover') {
     if (m === 'GET' && id === 'exercises') {
       return sendJson(res, 200, await discover.discoverExercises({
@@ -78,6 +77,10 @@ async function route(req, res) {
       }));
     }
     if (m === 'POST' && id === 'import') return sendJson(res, 201, await discover.importExercise(body));
+    if (m === 'GET' && id === 'programs') {
+      return sendJson(res, 200, await discover.discoverPrograms({ limit: Number(url.searchParams.get('limit')) || 80 }));
+    }
+    if (m === 'POST' && id === 'import-program') return sendJson(res, 201, await discover.importProgram(body));
   }
 
   // Sheets (workout templates)
@@ -87,7 +90,7 @@ async function route(req, res) {
     if (m === 'GET' && id) return sendOrNull(res, store.getSheet(Number(id)));
     if (m === 'PUT' && id) return sendOrNull(res, store.updateSheet(Number(id), body));
     if (m === 'DELETE' && id) return sendJson(res, store.deleteSheet(Number(id)) ? 200 : 404, { deleted: true });
-    if (m === 'POST' && id && sub === 'publish') return sendJson(res, 200, await idenstr.publishSheet(Number(id)));
+    if (m === 'POST' && id && sub === 'publish') return sendJson(res, 200, await idenstr.publishProgram(Number(id)));
   }
 
   // Sessions
@@ -130,22 +133,19 @@ async function route(req, res) {
     if (m === 'POST' && id === 'quick-workout') return sendJson(res, 200, store.getQuickWorkout(Number(body?.durationMinutes) || 45, Number(body?.minRecoveryPercent) || 80));
   }
 
-  // Read-only vault (the Idenstr local relay). No token scope needed: the relay
-  // is read-open and write-pinned to the owner key, so Workstr can only read.
-  if (resource === 'vault' && m === 'GET') {
-    if (id === 'sheets') return sendJson(res, 200, await vault.readSheets());
-    if (id === 'events') {
-      const kind = Number(url.searchParams.get('kind')) || 30078;
-      return sendJson(res, 200, await vault.readEvents({ kinds: [kind] }));
-    }
-  }
-
-  // Settings (weight unit, etc.)
+  // Settings (weight unit, body profile, etc.)
   if (resource === 'settings') {
-    if (m === 'GET') return sendJson(res, 200, { weightUnit: store.getSetting('weightUnit', 'kg') });
+    const readSettings = () => ({
+      weightUnit: store.getSetting('weightUnit', 'kg'),
+      heightCm: Number(store.getSetting('heightCm', 0)) || 0,
+      targetWeightKg: Number(store.getSetting('targetWeightKg', 0)) || 0,
+    });
+    if (m === 'GET') return sendJson(res, 200, readSettings());
     if (m === 'PUT') {
       if ('weightUnit' in (body || {})) store.setSetting('weightUnit', body.weightUnit === 'lbs' ? 'lbs' : 'kg');
-      return sendJson(res, 200, { weightUnit: store.getSetting('weightUnit', 'kg') });
+      if ('heightCm' in (body || {})) store.setSetting('heightCm', Number(body.heightCm) || 0);
+      if ('targetWeightKg' in (body || {})) store.setSetting('targetWeightKg', Number(body.targetWeightKg) || 0);
+      return sendJson(res, 200, readSettings());
     }
   }
 
@@ -163,6 +163,11 @@ async function route(req, res) {
 
 function authorize(req, pathname) {
   if (req.method === 'GET' && pathname === '/api/v1/health') return { ok: true };
+  // Branding assets the browser and iOS fetch without credentials (favicon, PWA
+  // manifest, home-screen / apple-touch icons). They must load even on the Basic
+  // auth challenge, or iOS falls back to a generated letter tile. serveStatic
+  // rejects any path containing '..', so the /icons/ prefix cannot be escaped.
+  if ((req.method === 'GET' || req.method === 'HEAD') && isPublicAsset(pathname)) return { ok: true };
   const header = req.headers.authorization ?? '';
   if (authConfigured()) {
     const basic = basicCredentials(header);
@@ -180,6 +185,12 @@ function basicCredentials(header) {
   const i = decoded.indexOf(':');
   if (i === -1) return null;
   return { user: decoded.slice(0, i), pass: decoded.slice(i + 1) };
+}
+
+function isPublicAsset(pathname) {
+  return pathname === '/manifest.webmanifest' ||
+    pathname === '/favicon.ico' ||
+    pathname.startsWith('/icons/');
 }
 
 export function authConfigured() {

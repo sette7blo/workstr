@@ -1,0 +1,32 @@
+{
+  "name": "Workstr",
+  "short_name": "Workstr",
+  "description": "Sovereign self-hosted workout tracker and planner. Signs and publishes through Idenstr.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#090512",
+  "theme_color": "#7c3cff",
+  "categories": ["health", "fitness", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icons/apple-touch-icon.png?v=workstr-wk-logo",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192.png?v=workstr-wk-logo",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png?v=workstr-wk-logo",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

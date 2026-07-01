@@ -14,7 +14,7 @@ Part of the `*str` ecosystem alongside Idenstr (identity/signing) and Feedstr.
 - **Train** — start a session from a sheet, log sets, finish and review.
 - **Plan** — a 7-day weekly grid and mesocycle blocks.
 - **Progress** — weekly volume, muscle distribution, estimated-1RM records, training streak, body-weight log.
-- **Sovereign Nostr layer** — publish your sheet as a private `kind:30078` event in your vault; share a session summary as a `kind:1` note. Both are signed (and the summary published) by Idenstr.
+- **Sovereign Nostr layer** — optionally publish your exercises and programs as standard NIP-101e templates (`kind:33401` / `kind:33402`) so any NIP-101e client can use them, and share a session summary as a `kind:1` note. All are signed (and published) by Idenstr.
 - No keys held, no cloud, no tracking — your data stays on your server.
 
 ## Quick start (Docker Compose)
@@ -38,8 +38,11 @@ Generate a token in Idenstr (API tokens) with:
 
 ```text
 profile:read
-sign:kind:30078     # workout sheet (private, in your vault)
+relays:read         # read your relay list for discovery
+sign:kind:27235     # image upload auth (NIP-98)
 publish:kind:1      # workout summary (Idenstr signs and publishes)
+publish:kind:33401  # share an exercise as a NIP-101e template
+publish:kind:33402  # share a program as a NIP-101e workout template
 ```
 
 ## Configuration
@@ -56,9 +59,9 @@ publish:kind:1      # workout summary (Idenstr signs and publishes)
 Data is stored in SQLite at `/data/workstr.db`. For access beyond your LAN/mesh,
 put Workstr behind an HTTPS reverse proxy.
 
-## DB vs vault
+## DB vs Nostr
 
-Workstr follows the stack rule: **signed Nostr events go in the vault; everything else goes in the DB.** Almost everything Workstr stores — your exercise library, sheets, sessions, set logs, progress, and body-weight — lives in its own `workstr.db` and never becomes a Nostr event. Only the narrow publishable slice crosses the line: your `kind:30078` workout sheet and a `kind:1` summary note. Workstr builds these as *unsigned* events and sends them to Idenstr — Idenstr is the only thing that signs (your keys never touch Workstr) and then writes them to your vault / publishes them. In the UI, **"save local" means save to `workstr.db`**; **"publish" / "share"** is the act of handing a specific item to Idenstr to sign and publish. See the stack `docs/architecture.md` → Storage Boundary.
+Everything Workstr stores — your exercise library, programs, sessions, set logs, progress, and body-weight — lives in its own `workstr.db` and stays a private local-DB item by default. Nothing leaves your server unless you choose to **publish** it. The publishable slice is opt-in and public: an exercise as a NIP-101e `kind:33401` template, a program as a NIP-101e `kind:33402` workout template, and a session summary as a `kind:1` note. Workstr builds these as *unsigned* events and hands them to Idenstr — Idenstr is the only thing that signs (your keys never touch Workstr) and broadcasts them to your relays. In the UI, an item is **local** until you press **Publish**; publishing a program also publishes the exercises it contains so other clients can run it. See the stack `docs/architecture.md` → Storage Boundary.
 
 ## License
 

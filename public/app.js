@@ -1,6 +1,6 @@
 import { canonMuscle as detailCanonMuscle } from './muscles.js?v=13';
 
-const state = { exercises: [], sheets: [], filters: { categories: [], muscles: [], difficulties: [] }, unit: 'kg', activeSession: null };
+const state = { exercises: [], sheets: [], filters: { categories: [], muscles: [], difficulties: [] }, unit: 'kg', heightCm: 0, targetWeightKg: 0, activeSession: null };
 let sessionExerciseIndex = 0;
 let sessionSetCounts = {};
 let sessionRestTimer = null;
@@ -114,6 +114,7 @@ async function loadTab(tab, sub) {
     if (tab === 'workouts') {
       if (sub === 'recovery') return loadRecovery();
       if (sub === 'history') return loadHistory();
+      if (sub === 'discover') return loadProgramDiscover();
       return loadPrograms();
     }
     if (tab === 'statistics') return loadProgress();
@@ -515,6 +516,121 @@ $('#discover-grid')?.addEventListener('click', async (ev) => {
   }
   const card = ev.target.closest('[data-address]');
   if (card) openDiscoverDetail(card.dataset.address);
+});
+
+// ---------- discover programs (workout templates shared on the public relays) ----------
+let programDiscoverResults = [];
+let programDiscoverBaseStatus = '';
+
+async function loadProgramDiscover() {
+  const grid = $('#program-discover-grid');
+  if (!grid || grid.dataset.loaded) return; // load once; refresh is manual
+  await runProgramDiscover();
+}
+
+async function runProgramDiscover() {
+  const grid = $('#program-discover-grid'); const status = $('#program-discover-status');
+  if (!grid) return;
+  status.textContent = 'Searching relays...';
+  grid.innerHTML = '';
+  try {
+    const res = await api('discover/programs');
+    grid.dataset.loaded = '1';
+    if (!res.configured) { status.textContent = res.error ? `Cannot reach relays: ${res.error}` : 'No relays are configured in Idenstr yet.'; programDiscoverResults = []; programDiscoverBaseStatus = ''; return; }
+    programDiscoverResults = res.programs || [];
+    const n = res.relays.length;
+    if (!programDiscoverResults.length) { status.textContent = `No shared programs found on ${n} relay${n === 1 ? '' : 's'}.`; programDiscoverBaseStatus = ''; return; }
+    programDiscoverBaseStatus = `${programDiscoverResults.length} program${programDiscoverResults.length === 1 ? '' : 's'} from ${n} relay${n === 1 ? '' : 's'}.`;
+    renderProgramDiscover();
+  } catch (err) { status.textContent = err.message; }
+}
+
+function renderProgramDiscover() {
+  const grid = $('#program-discover-grid'); const status = $('#program-discover-status');
+  if (!grid || !programDiscoverResults.length) return;
+  const q = $('#program-discover-search').value.trim().toLowerCase();
+  const list = programDiscoverResults.filter((p) => !q || p.name.toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q));
+  status.textContent = q ? `Showing ${list.length} of ${programDiscoverBaseStatus}` : programDiscoverBaseStatus;
+  grid.innerHTML = list.length ? list.map(programDiscoverCardHtml).join('') : '<div class="empty">No shared programs match.</div>';
+}
+
+function programDiscoverCardHtml(p) {
+  const count = p.exerciseCount || (p.exercises || []).length;
+  const author = p.pubkey ? `by ${escapeHtml(p.pubkey.slice(0, 8))}…` : '';
+  const sourceLabel = p.protocol === 'nip101e' ? 'NIP-101e' : 'Workstr';
+  return `
+    <div class="ex-card" data-program-address="${escapeHtml(p.address)}">
+      <div class="card-body">
+        <div class="card-name">${escapeHtml(p.name)}</div>
+        <div class="card-meta">
+          <span class="muscle">${count} exercise${count === 1 ? '' : 's'}</span>
+          <span class="card-tag">${sourceLabel}</span>
+          ${author ? `<span class="card-tag">${author}</span>` : ''}
+        </div>
+        ${p.description ? `<div class="card-desc">${escapeHtml(p.description)}</div>` : ''}
+        <button class="button ${p.imported ? 'ghost' : 'primary'} program-discover-import" data-program-address="${escapeHtml(p.address)}"${p.imported ? ' disabled' : ''}>${p.imported ? 'In library' : 'Import'}</button>
+      </div>
+    </div>`;
+}
+
+// Import a discovered program; fetches and imports any of its exercises you lack first.
+async function importDiscoveredProgram(data, btn) {
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Importing...';
+  try {
+    const res = await api('discover/import-program', { method: 'POST', body: JSON.stringify(data) });
+    data.imported = true;
+    toast(res.duplicate ? 'Already in your library' : 'Program imported');
+    document.querySelectorAll(`.program-discover-import[data-program-address="${CSS.escape(data.address)}"]`).forEach((b) => {
+      b.textContent = 'In library'; b.disabled = true; b.classList.remove('primary'); b.classList.add('ghost');
+    });
+    return true;
+  } catch (err) { btn.disabled = false; btn.textContent = label; toast(err.message, 'bad'); return false; }
+}
+
+function openProgramDiscoverDetail(address) {
+  const p = programDiscoverResults.find((x) => x.address === address);
+  if (!p) return;
+  const members = p.exercises || [];
+  const author = p.pubkey ? `${escapeHtml(p.pubkey.slice(0, 12))}…` : 'unknown';
+  const sourceLabel = p.protocol === 'nip101e' ? 'NIP-101e workout template' : 'Workstr program';
+  const memberName = (m) => escapeHtml(m.name || (m.address ? m.address.split(':').pop() : '') || 'Exercise');
+  const memberLine = (m) => {
+    const sets = Number(m.sets) || 3;
+    const reps = escapeHtml(m.reps || '8-12');
+    const weight = m.weight != null && m.weight !== '' ? ` @ ${wFmt(m.weight)}` : '';
+    const rest = m.restSec ? ` · ${Number(m.restSec)}s rest` : '';
+    return `${sets} × ${reps}${weight}${rest}`;
+  };
+  openModal(`
+    <h3 class="detail-title">${escapeHtml(p.name)}</h3>
+    <div class="detail-badges">
+      <span class="badge cat">${members.length} exercise${members.length === 1 ? '' : 's'}</span>
+      <span class="badge">${sourceLabel}</span>
+    </div>
+    <p class="detail-nostr">${sourceLabel} shared by <code>${author}</code>${p.relay ? ` · seen on <code>${escapeHtml(p.relay)}</code>` : ''}${p.address ? ` · <code>${escapeHtml(p.address)}</code>` : ''}</p>
+    ${p.description ? `<p class="detail-desc">${escapeHtml(p.description)}</p>` : ''}
+    <div class="subsection-head"><span>Exercises</span></div>
+    <div class="wk-ex-list">
+      ${members.map((m) => `<div class="wk-ex-item"><div class="wk-ex-header"><div class="wk-ex-info"><div class="wk-ex-name">${memberName(m)}</div><div class="wk-ex-short">${memberLine(m)}</div></div></div></div>`).join('')}
+    </div>
+    <div class="form-actions"><button class="button ${p.imported ? 'ghost' : 'primary'}" id="program-discover-detail-import"${p.imported ? ' disabled' : ''}>${p.imported ? 'In library' : 'Import to library'}</button></div>`);
+  const btn = $('#program-discover-detail-import');
+  btn.addEventListener('click', async () => { if (await importDiscoveredProgram(p, btn)) closeModal(); });
+}
+
+$('#program-discover-refresh')?.addEventListener('click', () => runProgramDiscover());
+$('#program-discover-search')?.addEventListener('input', renderProgramDiscover);
+$('#program-discover-grid')?.addEventListener('click', async (ev) => {
+  const btn = ev.target.closest('.program-discover-import');
+  if (btn) {
+    if (btn.disabled) return;
+    const data = programDiscoverResults.find((x) => x.address === btn.dataset.programAddress);
+    if (data) await importDiscoveredProgram(data, btn);
+    return;
+  }
+  const card = ev.target.closest('[data-program-address]');
+  if (card) openProgramDiscoverDetail(card.dataset.programAddress);
 });
 
 // ---------- sheets ----------
@@ -1436,10 +1552,115 @@ async function loadProgress() {
 }
 
 function renderBody(entries) {
-  const list = $('#body-list');
-  if (!entries.length) { list.className = 'list empty'; list.textContent = 'No entries yet.'; return; }
+  const cardsEl = $('#body-cards'), bmiEl = $('#body-bmi'), chartEl = $('#body-chart'), goalEl = $('#body-goal');
+  const list = $('#body-list'), empty = $('#body-empty');
+
+  // Keep the profile form in sync regardless of whether there are entries.
+  const pf = $('#body-profile-form');
+  if (pf) {
+    pf.heightCm.value = state.heightCm || '';
+    pf.targetWeightKg.value = state.targetWeightKg ? wDisplay(state.targetWeightKg) : '';
+  }
+
+  if (!entries.length) {
+    empty.style.display = '';
+    cardsEl.innerHTML = bmiEl.innerHTML = chartEl.innerHTML = goalEl.innerHTML = '';
+    list.className = 'list empty'; list.textContent = 'No entries yet.';
+    return;
+  }
+  empty.style.display = 'none';
+
+  // The API returns newest-first; sort oldest-first for trend/average maths.
+  const sorted = entries.slice().sort((a, b) => a.date.localeCompare(b.date));
+  const first = sorted[0], latest = sorted[sorted.length - 1];
+  const latestW = latest.weightKg;
+  const last7 = sorted.slice(-7);
+  const avg7 = last7.reduce((s, e) => s + e.weightKg, 0) / last7.length;
+  const totalChange = latestW - first.weightKg;
+  const changeColor = totalChange > 0 ? 'var(--danger-red)' : totalChange < 0 ? 'var(--success-green)' : 'var(--muted)';
+
+  cardsEl.innerHTML = `<div class="body-cards">
+    <div class="body-card"><div class="body-card-val">${wDisplay(latestW).toFixed(1)}</div><div class="body-card-lbl">Current (${unitLabel()})</div></div>
+    <div class="body-card"><div class="body-card-val">${wDisplay(avg7).toFixed(1)}</div><div class="body-card-lbl">7-day avg</div></div>
+    <div class="body-card"><div class="body-card-val" style="color:${changeColor}">${totalChange > 0 ? '+' : ''}${wDisplay(totalChange).toFixed(1)}</div><div class="body-card-lbl">Total change</div></div>
+  </div>`;
+
+  const heightCm = state.heightCm || 0;
+  if (heightCm > 0) { const m = heightCm / 100; bmiEl.innerHTML = bmiMarkup(latestW / (m * m)); }
+  else { bmiEl.innerHTML = ''; }
+
+  chartEl.innerHTML = bodyChartMarkup(sorted);
+
+  const targetKg = state.targetWeightKg || 0;
+  if (targetKg > 0) {
+    const startW = first.weightKg;
+    const totalNeeded = targetKg - startW;
+    const pct = totalNeeded !== 0 ? Math.min(100, Math.max(0, ((latestW - startW) / totalNeeded) * 100)) : 100;
+    const remaining = targetKg - latestW;
+    goalEl.innerHTML = `<div class="subsection-head"><span>Goal progress</span></div>
+      <div class="body-goal-bar"><div class="body-goal-fill" style="width:${pct.toFixed(0)}%"></div></div>
+      <div class="body-goal-labels"><span>${wDisplay(startW).toFixed(1)} ${unitLabel()}</span><span>${remaining > 0 ? '+' : ''}${wDisplay(remaining).toFixed(1)} ${unitLabel()} to go</span><span>${wDisplay(targetKg).toFixed(1)} ${unitLabel()}</span></div>`;
+  } else { goalEl.innerHTML = ''; }
+
   list.className = 'list';
   list.innerHTML = entries.map((b) => `<div class="row"><div><strong>${wDisplay(b.weightKg)} ${unitLabel()}</strong><small>${escapeHtml(b.date)}${b.notes ? ' · ' + escapeHtml(b.notes) : ''}</small></div><button class="button danger small" data-del-body="${b.id}">×</button></div>`).join('');
+}
+
+function bmiMarkup(bmi) {
+  const barMin = 15, barMax = 40, range = barMax - barMin;
+  const zones = [
+    { name: 'Under', cls: 'under', min: barMin, max: 18.5 },
+    { name: 'Normal', cls: 'normal', min: 18.5, max: 25 },
+    { name: 'Over', cls: 'over', min: 25, max: 30 },
+    { name: 'Obese', cls: 'obese', min: 30, max: barMax },
+  ];
+  const pct = ((Math.max(barMin, Math.min(barMax, bmi)) - barMin) / range) * 100;
+  const label = bmi < 18.5 ? 'Underweight' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Overweight' : 'Obese';
+  return `<div class="subsection-head"><span>BMI</span><small>${bmi.toFixed(1)} · ${label}</small></div>
+    <div class="bmi-bar">
+      ${zones.map((z) => `<div class="bmi-zone ${z.cls}" style="flex:0 0 ${(((z.max - z.min) / range) * 100).toFixed(1)}%">${z.name}</div>`).join('')}
+      <div class="bmi-marker" style="left:${pct.toFixed(1)}%"></div>
+    </div>
+    <div class="bmi-scale"><span>15</span><span>18.5</span><span>25</span><span>30</span><span>40+</span></div>`;
+}
+
+function bodyChartMarkup(sorted) {
+  if (sorted.length < 2) return '';
+  const W = 400, H = 120, pad = 30, n = sorted.length;
+  const vals = sorted.map((e) => e.weightKg);
+  const min = Math.min(...vals) * 0.995, max = Math.max(...vals) * 1.005, range = (max - min) || 1;
+  const pts = vals.map((v, i) => {
+    const x = pad + (i / (n - 1)) * (W - pad * 2);
+    const y = pad / 2 + (1 - (v - min) / range) * (H - pad);
+    return [x.toFixed(1), y.toFixed(1)];
+  });
+  const polyline = pts.map((p) => p.join(',')).join(' ');
+  const areaPath = `M${pts[0].join(',')} ${pts.slice(1).map((p) => 'L' + p.join(',')).join(' ')} L${pts[n - 1][0]},${H - pad / 2} L${pts[0][0]},${H - pad / 2} Z`;
+  const dots = pts.map(([x, y], i) => {
+    const d = new Date(sorted[i].date + 'T00:00:00').toLocaleDateString('en', { month: 'short', day: 'numeric' });
+    return `<circle cx="${x}" cy="${y}" r="3" fill="var(--purple-2)" stroke="var(--void)" stroke-width="1.5"><title>${d}: ${wDisplay(sorted[i].weightKg).toFixed(1)} ${unitLabel()}</title></circle>`;
+  }).join('');
+  let yLabels = '';
+  const ySteps = 4;
+  for (let i = 0; i <= ySteps; i++) {
+    const v = min + (range * i / ySteps);
+    const y = pad / 2 + (1 - i / ySteps) * (H - pad);
+    yLabels += `<text x="${pad - 6}" y="${y}" text-anchor="end" font-size="9" fill="var(--dim)" dominant-baseline="middle">${wDisplay(v).toFixed(0)}</text>`;
+    yLabels += `<line x1="${pad}" y1="${y}" x2="${W - pad}" y2="${y}" stroke="rgba(255,255,255,.06)" stroke-width="0.5"/>`;
+  }
+  const firstDate = new Date(sorted[0].date + 'T00:00:00').toLocaleDateString('en', { month: 'short', day: 'numeric' });
+  const lastDate = new Date(sorted[n - 1].date + 'T00:00:00').toLocaleDateString('en', { month: 'short', day: 'numeric' });
+  return `<div class="subsection-head"><span>Weight trend</span><small>${n} entr${n === 1 ? 'y' : 'ies'}</small></div>
+    <div class="body-chart">
+      <svg viewBox="0 0 ${W} ${H + 16}">
+        ${yLabels}
+        <path d="${areaPath}" fill="var(--sovereign-purple)" opacity=".12"/>
+        <polyline points="${polyline}" fill="none" stroke="var(--purple-2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+        ${dots}
+        <text x="${pad}" y="${H + 10}" font-size="9" fill="var(--dim)">${firstDate}</text>
+        <text x="${W - pad}" y="${H + 10}" font-size="9" fill="var(--dim)" text-anchor="end">${lastDate}</text>
+      </svg>
+    </div>`;
 }
 
 // ---------- connect ----------
@@ -1450,22 +1671,11 @@ async function loadConnect() {
   $('#connect-form').localRelayUrl.value = cfg.localRelayUrl || '';
   const settings = await api('settings');
   state.unit = settings.weightUnit;
+  state.heightCm = settings.heightCm || 0;
+  state.targetWeightKg = settings.targetWeightKg || 0;
   $('#unit-select').value = state.unit;
   applyUnitLabels();
   await testConnection();
-  await loadVault();
-}
-
-async function loadVault() {
-  const host = $('#vault-sheets');
-  try {
-    const res = await api('vault/sheets');
-    if (!res.configured) { host.className = 'list empty'; host.textContent = 'No local relay configured — set one above to read the vault.'; return; }
-    if (res.error) { host.className = 'list empty'; host.textContent = `Vault unreachable: ${res.error}`; return; }
-    if (!res.sheets.length) { host.className = 'list empty'; host.textContent = 'Vault reachable — no sheets stored yet. Publish a sheet to store it here.'; return; }
-    host.className = 'list';
-    host.innerHTML = res.sheets.map((s) => `<div class="row"><div><strong>${escapeHtml(s.title)}</strong><small>${s.exercises} exercises · ${escapeHtml(s.address)}</small></div><span class="badge muscle">stored</span></div>`).join('');
-  } catch (error) { host.className = 'list empty'; host.textContent = error.message; }
 }
 
 async function testConnection() {
@@ -1544,7 +1754,7 @@ $('#program-list').addEventListener('click', async (e) => {
   const edit = e.target.closest('[data-edit-program]');
   if (edit) { if (!state.exercises.length) await loadExercises(); openSheetBuilder(await api(`sheets/${edit.dataset.editProgram}`)); return; }
   const pub = e.target.closest('[data-publish-program]');
-  if (pub) { await withButtonState(pub, async () => { await api(`sheets/${pub.dataset.publishProgram}/publish`, { method: 'POST' }); toast('Program signed & stored in vault'); renderPrograms(await fetchSheets()); }); return; }
+  if (pub) { await withButtonState(pub, async () => { const r = await api(`sheets/${pub.dataset.publishProgram}/publish`, { method: 'POST' }); const n = r.members?.length || 0; toast(`Program published to relays (${n} exercise${n === 1 ? '' : 's'} shared)`); renderPrograms(await fetchSheets()); }); return; }
   const del = e.target.closest('[data-del-program]');
   if (del) { if (confirm('Delete this program?')) { await api(`sheets/${del.dataset.delProgram}`, { method: 'DELETE' }); toast('Program deleted'); renderPrograms(await fetchSheets()); } return; }
 });
@@ -1610,6 +1820,17 @@ $('#body-form').addEventListener('submit', async (e) => {
   });
 });
 $('#body-list').addEventListener('click', async (e) => { const del = e.target.dataset.delBody; if (del) { await api(`body/${del}`, { method: 'DELETE' }); loadProgress(); } });
+$('#body-profile-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  await withButtonState(form.querySelector('button[type=submit]'), async () => {
+    const heightCm = Number(form.heightCm.value) || 0;
+    const targetWeightKg = wStore(form.targetWeightKg.value) || 0;
+    const s = await api('settings', { method: 'PUT', body: JSON.stringify({ heightCm, targetWeightKg }) });
+    state.heightCm = s.heightCm || 0; state.targetWeightKg = s.targetWeightKg || 0;
+    toast('Profile saved'); loadProgress();
+  });
+});
 
 $('#connect-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -1618,17 +1839,17 @@ $('#connect-form').addEventListener('submit', async (e) => {
     const body = { idenstrUrl: form.idenstrUrl.value, localRelayUrl: form.localRelayUrl.value };
     if (form.idenstrToken.value.trim()) body.idenstrToken = form.idenstrToken.value.trim();
     await api('connect', { method: 'PUT', body: JSON.stringify(body) });
-    form.idenstrToken.value = ''; toast('Connection saved'); await testConnection(); await loadVault();
+    form.idenstrToken.value = ''; toast('Connection saved'); await testConnection();
   });
 });
 $('#test-connect').addEventListener('click', (e) => withButtonState(e.currentTarget, testConnection));
-$('#unit-select').addEventListener('change', async (e) => { await api('settings', { method: 'PUT', body: JSON.stringify({ weightUnit: e.target.value }) }); state.unit = e.target.value; applyUnitLabels(); toast('Weight unit updated'); });
+$('#unit-select').addEventListener('change', async (e) => { await api('settings', { method: 'PUT', body: JSON.stringify({ weightUnit: e.target.value }) }); state.unit = e.target.value; applyUnitLabels(); if (currentTab === 'statistics') loadProgress(); toast('Weight unit updated'); });
 
 // ---------- boot ----------
 async function boot() {
   // Load the weight-unit preference before the first render so every view (programs,
   // history, sessions) shows values in the chosen unit instead of defaulting to kg.
-  try { const s = await api('settings'); state.unit = s.weightUnit || 'kg'; } catch {}
+  try { const s = await api('settings'); state.unit = s.weightUnit || 'kg'; state.heightCm = s.heightCm || 0; state.targetWeightKg = s.targetWeightKg || 0; } catch {}
   const sel = $('#unit-select'); if (sel) sel.value = state.unit;
   applyUnitLabels();
   api('dashboard').then((d) => { setSessionCount(d.sessions); }).catch(() => { $('#live-status').textContent = 'api error'; });

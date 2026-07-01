@@ -139,9 +139,9 @@ export function listSheets() {
 
 function sheetRow(s) {
   return {
-    id: s.id, name: s.name, description: s.description, isTemporary: Boolean(s.is_temporary),
+    id: s.id, slug: s.slug, name: s.name, description: s.description, isTemporary: Boolean(s.is_temporary),
     createdAt: s.created_at, updatedAt: s.updated_at,
-    nostrEventId: s.nostr_event_id, nostrPublishedAt: s.nostr_published_at
+    nostrEventId: s.nostr_event_id, nostrPubkey: s.nostr_pubkey, nostrAddress: s.nostr_address, nostrPublishedAt: s.nostr_published_at
   };
 }
 
@@ -162,10 +162,22 @@ export function getSheet(id) {
   return { ...sheetRow(s), exercises: sheetExercises(s.id) };
 }
 
+// Find an already-imported program by its Nostr coordinate, to avoid duplicates
+// when the same shared program is discovered again.
+export function getSheetByNostrAddress(address) {
+  if (!address) return null;
+  const s = prep('SELECT * FROM sheets WHERE nostr_address = ?').get(address);
+  return s ? { ...sheetRow(s), exercises: sheetExercises(s.id) } : null;
+}
+
 export function createSheet(body) {
   const name = String(body.name || '').trim();
   if (!name) throw new Error('name is required');
-  const info = prep('INSERT INTO sheets (name, description, is_temporary, updated_at) VALUES (?, ?, ?, ?)').run(name, String(body.description || ''), body.isTemporary ? 1 : 0, now());
+  // Stable slug for the addressable kind:33402 d-tag; set once and never changed
+  // on edit so the published coordinate stays put. Imports carry their own slug.
+  let slug = slugify(body.slug || name);
+  if (prep('SELECT 1 FROM sheets WHERE slug = ?').get(slug)) slug = `${slug}-${Date.now().toString(36)}`;
+  const info = prep('INSERT INTO sheets (slug, name, description, is_temporary, updated_at) VALUES (?, ?, ?, ?, ?)').run(slug, name, String(body.description || ''), body.isTemporary ? 1 : 0, now());
   const id = Number(info.lastInsertRowid);
   if (Array.isArray(body.exercises)) replaceSheetExercises(id, body.exercises);
   return getSheet(id);
@@ -196,8 +208,11 @@ export function deleteSheet(id) {
   return prep('DELETE FROM sheets WHERE id = ?').run(id).changes > 0;
 }
 
-export function markSheetPublished(id, eventId) {
-  prep('UPDATE sheets SET nostr_event_id=?, nostr_published_at=? WHERE id=?').run(eventId, now(), id);
+// Record the Nostr coordinates after a program is published to (or imported from)
+// public relays, mirroring markExercisePublished.
+export function markSheetPublished(id, { eventId, pubkey, address }) {
+  prep('UPDATE sheets SET nostr_event_id=?, nostr_pubkey=?, nostr_address=?, nostr_published_at=? WHERE id=?')
+    .run(eventId || null, pubkey || null, address || null, now(), id);
 }
 
 // ---------- Sessions ----------

@@ -1,10 +1,10 @@
-// Discover exercises shared on the public relays and import them into the library.
-// Reading Nostr is keyless, so Workstr queries the relays directly over WebSocket
-// (the same REQ pattern vault.js uses for the private relay), then asks Idenstr
-// only for the relay list. Imported images are localised into the DB per policy.
+// Discover exercises and programs shared on the public relays and import them into
+// the library. Reading Nostr is keyless, so Workstr queries the relays directly over
+// WebSocket (a plain REQ subscription), then asks Idenstr only for the relay list.
+// Imported images are localised into the DB per policy.
 import { readRelays } from './idenstr.js';
 import { localizeImage } from './images.js';
-import { createExercise, getExercise, getExerciseByNostrAddress, markExercisePublished } from './store.js';
+import { createExercise, getExercise, getExerciseByNostrAddress, markExercisePublished, createSheet, getSheetByNostrAddress, markSheetPublished } from './store.js';
 import { canonMuscle } from '../../public/muscles.js';
 
 const DEFAULT_TIMEOUT_MS = 5000;
@@ -321,4 +321,145 @@ export async function importExercise(data) {
   return { exercise: getExercise(created.slug), duplicate: false };
 }
 
-export const __test = { isNip101eExerciseEvent, toNip101eExercise, inferNip101eMuscles };
+// ---------- Programs (NIP-101e workout templates, kind:33402) ----------
+const PROGRAM_D_PREFIX = 'workstr:program:';
+
+// Group `exercise` tags (one per set) back into members, deriving the prescription
+// from the first set of each. Used for foreign 33402s with no workstr_meta.
+function parseExerciseTags(tags) {
+  const order = [];
+  const byAddr = new Map();
+  for (const row of tags) {
+    if (row[0] !== 'exercise' || !row[1]) continue;
+    const addr = row[1];
+    if (!byAddr.has(addr)) { byAddr.set(addr, { address: addr, name: '', sets: 0, reps: '', restSec: 90, weight: null, notes: '' }); order.push(addr); }
+    const m = byAddr.get(addr);
+    m.sets += 1;
+    const params = row.slice(3); // after [exercise, addr, relay]; strength = [weight, reps, rpe, set_type]
+    if (!m.reps && params.length >= 2) m.reps = String(params[1] || '');
+    if (m.weight == null && params.length >= 1 && params[0] !== '') { const w = Number(params[0]); if (Number.isFinite(w)) m.weight = w; }
+  }
+  return order.map((a) => { const m = byAddr.get(a); if (!m.sets) m.sets = 3; if (!m.reps) m.reps = '8-12'; return m; });
+}
+
+function toNip101eProgram(ev) {
+  if (!ev || ev.kind !== 33402) return null;
+  const tags = ev.tags || [];
+  const name = tagValue(tags, 'title');
+  const dTag = tagValue(tags, 'd');
+  if (!name || !dTag) return null;
+  const topics = uniq(tagValues(tags, 't').map((t) => String(t).toLowerCase()));
+  if (topics.some((t) => NIP101E_NOISE_TAGS.has(t))) return null;
+  const meta = workstrMeta(tags);
+  const isWorkstr = Boolean(meta && Array.isArray(meta.exercises)) || topics.includes('workstr');
+  let members;
+  let description;
+  if (meta && Array.isArray(meta.exercises)) {
+    description = meta.description || String(ev.content || '').trim();
+    members = meta.exercises.map((m) => ({
+      address: m.address, name: m.name || '', sets: m.sets ?? 3, reps: m.reps ?? '8-12',
+      restSec: m.restSec ?? 90, weight: m.weight ?? null, notes: m.notes || ''
+    }));
+  } else {
+    description = String(ev.content || '').trim();
+    members = parseExerciseTags(tags);
+  }
+  if (!members.length) return null;
+  const slug = dTag.startsWith(PROGRAM_D_PREFIX) ? dTag.slice(PROGRAM_D_PREFIX.length) : slugify(name);
+  return {
+    protocol: isWorkstr ? 'workstr' : 'nip101e',
+    sourceLabel: isWorkstr ? 'Workstr' : 'NIP-101e',
+    kind: 33402,
+    slug,
+    name,
+    description,
+    exercises: members,
+    exerciseCount: members.length,
+    eventId: ev.id,
+    pubkey: ev.pubkey,
+    address: `33402:${ev.pubkey}:${dTag}`,
+    createdAt: ev.created_at
+  };
+}
+
+export async function discoverPrograms({ limit = 80, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+  let relays;
+  try { relays = await readRelays(); } catch (err) { return { configured: false, error: err.message, relays: [], programs: [] }; }
+  if (!relays.length) return { configured: false, relays: [], programs: [] };
+
+  const batches = await mapWithConcurrency(relays, RELAY_CONCURRENCY, (relay) =>
+    queryRelay(relay, { kinds: [33402], limit: Math.max(limit, 200) }, timeoutMs).then((events) => ({ relay, events })));
+
+  // Dedup by coordinate, keeping the newest version of each shared program.
+  const byAddress = new Map();
+  for (const batch of batches) {
+    for (const ev of batch.events) {
+      const program = toNip101eProgram(ev);
+      if (!program) continue;
+      program.relay = batch.relay;
+      const prev = byAddress.get(program.address);
+      if (!prev || program.createdAt > prev.createdAt) byAddress.set(program.address, program);
+    }
+  }
+
+  let programs = [...byAddress.values()];
+  for (const p of programs) p.imported = Boolean(getSheetByNostrAddress(p.address));
+  programs.sort((a, b) => b.createdAt - a.createdAt);
+  return { configured: true, relays, programs };
+}
+
+// Fetch a single 33401 exercise template by its coordinate, so an imported program
+// can resolve members that aren't in the library yet.
+async function fetchExerciseByAddress(address, relays, timeoutMs) {
+  const [kind, pubkey, ...rest] = String(address || '').split(':');
+  const dTag = rest.join(':');
+  if (kind !== '33401' || !pubkey || !dTag) return null;
+  const batches = await mapWithConcurrency(relays, RELAY_CONCURRENCY, (relay) =>
+    queryRelay(relay, { kinds: [33401], authors: [pubkey], '#d': [dTag], limit: 5 }, timeoutMs));
+  let best = null;
+  for (const events of batches) {
+    for (const ev of events) {
+      if (`33401:${ev.pubkey}:${tagValue(ev.tags || [], 'd')}` !== address) continue;
+      if (!best || ev.created_at > best.created_at) best = ev;
+    }
+  }
+  return best;
+}
+
+export async function importProgram(data) {
+  if (!data || !data.name) throw new Error('invalid program payload');
+  if (data.address) {
+    const existing = getSheetByNostrAddress(data.address);
+    if (existing) return { program: existing, duplicate: true };
+  }
+  const members = Array.isArray(data.exercises) ? data.exercises : [];
+  if (!members.length) throw new Error('program has no exercises');
+
+  // Resolve each member to a local exercise slug, importing the referenced 33401
+  // from the relays if it isn't in the library yet. Lazily load the relay list.
+  let relays = null;
+  const resolved = [];
+  for (const [index, m] of members.entries()) {
+    let local = m.address ? getExerciseByNostrAddress(m.address) : null;
+    if (!local && m.address) {
+      if (!relays) { try { relays = await readRelays(); } catch { relays = []; } }
+      const ev = await fetchExerciseByAddress(m.address, relays, DEFAULT_TIMEOUT_MS);
+      const parsed = ev ? toNip101eExercise(ev) : null;
+      if (!parsed) throw new Error(`could not resolve exercise ${m.name || m.address}`);
+      const res = await importExercise(parsed);
+      local = res.exercise;
+    }
+    if (!local) throw new Error(`could not resolve exercise ${m.name || m.address || index + 1}`);
+    resolved.push({
+      exerciseSlug: local.slug, position: index,
+      sets: m.sets ?? 3, reps: m.reps ?? '8-12', restSec: m.restSec ?? 90,
+      weight: m.weight ?? null, notes: m.notes || ''
+    });
+  }
+
+  const sheet = createSheet({ name: data.name, slug: data.slug, description: data.description || '', exercises: resolved });
+  markSheetPublished(sheet.id, { eventId: data.eventId, pubkey: data.pubkey, address: data.address });
+  return { program: getSheetByNostrAddress(data.address) || sheet, duplicate: false };
+}
+
+export const __test = { isNip101eExerciseEvent, toNip101eExercise, inferNip101eMuscles, toNip101eProgram, parseExerciseTags };

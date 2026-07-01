@@ -11,7 +11,7 @@ process.env.WORKSTR_ENV_FILE = join(tmp, '.env');
 
 const { createServer, authConfigured } = await import('../src/server.js');
 const { __test: discoverTest } = await import('../src/app/discover.js');
-const { buildExerciseTemplateEvent } = await import('../src/app/idenstr.js');
+const { buildExerciseTemplateEvent, buildWorkoutTemplateEvent } = await import('../src/app/idenstr.js');
 
 async function withServer(assertions, { user, pass } = {}) {
   if (user) { process.env.WORKSTR_AUTH_USER = user; process.env.WORKSTR_AUTH_PASSWORD = pass; }
@@ -102,7 +102,7 @@ test('connect config exposes the required Idenstr scopes', async () => {
   await withServer(async (base) => {
     const [status, body] = await get(base, '/api/v1/connect');
     assert.equal(status, 200);
-    assert.deepEqual(body.requiredScopes, ['profile:read', 'relays:read', 'sign:kind:30078', 'sign:kind:27235', 'publish:kind:1', 'publish:kind:33401']);
+    assert.deepEqual(body.requiredScopes, ['profile:read', 'relays:read', 'sign:kind:27235', 'publish:kind:1', 'publish:kind:33401', 'publish:kind:33402']);
   });
 });
 
@@ -153,6 +153,106 @@ test('publishing an exercise broadcasts an addressable NIP-101e kind:33401 event
     } finally {
       await new Promise((r) => iden.close(r));
     }
+  });
+});
+
+test('publishing a program auto-publishes its members then broadcasts a 33402 workout template', async () => {
+  await withServer(async (base) => {
+    const captured = [];
+    const iden = fakeIdenstr((b) => captured.push(b));
+    await new Promise((r) => iden.listen(0, '127.0.0.1', r));
+    const idenstrUrl = `http://127.0.0.1:${iden.address().port}`;
+    try {
+      await get(base, '/api/v1/connect', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ idenstrUrl, idenstrToken: 'test-token' }) });
+      await post(base, '/api/v1/exercises', { name: 'Air Squat', muscleGroup: 'Legs' });
+      const [, sheet] = await post(base, '/api/v1/sheets', { name: 'Leg Day', exercises: [{ exerciseSlug: 'air-squat', sets: 3, reps: '5', weight: 40 }] });
+
+      const [pubStatus, pub] = await post(base, `/api/v1/sheets/${sheet.id}/publish`, {});
+      assert.equal(pubStatus, 200);
+
+      // The member exercise was published first as a 33401, then the program as a 33402.
+      assert.ok(captured.some((e) => e.kind === 33401), 'member exercise broadcast as 33401');
+      const tmpl = captured.find((e) => e.kind === 33402);
+      assert.ok(tmpl, 'program broadcast as 33402');
+      assert.ok(tmpl.tags.some((t) => t[0] === 'd' && t[1] === 'workstr:program:leg-day'));
+      assert.ok(tmpl.tags.some((t) => t[0] === 'exercise' && /^33401:a{64}:workstr:exercise:air-squat$/.test(t[1])));
+      assert.equal(tmpl.tags.filter((t) => t[0] === 'exercise').length, 3, 'one exercise tag per prescribed set');
+      assert.match(pub.address, /^33402:a{64}:workstr:program:leg-day$/);
+
+      // The coordinates are persisted on the program row.
+      const [, after] = await get(base, `/api/v1/sheets/${sheet.id}`);
+      assert.ok(after.nostrEventId, 'program records its published event id');
+      assert.equal(after.nostrAddress, pub.address);
+    } finally {
+      await new Promise((r) => iden.close(r));
+    }
+  });
+});
+
+test('Workstr programs publish as valid NIP-101e 33402 workout templates', () => {
+  const sheet = { slug: 'push-day', name: 'Push Day', description: 'Chest and shoulders.' };
+  const members = [{
+    slug: 'bench', name: 'Bench Press', address: `33401:${'a'.repeat(64)}:workstr:exercise:bench`,
+    sets: 3, reps: '5', restSec: 120, weightKg: 60, notes: '', position: 0, timed: false, hashtags: ['chest', 'strength']
+  }];
+  const ev = buildWorkoutTemplateEvent(sheet, members, 'wss://relay.test');
+  assert.equal(ev.kind, 33402);
+  const t = (k) => ev.tags.find((row) => row[0] === k);
+  assert.equal(t('d')[1], 'workstr:program:push-day');
+  assert.equal(t('title')[1], 'Push Day');
+  const exTags = ev.tags.filter((row) => row[0] === 'exercise');
+  assert.equal(exTags.length, 3);
+  assert.equal(exTags[0][1], `33401:${'a'.repeat(64)}:workstr:exercise:bench`);
+  assert.equal(exTags[0][2], 'wss://relay.test');
+  assert.ok(ev.tags.some((row) => row[0] === 't' && row[1] === 'workstr'));
+  const meta = JSON.parse(t('workstr_meta')[1]);
+  assert.equal(meta.exercises[0].slug, 'bench');
+  assert.equal(meta.exercises[0].weight, 60);
+});
+
+test('Workstr-origin 33402 programs re-import losslessly', () => {
+  const sheet = { slug: 'pull-day', name: 'Pull Day', description: 'Back day.' };
+  const members = [{
+    slug: 'row', name: 'Row', address: `33401:${'b'.repeat(64)}:workstr:exercise:row`,
+    sets: 4, reps: '8', restSec: 90, weightKg: 40, notes: 'tempo', position: 0, timed: false, hashtags: ['back']
+  }];
+  const built = buildWorkoutTemplateEvent(sheet, members);
+  const ev = { ...built, id: 'evt_pull', pubkey: 'b'.repeat(64), created_at: 1770000000 };
+  const program = discoverTest.toNip101eProgram(ev);
+  assert.equal(program.protocol, 'workstr');
+  assert.equal(program.slug, 'pull-day');
+  assert.equal(program.name, 'Pull Day');
+  assert.equal(program.exercises.length, 1);
+  assert.equal(program.exercises[0].address, `33401:${'b'.repeat(64)}:workstr:exercise:row`);
+  assert.equal(program.exercises[0].sets, 4);
+  assert.equal(program.address, `33402:${'b'.repeat(64)}:workstr:program:pull-day`);
+});
+
+test('importing a program resolves members already in the library and dedups re-imports', async () => {
+  await withServer(async (base) => {
+    const shared = {
+      name: 'Goblet Squat', slug: 'goblet-squat', muscleGroup: 'Legs', instructions: ['Squat'],
+      defaultSets: 3, defaultReps: '8', eventId: 'evt_gs', pubkey: 'c'.repeat(64),
+      address: `33401:${'c'.repeat(64)}:workstr:exercise:goblet-squat`
+    };
+    await post(base, '/api/v1/discover/import', shared);
+
+    const program = {
+      name: 'Imported Leg Day', slug: 'imported-leg-day', description: 'Legs.',
+      eventId: 'evt_prog', pubkey: 'c'.repeat(64), address: `33402:${'c'.repeat(64)}:workstr:program:imported-leg-day`,
+      exercises: [{ address: shared.address, name: 'Goblet Squat', sets: 4, reps: '10', restSec: 120, weight: 24, notes: '' }]
+    };
+    const [s1, r1] = await post(base, '/api/v1/discover/import-program', program);
+    assert.equal(s1, 201);
+    assert.equal(r1.duplicate, false);
+    assert.equal(r1.program.exercises.length, 1);
+    assert.equal(r1.program.exercises[0].exerciseSlug, 'goblet-squat');
+    assert.equal(r1.program.nostrAddress, program.address);
+
+    const [, r2] = await post(base, '/api/v1/discover/import-program', program);
+    assert.equal(r2.duplicate, true);
+    const [, list] = await get(base, '/api/v1/sheets');
+    assert.equal(list.sheets.filter((s) => s.nostrAddress === program.address).length, 1);
   });
 });
 

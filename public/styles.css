@@ -56,6 +56,7 @@ body {
 }
 .logo-zone { display: flex; align-items: center; gap: 11px; }
 .glyph { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; font: 900 18px/1 ui-monospace, monospace; color: white; background: linear-gradient(135deg, var(--sovereign-purple), #4d1fd1); box-shadow: 0 0 20px rgba(124,60,255,.5); flex-shrink: 0; }
+.brand-logo { width: 36px; height: 36px; flex-shrink: 0; filter: drop-shadow(0 0 14px rgba(124,60,255,.45)); }
 .logo-text { display: flex; flex-direction: column; gap: 1px; }
 .logo-mark { font-weight: 800; font-size: 20px; line-height: 1; letter-spacing: -.04em; color: var(--text); }
 .logo-mark span { color: var(--purple-2); }
@@ -249,6 +250,29 @@ input:focus, textarea:focus, select:focus { border-color: var(--border-hot); box
 .dist-row .track { height: 10px; border-radius: 99px; background: rgba(255,255,255,.06); overflow: hidden; }
 .dist-row .track .fill { height: 100%; background: linear-gradient(90deg, var(--sovereign-purple), var(--success-green)); }
 .dist-row small { color: var(--muted); font: 700 12px/1 ui-monospace, monospace; }
+
+/* Body tracking */
+.body-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.body-card { border: 1px solid var(--border); border-radius: 16px; background: rgba(255,255,255,.03); padding: 16px 12px; text-align: center; }
+.body-card-val { font: 800 26px/1 ui-monospace, monospace; color: var(--text); }
+.body-card-lbl { margin-top: 8px; color: var(--purple-2); font: 800 10px/1.2 ui-monospace, monospace; letter-spacing: .1em; text-transform: uppercase; }
+
+.bmi-bar { position: relative; display: flex; height: 30px; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+.bmi-zone { display: flex; align-items: center; justify-content: center; font: 800 10px/1 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; color: rgba(255,255,255,.9); }
+.bmi-zone.under { background: #4a78d9; }
+.bmi-zone.normal { background: var(--success-green); color: #04140d; }
+.bmi-zone.over { background: var(--bitcoin-gold); color: #1a0f00; }
+.bmi-zone.obese { background: var(--danger-red); }
+.bmi-marker { position: absolute; top: -3px; bottom: -3px; width: 3px; border-radius: 3px; background: var(--text); box-shadow: 0 0 0 2px var(--void); transform: translateX(-50%); }
+.bmi-scale { display: flex; justify-content: space-between; margin-top: 6px; color: var(--dim); font: 700 10px/1 ui-monospace, monospace; }
+
+.body-chart { margin-top: 10px; padding: 10px; border: 1px solid var(--border); border-radius: 16px; background: rgba(0,0,0,.22); }
+.body-chart svg { display: block; width: 100%; height: auto; }
+
+.body-goal-bar { height: 12px; border-radius: 99px; background: rgba(255,255,255,.06); overflow: hidden; margin-top: 10px; }
+.body-goal-fill { height: 100%; background: linear-gradient(90deg, var(--sovereign-purple), var(--purple-2)); transition: width .4s ease; }
+.body-goal-labels { display: flex; justify-content: space-between; gap: 8px; margin-top: 8px; color: var(--muted); font: 700 11px/1.2 ui-monospace, monospace; }
+.body-goal-labels span:nth-child(2) { color: var(--purple-2); }
 
 /* Muscle recovery */
 .recovery-layout { display: grid; grid-template-columns: minmax(240px, 340px) 1fr; gap: 24px; align-items: start; margin-top: 16px; }

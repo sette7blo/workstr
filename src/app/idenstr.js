@@ -13,12 +13,12 @@ const root = fileURLToPath(new URL('../..', import.meta.url));
 const envFile = process.env.WORKSTR_ENV_FILE ?? join(root, '.env');
 
 // Scopes Workstr asks Idenstr for:
-// - sign:kind:30078  → sign the private sheet event kept in the vault
 // - publish:kind:1   → sign AND publish the workout summary note
 // - sign:kind:27235  → NIP-98 auth header for nostr.build image uploads
 // - publish:kind:33401 → sign AND broadcast a shared exercise as a NIP-101e template
+// - publish:kind:33402 → sign AND broadcast a shared program as a NIP-101e workout template
 // - relays:read      → read the public relay list for discovery
-export const REQUIRED_SCOPES = ['profile:read', 'relays:read', 'sign:kind:30078', 'sign:kind:27235', 'publish:kind:1', 'publish:kind:33401'];
+export const REQUIRED_SCOPES = ['profile:read', 'relays:read', 'sign:kind:27235', 'publish:kind:1', 'publish:kind:33401', 'publish:kind:33402'];
 
 let config = readConfig();
 
@@ -108,31 +108,110 @@ export async function status() {
   return out;
 }
 
-// Sign and store the workout sheet as a private kind:30078 event (NIP-78).
-export async function publishSheet(sheetId) {
-  const sheet = getSheet(sheetId);
-  if (!sheet) throw new Error('sheet not found');
+// --- NIP-101e workout template (kind:33402) construction ---
+// A program publishes as a standard NIP-101e workout template referencing each
+// member exercise by its 33401 coordinate, so other clients can run it, while the
+// exact Workstr prescription rides along in a namespaced tag for lossless re-import.
+const PROGRAM_D_PREFIX = 'workstr:program:';
+
+// A prescription logs duration when the exercise is timed (cardio or a "30s" rep
+// scheme); otherwise it logs the standard strength quartet, mirroring nip101eFormat.
+function isTimedPrescription(ex, reps) {
+  const r = String(reps ?? ex?.defaultReps ?? '').trim();
+  return ex?.category === 'cardio' || /^\d+\s*(s|sec|secs|second|seconds|min|mins|minute|minutes)$/i.test(r);
+}
+
+function prescriptionDurationSec(reps) {
+  const m = String(reps ?? '').trim().match(/^(\d+)\s*(s|sec|secs|second|seconds|min|mins|minute|minutes)?$/i);
+  if (!m) return '';
+  return String(/min/i.test(m[2] || '') ? Number(m[1]) * 60 : Number(m[1]));
+}
+
+// Build the unsigned kind:33402 event. Pure (no I/O) so it can be unit-tested.
+// `members` are the resolved, already-published member exercises (each carrying its
+// 33401 `address` and the program's prescribed sets/reps/weight).
+export function buildWorkoutTemplateEvent(sheet, members, relayHint = '') {
+  const dTag = `${PROGRAM_D_PREFIX}${sheet.slug}`;
+  const tags = [
+    ['d', dTag],
+    ['title', sheet.name]
+  ];
+
+  // One `exercise` tag per prescribed set, referencing the member's 33401 coordinate.
+  const hashtags = new Set();
+  for (const m of members) {
+    const sets = Math.max(1, Number(m.sets) || 1);
+    const ref = ['exercise', m.address, relayHint || ''];
+    for (let i = 0; i < sets; i++) {
+      tags.push(m.timed
+        ? [...ref, prescriptionDurationSec(m.reps), 'normal']
+        : [...ref, m.weightKg == null ? '' : String(m.weightKg), String(m.reps ?? ''), '', 'normal']);
+    }
+    for (const t of m.hashtags || []) if (t) hashtags.add(String(t).toLowerCase());
+  }
+  for (const t of hashtags) tags.push(['t', t]);
+
+  // Workstr identity — lets Workstr filter its own shared programs out of the pool.
+  tags.push(['t', 'workstr'], ['client', 'workstr']);
+
+  // Exact prescription per member, for lossless self re-import (ignored by others).
+  tags.push(['workstr_meta', JSON.stringify({
+    v: 1,
+    description: sheet.description || '',
+    exercises: members.map((m) => ({
+      address: m.address, slug: m.slug, name: m.name,
+      sets: m.sets, reps: m.reps, restSec: m.restSec, weight: m.weightKg, notes: m.notes, position: m.position
+    }))
+  })]);
+
+  return { kind: 33402, created_at: Math.floor(Date.now() / 1000), tags, content: sheet.description || '' };
+}
+
+// Publish a program: first auto-publish every member exercise as a 33401 (fail-fast —
+// if any member fails, the whole program publish fails and nothing is recorded), then
+// broadcast the kind:33402 workout template referencing their fresh addresses.
+export async function publishProgram(id) {
+  const sheet = getSheet(id);
+  if (!sheet) throw new Error('program not found');
   if (!config.idenstrToken) throw new Error('Idenstr is not connected');
-  const unsigned = {
-    kind: 30078,
-    created_at: Math.floor(Date.now() / 1000),
-    tags: [
-      ['d', `workstr:sheet:${sheet.id}`],
-      ['title', sheet.name],
-      ['client', 'workstr']
-    ],
-    content: JSON.stringify({
-      v: 1,
-      name: sheet.name,
-      description: sheet.description,
-      exercises: sheet.exercises.map((e) => ({ slug: e.exerciseSlug, name: e.exerciseName, sets: e.sets, reps: e.reps, restSec: e.restSec, weightKg: e.weight, notes: e.notes }))
-    })
-  };
-  const res = await idenstrFetch('/api/v1/sign', { method: 'POST', body: unsigned });
+  if (!sheet.exercises.length) throw new Error('program has no exercises to publish');
+
+  // Auto-publish (or re-publish) each member so its public 33401 copy is fresh.
+  for (const item of sheet.exercises) {
+    try {
+      await publishExercise(item.exerciseSlug);
+    } catch (err) {
+      throw new Error(`could not publish exercise "${item.exerciseName || item.exerciseSlug}": ${err.message}`);
+    }
+  }
+
+  let relayHint = '';
+  try { relayHint = (await readRelays())[0] || ''; } catch {}
+
+  const members = sheet.exercises.map((item) => {
+    const ex = getExercise(item.exerciseSlug);
+    const timed = isTimedPrescription(ex, item.reps);
+    return {
+      slug: item.exerciseSlug,
+      name: item.exerciseName,
+      address: ex?.nostrAddress || '',
+      sets: item.sets, reps: item.reps, restSec: item.restSec,
+      weightKg: item.weight, notes: item.notes, position: item.position, timed,
+      hashtags: [ex?.category, ...(ex?.muscles || [])].filter(Boolean)
+    };
+  });
+  const missing = members.find((m) => !m.address);
+  if (missing) throw new Error(`exercise "${missing.name}" has no published address`);
+
+  const unsigned = buildWorkoutTemplateEvent(sheet, members, relayHint);
+  const dTag = unsigned.tags[0][1];
+  const res = await idenstrFetch('/api/v1/events/publish', { method: 'POST', body: unsigned });
   if (!res.ok) throw new Error(res.body?.error ? `${res.body.error}${res.body.required ? `: ${res.body.required}` : ''}` : `idenstr ${res.status}`);
-  const eventId = res.body?.event?.id;
-  if (eventId) markSheetPublished(sheet.id, eventId);
-  return { event: res.body?.event, address: `30078:${unsigned.tags[0][1]}` };
+  const event = res.body?.event;
+  const pubkey = event?.pubkey || '';
+  const address = pubkey ? `33402:${pubkey}:${dTag}` : `33402:${dTag}`;
+  if (event?.id) markSheetPublished(sheet.id, { eventId: event.id, pubkey, address });
+  return { event, address, relayResults: res.body?.relayResults ?? [], members: members.map((m) => ({ slug: m.slug, name: m.name, address: m.address })) };
 }
 
 // The public relays to read from for discovery. Idenstr owns the relay list

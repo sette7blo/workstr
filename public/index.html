@@ -8,13 +8,18 @@
   <meta name="theme-color" content="#7c3cff" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="Workstr" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="manifest" href="./manifest.webmanifest?v=workstr-wk-logo" />
+  <link rel="icon" type="image/x-icon" href="./favicon.ico?v=workstr-wk-logo" />
+  <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png?v=workstr-wk-logo" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png?v=workstr-wk-logo" />
   <style>
     html { background: #090512; color: #ede7dc; }
     body { margin: 0; min-height: 100vh; background: radial-gradient(circle at top left, rgba(124,60,255,.18), transparent 34rem), #090512; color: #ede7dc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     .topbar, .sidebar, .content { opacity: 1; }
     .topbar { min-height: 64px; }
   </style>
-  <link rel="stylesheet" href="./styles.css?v=16" />
+  <link rel="stylesheet" href="./styles.css?v=19" />
 </head>
 <body>
   <div class="noise"></div>
@@ -23,7 +28,7 @@
   <!-- Topbar -->
   <header class="topbar">
     <div class="logo-zone">
-      <span class="glyph">W</span>
+      <img class="brand-logo" src="./icons/header-logo.png?v=workstr-wk-logo" width="36" height="36" alt="Workstr" />
       <div class="logo-text">
         <div class="logo-mark">Work<span>str</span></div>
         <div class="logo-tagline">sovereign training</div>
@@ -104,6 +109,7 @@
       <div class="page-title">Workouts</div>
       <div class="sub-tabs">
         <div class="sub-tab active" data-parent="workouts" data-subtab="programs">Programs</div>
+        <div class="sub-tab" data-parent="workouts" data-subtab="discover">Discover</div>
         <div class="sub-tab" data-parent="workouts" data-subtab="history">History</div>
         <div class="sub-tab" data-parent="workouts" data-subtab="recovery">Recovery</div>
       </div>
@@ -111,9 +117,21 @@
       <div class="sub-panel active" id="sub-workouts-programs">
         <div class="panel">
           <div class="panel-head"><span>Programs</span><button class="button primary small" id="new-program">+ New program</button></div>
-          <p class="section-help">A program is the routine you take to the gym. Expand one to review its exercises, then hit Start to open the live logger. Publish a program as a private, editable Nostr event (kind 30078) — signed and stored in your vault by Idenstr.</p>
+          <p class="section-help">A program is the routine you take to the gym. Expand one to review its exercises, then hit Start to open the live logger. Publish a program as a public NIP-101e workout template (kind 33402) on your relays — publishing also publishes its exercises so other clients can run it.</p>
           <div id="resume-slot"></div>
           <div id="program-list" class="list empty">No programs yet.</div>
+        </div>
+      </div>
+
+      <div class="sub-panel" id="sub-workouts-discover">
+        <div class="panel">
+          <div class="panel-head"><span>Discover programs</span><button class="button ghost" id="program-discover-refresh">Search relays</button></div>
+          <p class="section-help">Browse workout programs shared on your relays. Importing a program saves it into your library, fetching and importing any of its exercises you don't have yet.</p>
+          <div class="filter-bar">
+            <input class="grow" id="program-discover-search" placeholder="Search programs..." autocomplete="off" />
+          </div>
+          <div id="program-discover-status" class="discover-status"></div>
+          <div id="program-discover-grid" class="ex-grid"></div>
         </div>
       </div>
 
@@ -290,12 +308,28 @@
       <div class="sub-panel" id="sub-statistics-body">
         <div class="panel">
           <div class="panel-head"><span>Body weight</span><span class="section-label" id="body-unit">kg</span></div>
+
+          <div id="body-empty" class="empty" style="display:none">No entries yet. Log your weight below to start tracking.</div>
+
+          <div id="body-cards"></div>
+          <div id="body-bmi"></div>
+          <div id="body-chart"></div>
+          <div id="body-goal"></div>
+
+          <div class="subsection-head"><span>Log weight</span></div>
           <form id="body-form" class="form-grid">
             <label>Date<input type="date" name="date" /></label>
             <label><span>Weight (<span class="body-unit-lbl">kg</span>)</span><input type="number" name="weightKg" step="0.1" placeholder="e.g. 80" /></label>
             <div class="form-actions span-2"><button class="button primary" type="submit">Log weight</button></div>
           </form>
           <div id="body-list" class="list empty">No entries yet.</div>
+
+          <div class="subsection-head"><span>Profile</span><small>for BMI &amp; goal</small></div>
+          <form id="body-profile-form" class="form-grid">
+            <label>Height (cm)<input type="number" name="heightCm" step="1" min="100" max="250" placeholder="e.g. 175" /></label>
+            <label><span>Target weight (<span class="body-unit-lbl">kg</span>)</span><input type="number" name="targetWeightKg" step="0.1" min="0" placeholder="e.g. 75" /></label>
+            <div class="form-actions span-2"><button class="button" type="submit">Save profile</button></div>
+          </form>
         </div>
       </div>
     </div>
@@ -305,22 +339,17 @@
       <div class="page-title">Settings</div>
       <div class="panel">
         <div class="panel-head"><span>Idenstr connection</span><span id="connect-pill" class="status-pill">checking</span></div>
-        <p class="section-help">Idenstr is the Chief: it holds your key, signs your workout sheet, and publishes your workout summaries to your relays. Generate a token in Idenstr (API tokens) with scopes <code>profile:read</code>, <code>sign:kind:30078</code>, <code>publish:kind:1</code>.</p>
+        <p class="section-help">Idenstr is the Chief: it holds your key, signs and publishes your shared exercises, programs and workout summaries to your relays. Generate a token in Idenstr (API tokens) with scopes <code>profile:read</code>, <code>relays:read</code>, <code>publish:kind:1</code>, <code>publish:kind:33401</code>, <code>publish:kind:33402</code>. If you upgraded from an older version, re-authorize your token in Idenstr to add the new <code>publish:kind:33402</code> scope.</p>
         <form id="connect-form" class="form-grid">
           <label class="span-2">Idenstr URL<input name="idenstrUrl" placeholder="http://your-idenstr-host:3000" autocomplete="off" /></label>
           <label class="span-2">API token<input name="idenstrToken" placeholder="idstr_... (leave blank to keep current)" autocomplete="off" /></label>
-          <label class="span-2">Local relay (read-only vault)<input name="localRelayUrl" placeholder="ws://your-idenstr-host:7777" autocomplete="off" /></label>
+          <label class="span-2">Local relay (optional)<input name="localRelayUrl" placeholder="ws://your-idenstr-host:7777" autocomplete="off" /></label>
           <div class="form-actions span-2">
             <button class="button primary" type="submit">Save connection</button>
             <button class="button ghost" type="button" id="test-connect">Test connection</button>
           </div>
         </form>
         <div id="connect-status" class="terminal-mini">Not checked yet.</div>
-      </div>
-      <div class="panel">
-        <div class="panel-head"><span>Local vault — read-only</span><span class="section-label">kind:30078</span></div>
-        <p class="section-help">Sheets Idenstr has signed and stored in the write-ahead vault. Workstr reads these directly from the local relay; it cannot write (the relay is pinned to your key).</p>
-        <div id="vault-sheets" class="list empty">Checking vault…</div>
       </div>
       <div class="panel">
         <div class="panel-head"><span>Preferences</span></div>
@@ -374,6 +403,6 @@
   <div class="modal" id="modal"><div class="modal-card"><button class="modal-close" id="modal-close">×</button><div id="modal-body"></div></div></div>
   <div id="toast"></div>
 
-  <script type="module" src="./app.js?v=22"></script>
+  <script type="module" src="./app.js?v=25"></script>
 </body>
 </html>
