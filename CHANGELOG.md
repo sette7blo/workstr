@@ -10,6 +10,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 ---
 
 ## [Unreleased]
+### Added
+- **Statistics hero cards**, mirroring the original Liftme app: the Statistics → Training tab now opens with three summary cards — day streak (with a flame that lights up gold while a streak is active), total sessions, and all-time total volume in your weight unit. The volume total that previously sat mislabelled next to the "Weekly volume" heading moved into its own card.
 
 ## [v0.2.0] — 2026-07-01
 ### Added

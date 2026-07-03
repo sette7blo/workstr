@@ -1538,7 +1538,11 @@ async function cleanupTempSheet(sheetId) {
 // ---------- progress ----------
 async function loadProgress() {
   const [stats, { entries }] = await Promise.all([api('stats'), api('body')]);
-  $('#prog-total').textContent = Math.round(wDisplay(stats.totalVolume) || 0);
+  $('#stat-streak').textContent = stats.streak;
+  $('#stat-streak-flame').classList.toggle('active', stats.streak > 0);
+  $('#stat-sessions').textContent = stats.totalSessions;
+  $('#stat-volume').textContent = Math.round(wDisplay(stats.totalVolume) || 0).toLocaleString();
+  $('#stat-volume-unit').textContent = unitLabel();
   const max = Math.max(1, ...stats.weekly.map((w) => w.volume));
   $('#prog-bars').innerHTML = stats.weekly.length ? stats.weekly.map((w) => `<div class="bar"><div class="fill" style="height:${Math.round((w.volume / max) * 100)}%"></div><span class="blabel">${escapeHtml(w.week.split('-')[1])}</span></div>`).join('') : '<div class="empty">No volume logged yet.</div>';
   const distMax = Math.max(1, ...stats.muscle.map((m) => m.sets));
