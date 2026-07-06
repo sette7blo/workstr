@@ -10,6 +10,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 ---
 
 ## [Unreleased]
+
+## [v0.3.0] — 2026-07-06
 ### Added
 - **Statistics hero cards**, mirroring the original Liftme app: the Statistics → Training tab now opens with three summary cards — day streak (with a flame that lights up gold while a streak is active), total sessions, and all-time total volume in your weight unit. The volume total that previously sat mislabelled next to the "Weekly volume" heading moved into its own card.
 
@@ -87,7 +89,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 - Weight unit (kg/lbs) is a display label in this version; stored values are not converted when the unit is switched.
 - AI features (exercise/image/vision generation) are deferred to a later phase.
 
-[Unreleased]: https://github.com/sette7blo/workstr/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/sette7blo/workstr/compare/v0.3.0...HEAD
+[v0.3.0]: https://github.com/sette7blo/workstr/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/sette7blo/workstr/compare/v0.1.1...v0.2.0
 [v0.1.1]: https://github.com/sette7blo/workstr/compare/v0.1.0...v0.1.1
 [v0.1.0]: https://github.com/sette7blo/workstr/releases/tag/v0.1.0
