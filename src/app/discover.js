@@ -408,6 +408,33 @@ export async function discoverPrograms({ limit = 80, timeoutMs = DEFAULT_TIMEOUT
   return { configured: true, relays, programs };
 }
 
+// Fetch the live signed event behind a published address (33401 exercise or 33402
+// program) from the public relays, for the raw-JSON inspector. Returns the newest
+// version plus which relays currently hold it — the relays are the source of truth
+// here, not a local reconstruction.
+export async function fetchRawEvent(address, { timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
+  const [kindStr, pubkey, ...rest] = String(address || '').split(':');
+  const kind = Number(kindStr);
+  const dTag = rest.join(':');
+  if (!Number.isInteger(kind) || !pubkey || !dTag) throw new Error('invalid nostr address');
+  const relays = await readRelays();
+  if (!relays.length) throw new Error('no public relays configured in Idenstr');
+  const batches = await mapWithConcurrency(relays, RELAY_CONCURRENCY, (relay) =>
+    queryRelay(relay, { kinds: [kind], authors: [pubkey], '#d': [dTag], limit: 5 }, timeoutMs).then((events) => ({ relay, events })));
+  let best = null;
+  const seenOn = [];
+  for (const { relay, events } of batches) {
+    let held = false;
+    for (const ev of events) {
+      if (`${kind}:${ev.pubkey}:${tagValue(ev.tags || [], 'd')}` !== address) continue;
+      held = true;
+      if (!best || ev.created_at > best.created_at) best = ev;
+    }
+    if (held) seenOn.push(relay);
+  }
+  return { address, event: best, relays: seenOn, queried: relays.length };
+}
+
 // Fetch a single 33401 exercise template by its coordinate, so an imported program
 // can resolve members that aren't in the library yet.
 async function fetchExerciseByAddress(address, relays, timeoutMs) {

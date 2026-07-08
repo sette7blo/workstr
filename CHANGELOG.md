@@ -10,6 +10,9 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 ---
 
 ## [Unreleased]
+### Added
+- **Raw JSON inspector for published exercises and programs**, mirroring Feedstr's raw-event viewer: a `{ } JSON` button in the detail view of any published exercise (kind:33401) and on any published program card (kind:33402) fetches the live event from the public relays (the relays are the source of truth, not a local copy) and shows it in a read-only terminal-style panel with Copy JSON / Copy event ID actions and a list of which relays currently hold the event. The program Publish button now reads "Update on relays" once published, matching the exercise detail view.
+- **Multi-select in the exercise library** for bulk actions, matching the Liftme pattern: a Select toggle in the library header puts the grid in selection mode (tap cards to check them, Select all respects the active search/filters), and a bottom action bar publishes the whole selection to relays or deletes it in one go, with per-item progress and a confirmation before deleting. Selection mode exits automatically when navigating away.
 
 ## [v0.3.0] — 2026-07-06
 ### Added

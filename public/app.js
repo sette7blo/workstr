@@ -83,6 +83,7 @@ const subState = { exercises: 'library', workouts: 'programs', statistics: 'trai
 
 function switchTab(tab) {
   if (!document.getElementById('page-' + tab)) tab = 'exercises';
+  if (exSelectMode) setExerciseSelectMode(false); // leaving the library view drops any pending selection
   currentTab = tab;
   $$('.nav-item').forEach((n) => n.classList.toggle('active', n.dataset.tab === tab));
   $$('.page').forEach((p) => p.classList.toggle('active', p.id === 'page-' + tab));
@@ -92,6 +93,7 @@ function switchTab(tab) {
 }
 
 function switchSubTab(tab, sub) {
+  if (exSelectMode) setExerciseSelectMode(false);
   subState[tab] = sub;
   if (currentTab !== tab) return switchTab(tab);
   applySubTab(tab, sub);
@@ -127,6 +129,9 @@ async function loadExercises() {
   const [{ exercises }, filters] = await Promise.all([api('exercises'), api('exercises/filters')]);
   state.exercises = exercises;
   state.filters = filters;
+  // drop selections that no longer exist (deleted elsewhere, restore, etc.)
+  const live = new Set(exercises.map((e) => e.slug));
+  for (const slug of exSelected) if (!live.has(slug)) exSelected.delete(slug);
   fillSelect($('#ex-cat'), filters.categories, 'All categories');
   fillSelect($('#ex-muscle'), filters.muscles, 'All muscles');
   fillSelect($('#ex-diff'), filters.difficulties, 'All levels');
@@ -148,18 +153,52 @@ function exerciseCanonMuscles(e) {
   return set;
 }
 
-function renderExercises() {
+function filteredExercises() {
   const q = $('#ex-search').value.trim().toLowerCase();
   const cat = $('#ex-cat').value, muscle = $('#ex-muscle').value, diff = $('#ex-diff').value;
   const list = state.exercises.filter((e) =>
     (!q || e.name.toLowerCase().includes(q) || e.muscleGroup.toLowerCase().includes(q)) &&
     (!cat || e.category === cat) && (!muscle || exerciseCanonMuscles(e).has(muscle)) && (!diff || e.difficulty === diff));
-  const hasFilters = Boolean(q || cat || muscle || diff);
+  return { list, hasFilters: Boolean(q || cat || muscle || diff) };
+}
+
+function renderExercises() {
+  const { list, hasFilters } = filteredExercises();
   $('#ex-empty').style.display = list.length ? 'none' : 'block';
   $('#ex-empty').textContent = state.exercises.length === 0 && !hasFilters
     ? 'Your exercise library is empty. Create an exercise manually or discover exercises from relays.'
     : 'No exercises match.';
   $('#ex-grid').innerHTML = list.map(exerciseCardHtml).join('');
+  updateExerciseBulkBar();
+}
+
+// ---------- exercise multi-select (bulk publish / delete) ----------
+let exSelectMode = false;
+const exSelected = new Set();
+
+function setExerciseSelectMode(on) {
+  exSelectMode = on;
+  exSelected.clear();
+  const toggle = $('#ex-select-toggle');
+  toggle.classList.toggle('active', on);
+  toggle.textContent = on ? 'Done' : 'Select';
+  renderExercises();
+}
+
+function updateExerciseBulkBar() {
+  const n = exSelected.size;
+  $('#ex-bulk-count').textContent = `${n} selected`;
+  $('#ex-bulk-bar').classList.toggle('open', exSelectMode);
+  $('#ex-bulk-publish').disabled = n === 0;
+  $('#ex-bulk-delete').disabled = n === 0;
+}
+
+function toggleExerciseSelected(card) {
+  const slug = card.dataset.slug;
+  if (exSelected.has(slug)) exSelected.delete(slug);
+  else exSelected.add(slug);
+  card.classList.toggle('selected', exSelected.has(slug));
+  updateExerciseBulkBar();
 }
 
 const EX_PLACEHOLDER = `<div class="card-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
@@ -205,13 +244,15 @@ function exerciseCardHtml(e) {
   const source = e.sourceType === 'ai' ? 'ai' : e.sourceType === 'nostr' ? 'nostr' : 'manual';
   const sourceCls = source === 'ai' ? 'badge-ai' : source === 'nostr' ? 'badge-nostr' : 'badge-manual';
   const diffCls = difficultyBadgeClass(e.difficulty);
+  const selCheck = '<span class="sel-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>';
   return `
-    <div class="ex-card" data-slug="${escapeHtml(e.slug)}">
+    <div class="ex-card${exSelectMode ? ' selectable' : ''}${exSelected.has(e.slug) ? ' selected' : ''}" data-slug="${escapeHtml(e.slug)}">
       <div class="card-img">
         ${img}
         <span class="source-badge ${sourceCls}">${escapeHtml(source)}</span>
         ${e.nostrEventId ? '<span class="published-badge" title="Shared on relays">shared</span>' : ''}
         ${e.difficulty ? `<span class="diff-badge ${diffCls}">${escapeHtml(e.difficulty)}</span>` : ''}
+        ${exSelectMode ? selCheck : ''}
       </div>
       <div class="card-body">
         <div class="card-name">${escapeHtml(e.name)}<button class="fav ${e.favourite ? 'on' : ''}" data-fav="${escapeHtml(e.slug)}" title="Favourite">${e.favourite ? '★' : '☆'}</button></div>
@@ -358,6 +399,7 @@ function openExerciseDetail(slug) {
     <div class="form-actions">
       <button class="button primary" id="ex-edit">Edit</button>
       <button class="button ghost" id="ex-publish">${e.nostrEventId ? 'Update on relays' : 'Publish to relays'}</button>
+      ${e.nostrEventId ? '<button class="button ghost" id="ex-raw" title="View the published event JSON as relays hold it">{&hairsp;} JSON</button>' : ''}
     </div>`);
   if (muscleList.length) renderDetailMuscleMap(e.muscleGroup, muscleList);
   $('#ex-edit').addEventListener('click', async () => openExerciseModal(await api(`exercises/${encodeURIComponent(e.slug)}`)));
@@ -367,6 +409,76 @@ function openExerciseDetail(slug) {
     await loadExercises();
     openExerciseDetail(e.slug);
   }));
+  $('#ex-raw')?.addEventListener('click', () => openExerciseRawJson(e));
+}
+
+// Raw-JSON inspector for anything published (33401 exercise / 33402 program):
+// fetches the live signed event from the public relays (not a local
+// reconstruction) so what you see is exactly what other clients can discover.
+// `onBack` returns to an underlying modal (exercise detail); without it the
+// last button simply closes.
+async function openRawEventModal({ kind, address, path, onBack = null }) {
+  const backLabel = onBack ? 'Back' : 'Close';
+  const backAction = () => (onBack ? onBack() : closeModal());
+  const wireBack = () => $('#raw-back')?.addEventListener('click', backAction);
+  openModal(`
+    <div class="raw-head">
+      <h3>Published event</h3>
+      <span class="raw-kind-pill">kind:${escapeHtml(String(kind))}</span>
+    </div>
+    <p class="detail-nostr"><code>${escapeHtml(address || '')}</code></p>
+    <div id="raw-body"><p class="raw-fetching">Fetching the live event from relays...</p></div>`);
+  let data;
+  try {
+    data = await api(path);
+  } catch (err) {
+    const body = $('#raw-body');
+    if (body) body.innerHTML = `<p class="raw-fetching error">Could not reach relays: ${escapeHtml(err.message)}</p>
+      <div class="form-actions"><button class="button ghost" id="raw-back">${backLabel}</button></div>`;
+    wireBack();
+    return;
+  }
+  const body = $('#raw-body');
+  if (!body) return; // modal was closed or replaced while fetching
+  if (!data.event) {
+    body.innerHTML = `<p class="raw-fetching error">Not found on any of the ${data.queried} queried relay${data.queried === 1 ? '' : 's'}. It may still be propagating, or the relays have pruned it — republishing puts it back.</p>
+      <div class="form-actions"><button class="button ghost" id="raw-back">${backLabel}</button></div>`;
+    wireBack();
+    return;
+  }
+  const pretty = JSON.stringify(data.event, null, 2);
+  const relayList = (data.relays || []).map((r) => `<span class="tag-pill">${escapeHtml(r.replace(/^wss:\/\//, ''))}</span>`).join('');
+  body.innerHTML = `
+    <pre class="raw-json-viewer" id="raw-json-view" tabindex="0"></pre>
+    <div class="subsection-head"><span>Held by ${data.relays.length} of ${data.queried} relays</span></div>
+    <div class="tag-row">${relayList}</div>
+    <div class="form-actions">
+      <button class="button ghost" id="raw-copy-json">Copy JSON</button>
+      <button class="button ghost" id="raw-copy-id">Copy event ID</button>
+      <button class="button ghost" id="raw-back">${backLabel}</button>
+    </div>`;
+  $('#raw-json-view').textContent = pretty;
+  $('#raw-copy-json').addEventListener('click', () => copyText(pretty, 'JSON copied'));
+  $('#raw-copy-id').addEventListener('click', () => copyText(data.event.id, 'Event ID copied'));
+  wireBack();
+}
+
+function openExerciseRawJson(e) {
+  return openRawEventModal({
+    kind: 33401,
+    address: e.nostrAddress,
+    path: `exercises/${encodeURIComponent(e.slug)}/event`,
+    onBack: () => openExerciseDetail(e.slug)
+  });
+}
+
+async function copyText(text, message) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(message);
+  } catch {
+    toast('Could not copy', 'bad');
+  }
 }
 
 // ---------- discover (exercises shared on the public relays) ----------
@@ -763,7 +875,8 @@ function renderProgramBody(sheetId) {
     <div class="workout-card-actions">
       <button class="button gold small" data-start-program="${sheetId}">Start workout</button>
       <button class="button ghost small" data-edit-program="${sheetId}">Edit</button>
-      <button class="button ghost small" data-publish-program="${sheetId}">Publish</button>
+      <button class="button ghost small" data-publish-program="${sheetId}">${sheet.nostrEventId ? 'Update on relays' : 'Publish'}</button>
+      ${sheet.nostrEventId ? `<button class="button ghost small" data-raw-program="${sheetId}" title="View the published event JSON as relays hold it">{&hairsp;} JSON</button>` : ''}
       <button class="button danger small" data-del-program="${sheetId}">Delete</button>
     </div>`;
 }
@@ -1735,9 +1848,52 @@ if (recoveryBody) {
 $('#new-exercise').addEventListener('click', () => openExerciseModal());
 ['ex-search', 'ex-cat', 'ex-muscle', 'ex-diff'].forEach((id) => $('#' + id).addEventListener('input', renderExercises));
 $('#ex-grid').addEventListener('click', async (e) => {
+  const card = e.target.closest('[data-slug]');
+  if (exSelectMode) { if (card) toggleExerciseSelected(card); return; }
   const fav = e.target.dataset.fav;
   if (fav) { e.stopPropagation(); const ex = state.exercises.find((x) => x.slug === fav); await api(`exercises/${encodeURIComponent(fav)}/favourite`, { method: 'POST', body: JSON.stringify({ favourite: !ex.favourite }) }); await loadExercises(); return; }
-  const card = e.target.closest('[data-slug]'); if (card) openExerciseDetail(card.dataset.slug);
+  if (card) openExerciseDetail(card.dataset.slug);
+});
+
+$('#ex-select-toggle').addEventListener('click', () => setExerciseSelectMode(!exSelectMode));
+$('#ex-bulk-cancel').addEventListener('click', () => setExerciseSelectMode(false));
+$('#ex-bulk-all').addEventListener('click', () => {
+  const { list } = filteredExercises();
+  const allSelected = list.length > 0 && list.every((e) => exSelected.has(e.slug));
+  if (allSelected) exSelected.clear();
+  else list.forEach((e) => exSelected.add(e.slug));
+  renderExercises();
+});
+$('#ex-bulk-publish').addEventListener('click', async (e) => {
+  const slugs = [...exSelected];
+  if (!slugs.length) return;
+  await withButtonState(e.currentTarget, async () => {
+    let ok = 0;
+    let failed = 0;
+    for (const [i, slug] of slugs.entries()) {
+      $('#ex-bulk-count').textContent = `Publishing ${i + 1}/${slugs.length}...`;
+      try { await api(`exercises/${encodeURIComponent(slug)}/publish`, { method: 'POST' }); ok += 1; }
+      catch { failed += 1; }
+    }
+    await loadExercises();
+    setExerciseSelectMode(false);
+    if (failed) toast(`Published ${ok}/${slugs.length} — ${failed} failed`, 'bad');
+    else toast(`Published ${ok} exercise${ok === 1 ? '' : 's'} to relays`);
+  });
+});
+$('#ex-bulk-delete').addEventListener('click', async (e) => {
+  const slugs = [...exSelected];
+  if (!slugs.length) return;
+  if (!confirm(`Delete ${slugs.length} exercise${slugs.length === 1 ? '' : 's'} from your library?`)) return;
+  await withButtonState(e.currentTarget, async () => {
+    for (const [i, slug] of slugs.entries()) {
+      $('#ex-bulk-count').textContent = `Deleting ${i + 1}/${slugs.length}...`;
+      await api(`exercises/${encodeURIComponent(slug)}`, { method: 'DELETE' });
+    }
+    await loadExercises();
+    setExerciseSelectMode(false);
+    toast(`Deleted ${slugs.length} exercise${slugs.length === 1 ? '' : 's'}`);
+  });
 });
 
 $('#new-program').addEventListener('click', async () => { if (!state.exercises.length) await loadExercises(); openSheetBuilder(); });
@@ -1761,6 +1917,12 @@ $('#program-list').addEventListener('click', async (e) => {
   if (pub) { await withButtonState(pub, async () => { const r = await api(`sheets/${pub.dataset.publishProgram}/publish`, { method: 'POST' }); const n = r.members?.length || 0; toast(`Program published to relays (${n} exercise${n === 1 ? '' : 's'} shared)`); renderPrograms(await fetchSheets()); }); return; }
   const del = e.target.closest('[data-del-program]');
   if (del) { if (confirm('Delete this program?')) { await api(`sheets/${del.dataset.delProgram}`, { method: 'DELETE' }); toast('Program deleted'); renderPrograms(await fetchSheets()); } return; }
+  const raw = e.target.closest('[data-raw-program]');
+  if (raw) {
+    const sheet = state.sheets.find((s) => s.id === Number(raw.dataset.rawProgram));
+    if (sheet?.nostrAddress) openRawEventModal({ kind: 33402, address: sheet.nostrAddress, path: `sheets/${sheet.id}/event` });
+    return;
+  }
 });
 $('#resume-slot').addEventListener('click', (e) => { if (e.target.closest('[data-resume]') && state.activeSession) openSessionOverlay(state.activeSession); });
 

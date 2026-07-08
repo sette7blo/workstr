@@ -61,6 +61,12 @@ async function route(req, res) {
     if (m === 'POST' && !id) { if (body) body.imageUrl = await localizeImage(body.imageUrl); return sendJson(res, 201, store.createExercise(body)); }
     if (m === 'GET' && id && sub === 'image') return sendExerciseImage(res, id);
     if (m === 'GET' && id && sub === 'last-sets') return sendJson(res, 200, { sets: store.lastSetsForExercise(id, Number(url.searchParams.get('beforeSessionId')) || null) });
+    if (m === 'GET' && id && sub === 'event') {
+      const ex = store.getExercise(id);
+      if (!ex) return sendJson(res, 404, { error: 'not_found' });
+      if (!ex.nostrAddress) return sendJson(res, 409, { error: 'not_published' });
+      return sendJson(res, 200, await discover.fetchRawEvent(ex.nostrAddress));
+    }
     if (m === 'GET' && id) return sendOrNull(res, store.getExercise(id));
     if (m === 'PUT' && id) { if (body && 'imageUrl' in body) body.imageUrl = await localizeImage(body.imageUrl); return sendOrNull(res, store.updateExercise(id, body)); }
     if (m === 'POST' && id && sub === 'favourite') return sendJson(res, 200, store.setFavourite(id, body?.favourite !== false));
@@ -87,6 +93,12 @@ async function route(req, res) {
   if (resource === 'sheets') {
     if (m === 'GET' && !id) return sendJson(res, 200, { sheets: store.listSheets() });
     if (m === 'POST' && !id) return sendJson(res, 201, store.createSheet(body));
+    if (m === 'GET' && id && sub === 'event') {
+      const sheet = store.getSheet(Number(id));
+      if (!sheet) return sendJson(res, 404, { error: 'not_found' });
+      if (!sheet.nostrAddress) return sendJson(res, 409, { error: 'not_published' });
+      return sendJson(res, 200, await discover.fetchRawEvent(sheet.nostrAddress));
+    }
     if (m === 'GET' && id) return sendOrNull(res, store.getSheet(Number(id)));
     if (m === 'PUT' && id) return sendOrNull(res, store.updateSheet(Number(id), body));
     if (m === 'DELETE' && id) return sendJson(res, store.deleteSheet(Number(id)) ? 200 : 404, { deleted: true });

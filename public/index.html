@@ -19,7 +19,7 @@
     .topbar, .sidebar, .content { opacity: 1; }
     .topbar { min-height: 64px; }
   </style>
-  <link rel="stylesheet" href="./styles.css?v=20" />
+  <link rel="stylesheet" href="./styles.css?v=22" />
 </head>
 <body>
   <div class="noise"></div>
@@ -76,7 +76,7 @@
 
       <div class="sub-panel active" id="sub-exercises-library">
         <div class="panel">
-          <div class="panel-head"><span>Exercise library</span><button class="button primary small" id="new-exercise">+ New exercise</button></div>
+          <div class="panel-head"><span>Exercise library</span><span class="head-actions"><button class="button ghost small" id="ex-select-toggle">Select</button><button class="button primary small" id="new-exercise">+ New exercise</button></span></div>
           <div class="filter-bar">
             <input class="grow" id="ex-search" placeholder="Search exercises..." autocomplete="off" />
             <select id="ex-cat"><option value="">All categories</option></select>
@@ -417,6 +417,14 @@
   <div class="modal" id="modal"><div class="modal-card"><button class="modal-close" id="modal-close">×</button><div id="modal-body"></div></div></div>
   <div id="toast"></div>
 
-  <script type="module" src="./app.js?v=26"></script>
+  <div class="bulk-bar" id="ex-bulk-bar">
+    <span class="bulk-count" id="ex-bulk-count">0 selected</span>
+    <button class="button ghost small" id="ex-bulk-all">Select all</button>
+    <button class="button primary small" id="ex-bulk-publish">Publish to relays</button>
+    <button class="button danger small" id="ex-bulk-delete">Delete</button>
+    <button class="button ghost small" id="ex-bulk-cancel">Cancel</button>
+  </div>
+
+  <script type="module" src="./app.js?v=29"></script>
 </body>
 </html>

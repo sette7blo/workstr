@@ -387,6 +387,29 @@ test('discover reports not-configured when no relays are reachable', async () =>
   });
 });
 
+test('raw published-event endpoint guards unknown and unpublished exercises', async () => {
+  await withServer(async (base) => {
+    const [missingStatus, missingBody] = await get(base, '/api/v1/exercises/no-such-exercise/event');
+    assert.equal(missingStatus, 404);
+    assert.equal(missingBody.error, 'not_found');
+
+    await post(base, '/api/v1/exercises', { name: 'Never Shared Press' });
+    const [unpublishedStatus, unpublishedBody] = await get(base, '/api/v1/exercises/never-shared-press/event');
+    assert.equal(unpublishedStatus, 409);
+    assert.equal(unpublishedBody.error, 'not_published');
+
+    // same guards for programs (kind:33402)
+    const [noSheetStatus, noSheetBody] = await get(base, '/api/v1/sheets/99999/event');
+    assert.equal(noSheetStatus, 404);
+    assert.equal(noSheetBody.error, 'not_found');
+
+    const [, sheet] = await post(base, '/api/v1/sheets', { name: 'Local Only Plan', exercises: [] });
+    const [unpubSheetStatus, unpubSheetBody] = await get(base, `/api/v1/sheets/${sheet.id}/event`);
+    assert.equal(unpubSheetStatus, 409);
+    assert.equal(unpubSheetBody.error, 'not_published');
+  });
+});
+
 test('with credentials configured, the API requires Basic auth', async () => {
   await withServer(async (base) => {
     const [noAuth, , ] = [await fetch(base + '/api/v1/exercises')].map((r) => r);
