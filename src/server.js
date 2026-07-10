@@ -114,7 +114,7 @@ async function route(req, res) {
     if (m === 'POST' && id && sub === 'sets') return sendJson(res, 201, store.logSet(Number(id), body));
     if (m === 'POST' && id && sub === 'finish') return sendJson(res, 200, store.finishSession(Number(id), body?.notes));
     if (m === 'DELETE' && id) return sendJson(res, store.deleteSession(Number(id)) ? 200 : 404, { deleted: true });
-    if (m === 'POST' && id && sub === 'share') return sendJson(res, 200, await idenstr.shareSummary(Number(id)));
+    if (m === 'POST' && id && sub === 'share') return sendJson(res, 200, await idenstr.shareSummary(Number(id), body || {}));
   }
   if (resource === 'sets' && m === 'DELETE' && id) return sendJson(res, store.deleteSet(Number(id)) ? 200 : 404, { deleted: true });
 

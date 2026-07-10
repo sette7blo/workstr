@@ -258,14 +258,15 @@ function extractNostrBuildUrls(payload, text) {
   return [...urls];
 }
 
-async function uploadImageToNostrBuild(dataUrl) {
+async function uploadImageToNostrBuild(dataUrl, filenameBase = 'exercise') {
   const m = String(dataUrl || '').match(/^data:([^;,]+);base64,(.+)$/s);
-  if (!m) throw new Error('exercise image is not an uploadable data URL');
+  if (!m) throw new Error('image is not an uploadable data URL');
   const mimeType = m[1];
   const fileBytes = Buffer.from(m[2], 'base64');
   const ext = (mimeType.split('/')[1] || 'jpg').split('+')[0];
+  const safeName = String(filenameBase || 'image').toLowerCase().replace(/[^a-z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'image';
   const boundary = `----workstr${randomUUID().replace(/-/g, '')}`;
-  const head = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="exercise.${ext}"\r\nContent-Type: ${mimeType}\r\n\r\n`);
+  const head = Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${safeName}.${ext}"\r\nContent-Type: ${mimeType}\r\n\r\n`);
   const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
   const body = Buffer.concat([head, fileBytes, tail]);
   const auth = await createNip98Authorization('POST', NOSTRBUILD_UPLOAD_URL, body);
@@ -390,21 +391,30 @@ export async function publishExercise(slug) {
 }
 
 // Build a human-readable summary and ask Idenstr to sign AND publish it (kind:1).
-export async function shareSummary(sessionId) {
+export async function shareSummary(sessionId, { muscleMapImage = '' } = {}) {
   const session = getSession(sessionId);
   if (!session) throw new Error('session not found');
+  if (session.summaryEventId) return { alreadyPublished: true, eventId: session.summaryEventId, imageUrl: session.summaryImageUrl || '', relayResults: [], text: summaryText(session) };
   if (!config.idenstrToken) throw new Error('Idenstr is not connected');
   const text = summaryText(session);
+  let imageUrl = '';
+  if (muscleMapImage) {
+    try { imageUrl = await uploadImageToNostrBuild(muscleMapImage, `workout-${session.id}-muscle-map`); }
+    catch (err) { console.warn(`Workout muscle-map upload failed: ${err.message}`); }
+  }
+  const tags = [['t', 'workout'], ['t', 'fitness'], ['client', 'workstr']];
+  const content = imageUrl ? `${text}\n\n${imageUrl}` : text;
+  if (imageUrl) tags.push(['imeta', `url ${imageUrl}`, 'm image/png', `alt Muscle map of worked areas for ${session.sheetName || 'Workstr workout'}`]);
   const unsigned = {
     kind: 1,
     created_at: Math.floor(Date.now() / 1000),
-    tags: [['t', 'workout'], ['client', 'workstr']],
-    content: text
+    tags,
+    content
   };
   const res = await idenstrFetch('/api/v1/events/publish', { method: 'POST', body: unsigned });
   if (!res.ok) throw new Error(res.body?.error ? `${res.body.error}${res.body.required ? `: ${res.body.required}` : ''}` : `idenstr ${res.status}`);
-  if (res.body?.event?.id) markSessionSummary(session.id, res.body.event.id);
-  return { event: res.body?.event, relayResults: res.body?.relayResults ?? [], text };
+  if (res.body?.event?.id) markSessionSummary(session.id, res.body.event.id, imageUrl);
+  return { event: res.body?.event, imageUrl, relayResults: res.body?.relayResults ?? [], text: content };
 }
 
 export function summaryText(session) {

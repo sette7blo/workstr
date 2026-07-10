@@ -118,9 +118,87 @@ function fakeIdenstr(onPublish) {
       const event = { ...reqBody, id: 'evt_' + Math.random().toString(36).slice(2), pubkey: 'a'.repeat(64), sig: 'b'.repeat(128) };
       return res.end(JSON.stringify({ event, relayResults: [{ relay: 'wss://relay.test', accepted: true }] }));
     }
+    if (req.url === '/api/v1/sign') {
+      const event = { ...reqBody, id: 'sig_' + Math.random().toString(36).slice(2), pubkey: 'a'.repeat(64), sig: 'b'.repeat(128) };
+      return res.end(JSON.stringify({ event }));
+    }
     res.end('{}');
   });
 }
+
+test('publishing a workout history summary is one-shot and marks the session shared', async () => {
+  await withServer(async (base) => {
+    const captured = [];
+    const iden = fakeIdenstr((b) => captured.push(b));
+    await new Promise((r) => iden.listen(0, '127.0.0.1', r));
+    const idenstrUrl = `http://127.0.0.1:${iden.address().port}`;
+    try {
+      await get(base, '/api/v1/connect', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ idenstrUrl, idenstrToken: 'test-token' }) });
+      await post(base, '/api/v1/exercises', { name: 'History Press', muscleGroup: 'Chest' });
+      const [, sheet] = await post(base, '/api/v1/sheets', { name: 'History Share Day', exercises: [{ exerciseSlug: 'history-press', sets: 3, reps: '8' }] });
+      const [, session] = await post(base, '/api/v1/sessions', { sheetId: sheet.id });
+      await post(base, `/api/v1/sessions/${session.id}/sets`, { exerciseSlug: 'history-press', setNumber: 1, reps: 8, weight: 50 });
+      await post(base, `/api/v1/sessions/${session.id}/finish`, {});
+
+      const [firstStatus, first] = await post(base, `/api/v1/sessions/${session.id}/share`, {});
+      assert.equal(firstStatus, 200);
+      assert.equal(captured.length, 1);
+      assert.equal(captured[0].kind, 1);
+      assert.ok(captured[0].content.includes('History Share Day'));
+
+      const [, listed] = await get(base, '/api/v1/sessions');
+      const item = listed.sessions.find((s) => s.id === session.id);
+      assert.equal(item.shared, true);
+      assert.deepEqual(item.exerciseSlugs, ['history-press']);
+      assert.deepEqual(item.muscleGroups, ['Chest']);
+
+      const [secondStatus, second] = await post(base, `/api/v1/sessions/${session.id}/share`, {});
+      assert.equal(secondStatus, 200);
+      assert.equal(second.alreadyPublished, true);
+      assert.equal(captured.length, 1, 'already-published session is not re-broadcast');
+    } finally { await new Promise((r) => iden.close(r)); }
+  });
+});
+
+test('publishing a workout history summary attaches an uploaded muscle-map image when provided', async () => {
+  await withServer(async (base) => {
+    const captured = [];
+    const iden = fakeIdenstr((b) => captured.push(b));
+    await new Promise((r) => iden.listen(0, '127.0.0.1', r));
+    const idenstrUrl = `http://127.0.0.1:${iden.address().port}`;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, opts = {}) => {
+      if (String(url).startsWith('https://nostr.build/api/v2/nip96/upload')) {
+        assert.equal(opts.method, 'POST');
+        assert.match(opts.headers.Authorization, /^Nostr /);
+        assert.match(opts.headers['Content-Type'], /multipart\/form-data/);
+        return new Response(JSON.stringify({ data: { url: 'https://nostr.build/i/workstr-muscle-map.png' } }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+      return originalFetch(url, opts);
+    };
+    try {
+      await get(base, '/api/v1/connect', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ idenstrUrl, idenstrToken: 'test-token' }) });
+      await post(base, '/api/v1/exercises', { name: 'Map Press', muscleGroup: 'Chest' });
+      const [, sheet] = await post(base, '/api/v1/sheets', { name: 'Map Share Day', exercises: [{ exerciseSlug: 'map-press', sets: 1, reps: '8' }] });
+      const [, session] = await post(base, '/api/v1/sessions', { sheetId: sheet.id });
+      await post(base, `/api/v1/sessions/${session.id}/sets`, { exerciseSlug: 'map-press', setNumber: 1, reps: 8, weight: 50 });
+      await post(base, `/api/v1/sessions/${session.id}/finish`, {});
+
+      const image = `data:image/png;base64,${Buffer.from('fakepng').toString('base64')}`;
+      const [status, shared] = await post(base, `/api/v1/sessions/${session.id}/share`, { muscleMapImage: image });
+      assert.equal(status, 200);
+      assert.equal(shared.imageUrl, 'https://nostr.build/i/workstr-muscle-map.png');
+      assert.equal(captured.length, 1);
+      assert.ok(captured[0].content.includes('https://nostr.build/i/workstr-muscle-map.png'));
+      assert.ok(captured[0].tags.some((t) => t[0] === 'imeta' && t.some((v) => String(v).includes('workstr-muscle-map.png'))));
+      const [, detail] = await get(base, `/api/v1/sessions/${session.id}`);
+      assert.equal(detail.summaryImageUrl, 'https://nostr.build/i/workstr-muscle-map.png');
+    } finally {
+      globalThis.fetch = originalFetch;
+      await new Promise((r) => iden.close(r));
+    }
+  });
+});
 
 test('publishing an exercise broadcasts an addressable NIP-101e kind:33401 event', async () => {
   await withServer(async (base) => {

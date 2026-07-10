@@ -63,6 +63,8 @@ function migrate(db) {
   if (!exCols.includes('nostr_pubkey')) db.exec('ALTER TABLE exercises ADD COLUMN nostr_pubkey TEXT');
   if (!exCols.includes('nostr_address')) db.exec('ALTER TABLE exercises ADD COLUMN nostr_address TEXT');
   if (!exCols.includes('nostr_published_at')) db.exec('ALTER TABLE exercises ADD COLUMN nostr_published_at TEXT');
+  const sessionCols = db.prepare('PRAGMA table_info(sessions)').all().map((c) => c.name);
+  if (!sessionCols.includes('summary_image_url')) db.exec('ALTER TABLE sessions ADD COLUMN summary_image_url TEXT');
 }
 
 const SCHEMA = `
@@ -133,6 +135,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   finished_at  TEXT,
   notes        TEXT DEFAULT '',
   summary_event_id TEXT,
+  summary_image_url TEXT,
   FOREIGN KEY (sheet_id) REFERENCES sheets(id) ON DELETE SET NULL
 );
 

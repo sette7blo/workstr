@@ -230,7 +230,7 @@ export function getSession(id) {
     .map((r) => ({ id: r.id, exerciseSlug: r.exercise_slug, setNumber: r.set_number, reps: r.reps, weight: r.weight, done: Boolean(r.done) }));
   return {
     id: s.id, sheetId: s.sheet_id, sheetName: s.sheet_name, startedAt: s.started_at, finishedAt: s.finished_at,
-    notes: s.notes, summaryEventId: s.summary_event_id, sets
+    notes: s.notes, summaryEventId: s.summary_event_id, summaryImageUrl: s.summary_image_url, sets
   };
 }
 
@@ -272,25 +272,30 @@ export function finishSession(sessionId, notes = '') {
   return getSession(sessionId);
 }
 
-export function markSessionSummary(sessionId, eventId) {
-  prep('UPDATE sessions SET summary_event_id = ? WHERE id = ?').run(eventId, sessionId);
+export function markSessionSummary(sessionId, eventId, imageUrl = '') {
+  prep('UPDATE sessions SET summary_event_id = ?, summary_image_url = ? WHERE id = ?').run(eventId, String(imageUrl || ''), sessionId);
 }
 
 export function listSessions(limit = 50) {
   // Single grouped query instead of one aggregate per session (was 1 + N).
   return prep(`
-    SELECT s.id, s.sheet_name, s.started_at, s.finished_at, s.notes, s.summary_event_id,
+    SELECT s.id, s.sheet_name, s.started_at, s.finished_at, s.notes, s.summary_event_id, s.summary_image_url,
            COUNT(CASE WHEN ss.done = 1 THEN 1 END) AS sets,
-           COALESCE(SUM(CASE WHEN ss.done = 1 THEN ss.reps * ss.weight END), 0) AS volume
+           COALESCE(SUM(CASE WHEN ss.done = 1 THEN ss.reps * ss.weight END), 0) AS volume,
+           GROUP_CONCAT(DISTINCT CASE WHEN ss.done = 1 THEN ss.exercise_slug END) AS exercise_slugs,
+           GROUP_CONCAT(DISTINCT CASE WHEN ss.done = 1 THEN e.muscle_group END) AS muscle_groups
     FROM sessions s
     LEFT JOIN session_sets ss ON ss.session_id = s.id
+    LEFT JOIN exercises e ON e.slug = ss.exercise_slug
     WHERE s.finished_at IS NOT NULL
     GROUP BY s.id
     ORDER BY s.started_at DESC
     LIMIT ?
   `).all(limit).map((s) => ({
     id: s.id, sheetName: s.sheet_name, startedAt: s.started_at, finishedAt: s.finished_at,
-    notes: s.notes, setCount: s.sets, volume: Math.round(s.volume), shared: Boolean(s.summary_event_id)
+    notes: s.notes, setCount: s.sets, volume: Math.round(s.volume), shared: Boolean(s.summary_event_id), summaryImageUrl: s.summary_image_url || '',
+    exerciseSlugs: String(s.exercise_slugs || '').split(',').filter(Boolean),
+    muscleGroups: String(s.muscle_groups || '').split(',').filter(Boolean)
   }));
 }
 

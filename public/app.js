@@ -539,10 +539,24 @@ function renderDiscover() {
   grid.innerHTML = list.length ? list.map(discoverCardHtml).join('') : '<div class="empty">No shared exercises match.</div>';
 }
 
+function authorPill(author, pubkey, { compact = false } = {}) {
+  const name = author?.name || (pubkey ? `${String(pubkey).slice(0, 8)}…` : 'unknown');
+  const title = [author?.nip05, pubkey].filter(Boolean).join(' · ');
+  const initial = name.trim().slice(0, 1).toUpperCase() || '?';
+  // Keep critical sizing inline too: mobile clients can keep an old stylesheet in cache,
+  // and an unbounded remote avatar can otherwise blow up the program card.
+  const avatarStyle = 'width:14px;height:14px;max-width:14px;max-height:14px;flex:0 0 14px;border-radius:999px;object-fit:cover;display:inline-grid;place-items:center;vertical-align:middle;';
+  const pillStyle = `display:inline-flex;align-items:center;gap:4px;max-width:${compact ? '116px' : '150px'};font:800 9px/1 ui-monospace,monospace;color:var(--muted);vertical-align:middle;overflow:hidden;`;
+  const nameStyle = 'min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+  const avatar = author?.picture
+    ? `<img src="${escapeHtml(author.picture)}" alt="" width="14" height="14" style="${avatarStyle}" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'author-avatar-fallback',textContent:'${escapeHtml(initial)}'}))">`
+    : `<span class="author-avatar-fallback" style="${avatarStyle}">${escapeHtml(initial)}</span>`;
+  return `<span class="author-pill${compact ? ' compact' : ''}" style="${pillStyle}" title="${escapeHtml(title)}">${avatar}<span style="${nameStyle}">${escapeHtml(name)}</span></span>`;
+}
+
 function discoverCardHtml(e) {
   const src = exerciseImageSrc(e.image);
   const img = `${EX_PLACEHOLDER}${src ? `<img class="card-photo" src="${escapeHtml(src)}" alt="" loading="lazy" onerror="this.remove()">` : ''}`;
-  const author = e.pubkey ? `by ${escapeHtml(e.pubkey.slice(0, 8))}…` : '';
   const diffCls = difficultyBadgeClass(e.difficulty);
   const sourceLabel = e.protocol === 'nip101e' ? 'NIP-101e' : 'Workstr';
   return `
@@ -556,7 +570,7 @@ function discoverCardHtml(e) {
         <div class="card-name">${escapeHtml(e.name)}</div>
         <div class="card-meta">
           ${e.muscleGroup ? `<span class="muscle">${escapeHtml(e.muscleGroup)}</span>` : ''}
-          ${author ? `<span class="card-tag">${author}</span>` : ''}
+          ${authorPill(e.author, e.pubkey, { compact: true })}
         </div>
         <button class="button ${e.imported ? 'ghost' : 'primary'} discover-import" data-address="${escapeHtml(e.address)}"${e.imported ? ' disabled' : ''}>${e.imported ? 'In library' : 'Import'}</button>
       </div>
@@ -588,8 +602,8 @@ function openDiscoverDetail(address) {
   const tags = (e.tags || []).filter(Boolean);
   const pills = (list) => list.map((x) => `<span class="tag-pill">${escapeHtml(x)}</span>`).join('');
   const muscleList = muscles.length ? muscles : (e.muscleGroup ? [e.muscleGroup] : []);
-  const author = e.pubkey ? `${escapeHtml(e.pubkey.slice(0, 12))}…` : 'unknown';
   const sourceLabel = e.protocol === 'nip101e' ? 'NIP-101e exercise template' : 'Workstr exercise';
+  const authorHtml = authorPill(e.author, e.pubkey);
   openModal(`
     <div class="detail-img${src ? '' : ' placeholder'}">${src ? `<img src="${escapeHtml(src)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('placeholder');this.remove()">` : EX_PLACEHOLDER}</div>
     <h3 class="detail-title">${escapeHtml(e.name)}</h3>
@@ -598,7 +612,7 @@ function openDiscoverDetail(address) {
       ${e.category ? `<span class="badge cat">${escapeHtml(e.category)}</span>` : ''}
       <span class="badge">${sourceLabel}</span>
     </div>
-    <p class="detail-nostr">${sourceLabel} shared by <code>${author}</code>${e.relay ? ` · seen on <code>${escapeHtml(e.relay)}</code>` : ''}${e.address ? ` · <code>${escapeHtml(e.address)}</code>` : ''}</p>
+    <p class="detail-nostr">${sourceLabel} shared by ${authorHtml}${e.relay ? ` · seen on <code>${escapeHtml(e.relay)}</code>` : ''}${e.address ? ` · <code>${escapeHtml(e.address)}</code>` : ''}</p>
     ${e.mediaUrl ? `<p class="detail-nostr">Demo video: <a href="${escapeHtml(e.mediaUrl)}" target="_blank" rel="noopener">${escapeHtml(e.mediaUrl)}</a></p>` : ''}
     ${e.description ? `<p class="detail-desc">${escapeHtml(e.description)}</p>` : ''}
     <div class="sets-info">
@@ -646,6 +660,9 @@ async function runProgramDiscover() {
   status.textContent = 'Searching relays...';
   grid.innerHTML = '';
   try {
+    // Members resolve against the local library (muscle map, images), so make
+    // sure it is loaded before the cards render.
+    if (!state.exercises.length) { try { await loadExercises(); } catch {} }
     const res = await api('discover/programs');
     grid.dataset.loaded = '1';
     if (!res.configured) { status.textContent = res.error ? `Cannot reach relays: ${res.error}` : 'No relays are configured in Idenstr yet.'; programDiscoverResults = []; programDiscoverBaseStatus = ''; return; }
@@ -663,25 +680,104 @@ function renderProgramDiscover() {
   const q = $('#program-discover-search').value.trim().toLowerCase();
   const list = programDiscoverResults.filter((p) => !q || p.name.toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q));
   status.textContent = q ? `Showing ${list.length} of ${programDiscoverBaseStatus}` : programDiscoverBaseStatus;
+  grid.className = 'program-list'; // discovered programs render as library-style workout cards, not image tiles
   grid.innerHTML = list.length ? list.map(programDiscoverCardHtml).join('') : '<div class="empty">No shared programs match.</div>';
+  list.forEach(paintDiscoverProgramMap);
+}
+
+// A discovered member only carries its 33401 address and prescription; anything
+// richer (muscle group, image) resolves through the local library when the
+// exercise is already imported — matched by address, then d-tag slug, then name.
+function resolveDiscoverMember(m) {
+  if (m.address) {
+    const byAddress = state.exercises.find((e) => e.nostrAddress === m.address);
+    if (byAddress) return byAddress;
+    const slug = m.address.split(':').pop();
+    const bySlug = state.exercises.find((e) => e.slug === slug);
+    if (bySlug) return bySlug;
+  }
+  if (m.name) {
+    const name = m.name.toLowerCase();
+    return state.exercises.find((e) => e.name.toLowerCase() === name) || null;
+  }
+  return null;
+}
+
+function discoverProgramGroups(p) {
+  return [...new Set((p.exercises || []).map((m) => resolveDiscoverMember(m)?.muscleGroup).filter(Boolean))];
 }
 
 function programDiscoverCardHtml(p) {
   const count = p.exerciseCount || (p.exercises || []).length;
-  const author = p.pubkey ? `by ${escapeHtml(p.pubkey.slice(0, 8))}…` : '';
-  const sourceLabel = p.protocol === 'nip101e' ? 'NIP-101e' : 'Workstr';
-  return `
-    <div class="ex-card" data-program-address="${escapeHtml(p.address)}">
-      <div class="card-body">
-        <div class="card-name">${escapeHtml(p.name)}</div>
-        <div class="card-meta">
-          <span class="muscle">${count} exercise${count === 1 ? '' : 's'}</span>
-          <span class="card-tag">${sourceLabel}</span>
-          ${author ? `<span class="card-tag">${author}</span>` : ''}
-        </div>
-        ${p.description ? `<div class="card-desc">${escapeHtml(p.description)}</div>` : ''}
-        <button class="button ${p.imported ? 'ghost' : 'primary'} program-discover-import" data-program-address="${escapeHtml(p.address)}"${p.imported ? ' disabled' : ''}>${p.imported ? 'In library' : 'Import'}</button>
+  const time = formatMinutes(estimateProgramMin(p.exercises || []));
+  const groups = discoverProgramGroups(p);
+  const meta = [`${count} exercise${count === 1 ? '' : 's'}`, p.description ? escapeHtml(p.description) : '', time ? `~${time}` : ''].filter(Boolean).join(' · ');
+  const st = p.imported ? { cls: 'published', label: 'in library' } : { cls: 'local', label: p.sourceLabel || (p.protocol === 'nip101e' ? 'NIP-101e' : 'Workstr') };
+  return `<div class="workout-card" data-program-address="${escapeHtml(p.address)}">
+    <div class="workout-card-header" data-toggle-discover-program="${escapeHtml(p.address)}">
+      <div class="workout-card-map" data-discover-map="${escapeHtml(p.address)}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
       </div>
+      <div class="workout-card-info">
+        <div class="workout-card-name">${escapeHtml(p.name)}<span class="program-status ${st.cls}">${escapeHtml(st.label)}</span></div>
+        <div class="workout-card-meta">${meta}</div>
+        <div class="workout-card-author">${authorPill(p.author, p.pubkey, { compact: true })}</div>
+        ${groups.length ? `<div class="workout-card-muscles">${escapeHtml(groups.join(', '))}</div>` : ''}
+      </div>
+      <svg class="workout-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="workout-card-body" data-discover-body="${escapeHtml(p.address)}"></div>
+  </div>`;
+}
+
+function paintDiscoverProgramMap(p) {
+  const host = document.querySelector(`[data-discover-map="${CSS.escape(p.address)}"]`);
+  if (!host) return;
+  const primary = new Set();
+  const secondary = new Set();
+  (p.exercises || []).forEach((m) => {
+    const full = resolveDiscoverMember(m);
+    if (!full) return;
+    const c = detailCanonMuscle(full.muscleGroup); if (c) primary.add(c);
+    (full.muscles || []).forEach((mu) => { const s = detailCanonMuscle(mu); if (s) secondary.add(s); });
+  });
+  primary.forEach((c) => secondary.delete(c));
+  if (!primary.size && !secondary.size) return; // nothing resolvable locally — keep the dumbbell icon
+  buildBodyMapInto(host, primary, secondary);
+  host.classList.add('has-map');
+}
+
+function renderProgramDiscoverBody(address) {
+  const p = programDiscoverResults.find((x) => x.address === address);
+  const body = document.querySelector(`[data-discover-body="${CSS.escape(address)}"]`);
+  if (!p || !body) return;
+  const exHtml = (p.exercises || []).map((m) => {
+    const full = resolveDiscoverMember(m);
+    const src = exerciseImageSrc(full?.imageUrl);
+    const img = src
+      ? `<img class="wk-ex-img" src="${escapeHtml(src)}" alt="" loading="lazy" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'wk-ex-img placeholder'}))">`
+      : `<div class="wk-ex-img placeholder"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg></div>`;
+    // Foreign NIP-101e members often carry no title, only their coordinate; the
+    // d-tag tail is a readable slug ("bulgarian-split-squat-db"), so prettify it.
+    const slugName = m.address ? m.address.split(':').pop().replace(/[-_]+/g, ' ') : '';
+    const name = m.name || full?.name || slugName || 'Exercise';
+    const weight = m.weight != null && m.weight !== '' ? ` @ ${wFmt(m.weight)}` : '';
+    const muscle = full?.muscleGroup || '';
+    return `<div class="wk-ex-item">
+      <div class="wk-ex-header">
+        ${img}
+        <div class="wk-ex-info">
+          <div class="wk-ex-name">${escapeHtml(name)}</div>
+          <div class="wk-ex-short">${Number(m.sets) || 3} × ${escapeHtml(m.reps || '8-12')}${weight}${m.restSec ? ` · ${Number(m.restSec)}s rest` : ''}</div>
+        </div>
+        ${muscle ? `<span class="wk-ex-muscle-pill">${escapeHtml(muscle)}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  body.innerHTML = `
+    <div class="wk-ex-list">${exHtml}</div>
+    <div class="workout-card-actions">
+      <button class="button ${p.imported ? 'ghost' : 'primary'} small program-discover-import" data-program-address="${escapeHtml(p.address)}"${p.imported ? ' disabled' : ''}>${p.imported ? 'In library' : 'Import to library'}</button>
     </div>`;
 }
 
@@ -696,39 +792,14 @@ async function importDiscoveredProgram(data, btn) {
     document.querySelectorAll(`.program-discover-import[data-program-address="${CSS.escape(data.address)}"]`).forEach((b) => {
       b.textContent = 'In library'; b.disabled = true; b.classList.remove('primary'); b.classList.add('ghost');
     });
+    const pill = document.querySelector(`.workout-card[data-program-address="${CSS.escape(data.address)}"] .program-status`);
+    if (pill) { pill.textContent = 'in library'; pill.className = 'program-status published'; }
+    // Members were just imported into the library — refresh so the body map,
+    // muscle groups, and member images can resolve.
+    try { await loadExercises(); } catch {}
+    paintDiscoverProgramMap(data);
     return true;
   } catch (err) { btn.disabled = false; btn.textContent = label; toast(err.message, 'bad'); return false; }
-}
-
-function openProgramDiscoverDetail(address) {
-  const p = programDiscoverResults.find((x) => x.address === address);
-  if (!p) return;
-  const members = p.exercises || [];
-  const author = p.pubkey ? `${escapeHtml(p.pubkey.slice(0, 12))}…` : 'unknown';
-  const sourceLabel = p.protocol === 'nip101e' ? 'NIP-101e workout template' : 'Workstr program';
-  const memberName = (m) => escapeHtml(m.name || (m.address ? m.address.split(':').pop() : '') || 'Exercise');
-  const memberLine = (m) => {
-    const sets = Number(m.sets) || 3;
-    const reps = escapeHtml(m.reps || '8-12');
-    const weight = m.weight != null && m.weight !== '' ? ` @ ${wFmt(m.weight)}` : '';
-    const rest = m.restSec ? ` · ${Number(m.restSec)}s rest` : '';
-    return `${sets} × ${reps}${weight}${rest}`;
-  };
-  openModal(`
-    <h3 class="detail-title">${escapeHtml(p.name)}</h3>
-    <div class="detail-badges">
-      <span class="badge cat">${members.length} exercise${members.length === 1 ? '' : 's'}</span>
-      <span class="badge">${sourceLabel}</span>
-    </div>
-    <p class="detail-nostr">${sourceLabel} shared by <code>${author}</code>${p.relay ? ` · seen on <code>${escapeHtml(p.relay)}</code>` : ''}${p.address ? ` · <code>${escapeHtml(p.address)}</code>` : ''}</p>
-    ${p.description ? `<p class="detail-desc">${escapeHtml(p.description)}</p>` : ''}
-    <div class="subsection-head"><span>Exercises</span></div>
-    <div class="wk-ex-list">
-      ${members.map((m) => `<div class="wk-ex-item"><div class="wk-ex-header"><div class="wk-ex-info"><div class="wk-ex-name">${memberName(m)}</div><div class="wk-ex-short">${memberLine(m)}</div></div></div></div>`).join('')}
-    </div>
-    <div class="form-actions"><button class="button ${p.imported ? 'ghost' : 'primary'}" id="program-discover-detail-import"${p.imported ? ' disabled' : ''}>${p.imported ? 'In library' : 'Import to library'}</button></div>`);
-  const btn = $('#program-discover-detail-import');
-  btn.addEventListener('click', async () => { if (await importDiscoveredProgram(p, btn)) closeModal(); });
 }
 
 $('#program-discover-refresh')?.addEventListener('click', () => runProgramDiscover());
@@ -741,8 +812,15 @@ $('#program-discover-grid')?.addEventListener('click', async (ev) => {
     if (data) await importDiscoveredProgram(data, btn);
     return;
   }
-  const card = ev.target.closest('[data-program-address]');
-  if (card) openProgramDiscoverDetail(card.dataset.programAddress);
+  // Same hub-and-spoke expansion as the library: one card open at a time.
+  const head = ev.target.closest('[data-toggle-discover-program]');
+  if (head) {
+    const address = head.dataset.toggleDiscoverProgram;
+    const card = head.closest('.workout-card');
+    const wasOpen = card.classList.contains('expanded');
+    $('#program-discover-grid').querySelectorAll('.workout-card.expanded').forEach((c) => c.classList.remove('expanded'));
+    if (!wasOpen) { renderProgramDiscoverBody(address); card.classList.add('expanded'); }
+  }
 });
 
 // ---------- sheets ----------
@@ -825,16 +903,22 @@ function renderPrograms(sheets) {
   sheets.forEach(paintProgramMap);
 }
 
-function paintProgramMap(sheet) {
-  const host = document.querySelector(`[data-map="${sheet.id}"]`);
-  if (!host) return;
+function muscleSetsForSlugs(slugs = [], fallbackGroups = []) {
   const primary = new Set(), secondary = new Set();
-  sheet.exercises.forEach((ex) => {
-    const p = detailCanonMuscle(ex.muscleGroup); if (p) primary.add(p);
-    const full = state.exercises.find((e) => e.slug === ex.exerciseSlug);
+  fallbackGroups.forEach((g) => { const c = detailCanonMuscle(g); if (c) primary.add(c); });
+  slugs.forEach((slug) => {
+    const full = state.exercises.find((e) => e.slug === slug);
+    const p = detailCanonMuscle(full?.muscleGroup); if (p) primary.add(p);
     (full?.muscles || []).forEach((m) => { const c = detailCanonMuscle(m); if (c) secondary.add(c); });
   });
   primary.forEach((p) => secondary.delete(p));
+  return { primary, secondary };
+}
+
+function paintProgramMap(sheet) {
+  const host = document.querySelector(`[data-map="${sheet.id}"]`);
+  if (!host) return;
+  const { primary, secondary } = muscleSetsForSlugs(sheet.exercises.map((ex) => ex.exerciseSlug), sheet.exercises.map((ex) => ex.muscleGroup).filter(Boolean));
   if (!primary.size && !secondary.size) return; // no muscle data — keep the dumbbell icon
   buildBodyMapInto(host, primary, secondary);
   host.classList.add('has-map');
@@ -1405,7 +1489,7 @@ async function renderFinished(session, prs = []) {
   $('#finish-done').addEventListener('click', () => { closeModal(); goTo('workouts', 'programs'); });
   $('#share-summary').addEventListener('click', async (e) => {
     await withButtonState(e.currentTarget, async () => {
-      const res = await api(`sessions/${session.id}/share`, { method: 'POST' });
+      const res = await publishSessionSummary(session.id, session);
       const box = $('#share-result'); box.style.display = 'block';
       const relays = (res.relayResults || []).map((r) => `${r.accepted ? 'OK ' : 'x  '} ${r.relay}`).join('\n');
       box.textContent = `Published kind:1 summary via Idenstr.\n\n${res.text}\n\n${relays || 'No relay results returned.'}`;
@@ -1471,6 +1555,96 @@ async function loadHistory() {
   renderHistory(sessions);
 }
 
+function paintSessionMap(session) {
+  const host = document.querySelector(`[data-session-map="${session.id}"]`);
+  if (!host) return;
+  const { primary, secondary } = sessionMuscleSets(session);
+  if (!primary.size && !secondary.size) return; // no muscle data — keep the clock icon
+  buildBodyMapInto(host, primary, secondary);
+  host.classList.add('has-map');
+}
+
+function sessionExerciseSlugs(session) {
+  if (session.exerciseSlugs?.length) return session.exerciseSlugs;
+  return [...new Set((session.sets || []).filter((s) => s.done).map((s) => s.exerciseSlug).filter(Boolean))];
+}
+
+function sessionMuscleSets(session) {
+  return muscleSetsForSlugs(sessionExerciseSlugs(session), session.muscleGroups || []);
+}
+
+function inlineSvgPaint(svg) {
+  const rootStyle = getComputedStyle(document.documentElement);
+  const colorVars = {
+    'var(--sovereign-purple)': rootStyle.getPropertyValue('--sovereign-purple').trim() || '#7c3cff',
+    'var(--purple-2)': rootStyle.getPropertyValue('--purple-2').trim() || '#b99cff'
+  };
+  svg.querySelectorAll('[style]').forEach((el) => {
+    let style = el.getAttribute('style') || '';
+    Object.entries(colorVars).forEach(([from, to]) => { style = style.replaceAll(from, to); });
+    el.setAttribute('style', style);
+  });
+  svg.querySelectorAll('polygon').forEach((el) => {
+    const fill = el.style.fill || el.getAttribute('fill');
+    if (fill) el.setAttribute('fill', fill);
+    const opacity = el.style.opacity || el.getAttribute('opacity');
+    if (opacity) el.setAttribute('opacity', opacity);
+  });
+}
+
+async function svgToPngDataUrl(svg, { width = 1200, height = 1200, background = '#0b0712' } = {}) {
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+  clone.setAttribute('width', String(width));
+  clone.setAttribute('height', String(height));
+  inlineSvgPaint(clone);
+  const xml = new XMLSerializer().serializeToString(clone);
+  const url = URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml;charset=utf-8' }));
+  try {
+    const img = new Image();
+    img.src = url;
+    if (img.decode) await img.decode();
+    else await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; });
+    const canvas = document.createElement('canvas');
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = background; ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(img, 0, 0, width, height);
+    return canvas.toDataURL('image/png');
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+async function sessionMuscleMapPng(session) {
+  const { primary, secondary } = sessionMuscleSets(session);
+  if (!primary.size && !secondary.size) return '';
+  const host = document.createElement('div');
+  buildBodyMapInto(host, primary, secondary);
+  const svg = host.querySelector('svg');
+  return svg ? svgToPngDataUrl(svg) : '';
+}
+
+async function publishSessionSummary(sessionId, sessionForMap = null) {
+  let muscleMapImage = '';
+  try {
+    const source = sessionForMap || await api(`sessions/${sessionId}`);
+    muscleMapImage = await sessionMuscleMapPng(source);
+  } catch (err) {
+    console.warn(`Could not generate workout muscle map: ${err.message}`);
+  }
+  return api(`sessions/${sessionId}/share`, { method: 'POST', body: JSON.stringify({ muscleMapImage }) });
+}
+
+function sessionMuscleGroups(session) {
+  const names = new Set(session.muscleGroups || []);
+  (session.exerciseSlugs || []).forEach((slug) => {
+    const full = state.exercises.find((e) => e.slug === slug);
+    if (full?.muscleGroup) names.add(full.muscleGroup);
+  });
+  return [...names].filter(Boolean);
+}
+
 function renderHistory(sessions) {
   const list = $('#history-list');
   if (!sessions.length) { list.className = 'list empty'; list.textContent = 'No completed sessions yet. Finish a workout to see it here.'; return; }
@@ -1482,20 +1656,23 @@ function renderHistory(sessions) {
       `${s.setCount} set${s.setCount === 1 ? '' : 's'}`,
       s.volume > 0 ? `${Math.round(wDisplay(s.volume))} ${unitLabel()} volume` : ''
     ].filter(Boolean).join(' · ');
+    const groups = sessionMuscleGroups(s);
     return `<div class="workout-card" data-session="${s.id}">
       <div class="workout-card-header" data-toggle-session="${s.id}">
-        <div class="workout-card-map">
+        <div class="workout-card-map" data-session-map="${s.id}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
         </div>
         <div class="workout-card-info">
           <div class="workout-card-name">${escapeHtml(s.sheetName || 'Freestyle')}${s.shared ? '<span class="program-status published">shared</span>' : ''}</div>
           <div class="workout-card-meta">${meta}</div>
+          ${groups.length ? `<div class="workout-card-muscles">${escapeHtml(groups.join(', '))}</div>` : ''}
         </div>
         <svg class="workout-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="workout-card-body" data-session-body="${s.id}"></div>
     </div>`;
   }).join('');
+  sessions.forEach(paintSessionMap);
 }
 
 async function renderSessionDetail(sessionId) {
@@ -1518,10 +1695,14 @@ async function renderSessionDetail(sessionId) {
       <div class="session-detail-sets">${pills}</div>
     </div>`;
   }).join('');
+  const shareButton = session.summaryEventId
+    ? `<button class="button ghost small" disabled title="This workout summary has already been published">Published</button>`
+    : `<button class="button primary small" data-publish-session="${sessionId}">Publish summary</button>`;
   body.innerHTML = `<div class="session-detail">
     ${rows || '<p class="empty" style="padding:6px 0 12px">No sets were logged in this session.</p>'}
     ${session.notes ? `<div class="wk-ex-detail-note">${escapeHtml(session.notes)}</div>` : ''}
     <div class="workout-card-actions">
+      ${shareButton}
       <button class="button danger small" data-del-session="${sessionId}">Delete session</button>
     </div>
   </div>`;
@@ -1886,13 +2067,17 @@ $('#ex-bulk-delete').addEventListener('click', async (e) => {
   if (!slugs.length) return;
   if (!confirm(`Delete ${slugs.length} exercise${slugs.length === 1 ? '' : 's'} from your library?`)) return;
   await withButtonState(e.currentTarget, async () => {
+    let ok = 0;
+    let failed = 0;
     for (const [i, slug] of slugs.entries()) {
       $('#ex-bulk-count').textContent = `Deleting ${i + 1}/${slugs.length}...`;
-      await api(`exercises/${encodeURIComponent(slug)}`, { method: 'DELETE' });
+      try { await api(`exercises/${encodeURIComponent(slug)}`, { method: 'DELETE' }); ok += 1; }
+      catch { failed += 1; }
     }
     await loadExercises();
     setExerciseSelectMode(false);
-    toast(`Deleted ${slugs.length} exercise${slugs.length === 1 ? '' : 's'}`);
+    if (failed) toast(`Deleted ${ok}/${slugs.length} — ${failed} failed`, 'bad');
+    else toast(`Deleted ${ok} exercise${ok === 1 ? '' : 's'}`);
   });
 });
 
@@ -1946,6 +2131,16 @@ $('#history-list').addEventListener('click', async (e) => {
     const wasOpen = card.classList.contains('expanded');
     $$('#history-list .workout-card.expanded').forEach((c) => c.classList.remove('expanded'));
     if (!wasOpen) { card.classList.add('expanded'); renderSessionDetail(id); }
+    return;
+  }
+  const pub = e.target.closest('[data-publish-session]');
+  if (pub) {
+    await withButtonState(pub, async () => {
+      const r = await publishSessionSummary(pub.dataset.publishSession);
+      if (r.alreadyPublished) toast('Already published');
+      else toast(`Workout summary published to relays (${r.relayResults?.length || 0} relay${(r.relayResults?.length || 0) === 1 ? '' : 's'})`);
+    });
+    await loadHistory();
     return;
   }
   const del = e.target.closest('[data-del-session]');

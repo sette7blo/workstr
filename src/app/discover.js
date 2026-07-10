@@ -18,6 +18,11 @@ const MOVEMENT_TAGS = new Set([
 ]);
 
 const RELAY_CONCURRENCY = 8;
+const PROFILE_CACHE_TTL_MS = 30 * 60 * 1000;
+const PROFILE_QUERY_TIMEOUT_MS = 2500;
+const MAX_PROFILE_AUTHORS = 80;
+const profileCache = new Map();
+
 async function mapWithConcurrency(items, limit, fn) {
   const results = new Array(items.length);
   let cursor = 0;
@@ -259,6 +264,74 @@ function queryRelay(url, filter, timeoutMs) {
   });
 }
 
+function shortPubkey(pubkey) { return pubkey ? `${String(pubkey).slice(0, 8)}…` : 'unknown'; }
+function safeProfileUrl(value) {
+  const url = String(value || '').trim();
+  if (!/^https?:\/\/[^\s]+$/i.test(url)) return '';
+  return url.slice(0, 500);
+}
+function cleanProfileName(profile, pubkey) {
+  const raw = profile?.display_name || profile?.displayName || profile?.name || profile?.username || profile?.nip05 || '';
+  const name = String(raw || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 80);
+  return name || shortPubkey(pubkey);
+}
+function fallbackAuthor(pubkey) {
+  return { pubkey, name: shortPubkey(pubkey), picture: '', nip05: '' };
+}
+function parseProfileEvent(ev) {
+  let profile = {};
+  try { profile = JSON.parse(ev.content || '{}'); } catch {}
+  return {
+    pubkey: ev.pubkey,
+    name: cleanProfileName(profile, ev.pubkey),
+    picture: safeProfileUrl(profile.picture || profile.image || profile.avatar),
+    nip05: String(profile.nip05 || '').trim().slice(0, 120),
+    createdAt: ev.created_at || 0
+  };
+}
+
+async function fetchAuthorProfiles(pubkeys, relays, { timeoutMs = PROFILE_QUERY_TIMEOUT_MS } = {}) {
+  const now = Date.now();
+  const unique = uniq(pubkeys).slice(0, MAX_PROFILE_AUTHORS);
+  const out = new Map();
+  const missing = [];
+  for (const pubkey of unique) {
+    const cached = profileCache.get(pubkey);
+    if (cached && now - cached.fetchedAt < PROFILE_CACHE_TTL_MS) out.set(pubkey, cached.profile);
+    else missing.push(pubkey);
+  }
+  if (missing.length && relays.length) {
+    const batches = await mapWithConcurrency(relays, RELAY_CONCURRENCY, (relay) =>
+      queryRelay(relay, { kinds: [0], authors: missing, limit: missing.length }, timeoutMs));
+    const best = new Map();
+    for (const events of batches) {
+      for (const ev of events) {
+        if (!missing.includes(ev.pubkey)) continue;
+        const prev = best.get(ev.pubkey);
+        if (!prev || (ev.created_at || 0) > (prev.created_at || 0)) best.set(ev.pubkey, ev);
+      }
+    }
+    for (const pubkey of missing) {
+      const profile = best.has(pubkey) ? parseProfileEvent(best.get(pubkey)) : fallbackAuthor(pubkey);
+      profileCache.set(pubkey, { profile, fetchedAt: now });
+      out.set(pubkey, profile);
+    }
+  }
+  for (const pubkey of unique) if (!out.has(pubkey)) out.set(pubkey, fallbackAuthor(pubkey));
+  return out;
+}
+
+async function attachAuthors(items, relays) {
+  if (!items.length) return items;
+  try {
+    const profiles = await fetchAuthorProfiles(items.map((item) => item.pubkey), relays);
+    for (const item of items) item.author = profiles.get(item.pubkey) || fallbackAuthor(item.pubkey);
+  } catch {
+    for (const item of items) item.author = fallbackAuthor(item.pubkey);
+  }
+  return items;
+}
+
 export async function discoverExercises({ muscle = '', limit = 80, timeoutMs = DEFAULT_TIMEOUT_MS } = {}) {
   let relays;
   try { relays = await readRelays(); } catch (err) { return { configured: false, error: err.message, relays: [], exercises: [] }; }
@@ -290,6 +363,7 @@ export async function discoverExercises({ muscle = '', limit = 80, timeoutMs = D
   // Flag the ones already in the library so the UI can show "imported".
   for (const e of exercises) e.imported = Boolean(getExerciseByNostrAddress(e.address));
   exercises.sort((a, b) => b.createdAt - a.createdAt);
+  await attachAuthors(exercises, relays);
   return { configured: true, relays, exercises };
 }
 
@@ -405,6 +479,7 @@ export async function discoverPrograms({ limit = 80, timeoutMs = DEFAULT_TIMEOUT
   let programs = [...byAddress.values()];
   for (const p of programs) p.imported = Boolean(getSheetByNostrAddress(p.address));
   programs.sort((a, b) => b.createdAt - a.createdAt);
+  await attachAuthors(programs, relays);
   return { configured: true, relays, programs };
 }
 

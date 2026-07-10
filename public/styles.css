@@ -191,6 +191,11 @@ input:focus, textarea:focus, select:focus { border-color: var(--border-hot); box
 .card-meta { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
 .card-meta .muscle { color: var(--purple-2); font: 700 12px/1 ui-monospace, monospace; }
 .card-tag { padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); font: 700 10px/1 ui-monospace, monospace; text-transform: uppercase; letter-spacing: .04em; }
+.author-pill { display: inline-flex; align-items: center; gap: 4px; max-width: 150px; padding: 0; border: 0; color: var(--muted); font: 800 9px/1 ui-monospace, monospace; vertical-align: middle; overflow: hidden; }
+.author-pill.compact { max-width: 116px; font-size: 9px; }
+.author-pill img, .author-avatar-fallback { width: 14px; height: 14px; max-width: 14px; max-height: 14px; flex: 0 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(124,60,255,.18); object-fit: cover; display: inline-grid; place-items: center; color: var(--text); font: 900 8px/1 ui-monospace, monospace; }
+.author-pill span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.detail-nostr .author-pill { margin: 0 4px; word-break: normal; }
 .detail-img { margin: 0 0 14px; border-radius: 14px; overflow: hidden; aspect-ratio: 16 / 9; background: rgba(0,0,0,.34); }
 .detail-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .detail-img.placeholder { display: grid; place-items: center; color: var(--dim); }
@@ -387,6 +392,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--border-hot); box
 .program-status.published { color: var(--success-green); border-color: rgba(0,208,132,.4); }
 .program-status.edited { color: var(--bitcoin-gold); border-color: rgba(247,147,26,.4); }
 .workout-card-meta { margin-top: 6px; color: var(--muted); font: 700 12px/1.3 ui-monospace, monospace; }
+.workout-card-author { margin-top: 6px; display: flex; align-items: center; }
 .workout-card-muscles { margin-top: 5px; color: var(--purple-2); font: 700 11px/1.3 ui-monospace, monospace; }
 .workout-card-chevron { width: 22px; height: 22px; color: var(--dim); transition: transform .25s ease; }
 .workout-card.expanded .workout-card-chevron { transform: rotate(180deg); }
