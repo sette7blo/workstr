@@ -10,6 +10,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 ---
 
 ## [Unreleased]
+
+## [v0.4.0] — 2026-07-10
 ### Changed
 - **Discover author pills are now mobile-compact and cache-safe**: avatars are constrained to 14px with inline critical sizing plus a bumped stylesheet cache key, preventing remote profile pictures from expanding workout/program cards.
 - **Discover now shows author names and avatars instead of raw pubkey fragments**: exercise and program discovery resolve each event author's Nostr `kind:0` profile in one batched, cached relay lookup and render compact author pills with lazy-loaded avatars, falling back to a short pubkey when metadata is missing.
@@ -100,7 +102,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 - Weight unit (kg/lbs) is a display label in this version; stored values are not converted when the unit is switched.
 - AI features (exercise/image/vision generation) are deferred to a later phase.
 
-[Unreleased]: https://github.com/sette7blo/workstr/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/sette7blo/workstr/compare/v0.4.0...HEAD
+[v0.4.0]: https://github.com/sette7blo/workstr/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/sette7blo/workstr/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/sette7blo/workstr/compare/v0.1.1...v0.2.0
 [v0.1.1]: https://github.com/sette7blo/workstr/compare/v0.1.0...v0.1.1
