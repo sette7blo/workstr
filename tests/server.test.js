@@ -246,7 +246,8 @@ test('publishing a program uploads and attaches its Workstr muscle-map image to 
         assert.equal(opts.method, 'POST');
         assert.match(opts.headers.Authorization, /^Nostr /);
         assert.match(opts.headers['Content-Type'], /multipart\/form-data/);
-        return new Response(JSON.stringify({ data: { url: 'https://nostr.build/i/program-leg-day-map.svg' } }), { status: 200, headers: { 'content-type': 'application/json' } });
+        assert.match(String(opts.body), /Content-Type: image\/png/);
+        return new Response(JSON.stringify({ data: { url: 'https://nostr.build/i/program-leg-day-map.png' } }), { status: 200, headers: { 'content-type': 'application/json' } });
       }
       return originalFetch(url, opts);
     };
@@ -265,11 +266,11 @@ test('publishing a program uploads and attaches its Workstr muscle-map image to 
       assert.ok(tmpl.tags.some((t) => t[0] === 'd' && t[1] === 'workstr:program:leg-day'));
       assert.ok(tmpl.tags.some((t) => t[0] === 'exercise' && /^33401:a{64}:workstr:exercise:air-squat$/.test(t[1])));
       assert.equal(tmpl.tags.filter((t) => t[0] === 'exercise').length, 3, 'one exercise tag per prescribed set');
-      assert.ok(tmpl.tags.some((t) => t[0] === 'imeta' && t.some((v) => String(v).includes('program-leg-day-map.svg'))));
-      assert.ok(tmpl.tags.some((t) => t[0] === 'workstr_muscle_map' && t[1] === 'https://nostr.build/i/program-leg-day-map.svg'));
+      assert.ok(tmpl.tags.some((t) => t[0] === 'imeta' && t.some((v) => String(v).includes('program-leg-day-map.png')) && t.includes('m image/png')));
+      assert.ok(tmpl.tags.some((t) => t[0] === 'workstr_muscle_map' && t[1] === 'https://nostr.build/i/program-leg-day-map.png'));
       const meta = JSON.parse(tmpl.tags.find((t) => t[0] === 'workstr_meta')[1]);
-      assert.equal(meta.muscleMapUrl, 'https://nostr.build/i/program-leg-day-map.svg');
-      assert.equal(pub.muscleMapUrl, 'https://nostr.build/i/program-leg-day-map.svg');
+      assert.equal(meta.muscleMapUrl, 'https://nostr.build/i/program-leg-day-map.png');
+      assert.equal(pub.muscleMapUrl, 'https://nostr.build/i/program-leg-day-map.png');
       assert.match(pub.address, /^33402:a{64}:workstr:program:leg-day$/);
 
       // The coordinates are persisted on the program row.

@@ -2,6 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, randomUUID } from 'node:crypto';
+import sharp from 'sharp';
 import { getSheet, markSheetPublished, getSession, getExercise, markExercisePublished, markSessionSummary, getSetting } from './store.js';
 import { canonMuscle } from '../../public/muscles.js';
 
@@ -151,14 +152,18 @@ function paintBodyMapSvg(svg, primary, secondary) {
   });
 }
 
-async function programMuscleMapDataUrl(sheet) {
+async function programMuscleMapPngDataUrl(sheet) {
   const { primary, secondary } = programMuscleSets(sheet);
   if (!primary.size && !secondary.size) return '';
   const inner = paintBodyMapSvg(await recoveryBodySvg(), primary, secondary)
     .replace(/^<svg[^>]*>/, '')
     .replace(/<\/svg>\s*$/, '');
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" rx="72" fill="#120b1f"/><g transform="translate(120 56) scale(4.2)">${inner}</g><text x="600" y="1125" text-anchor="middle" fill="#cbb8ff" font-family="Inter, system-ui, sans-serif" font-size="44" font-weight="700">${escapeXml(sheet.name || 'Workstr program')}</text></svg>`;
-  return `data:image/svg+xml;base64,${Buffer.from(svg, 'utf8').toString('base64')}`;
+  const png = await sharp(Buffer.from(svg, 'utf8'), { density: 144 })
+    .resize(1200, 1200, { fit: 'contain', background: '#120b1f' })
+    .png()
+    .toBuffer();
+  return `data:image/png;base64,${png.toString('base64')}`;
 }
 
 function escapeXml(value) {
@@ -204,7 +209,7 @@ export function buildWorkoutTemplateEvent(sheet, members, relayHint = '', muscle
 
   // Workstr identity — lets Workstr filter its own shared programs out of the pool.
   tags.push(['t', 'workstr'], ['client', 'workstr']);
-  if (muscleMapUrl) tags.push(['imeta', `url ${muscleMapUrl}`, 'm image/svg+xml', `alt Muscle map for ${sheet.name}`], ['workstr_muscle_map', muscleMapUrl]);
+  if (muscleMapUrl) tags.push(['imeta', `url ${muscleMapUrl}`, 'm image/png', `alt Muscle map for ${sheet.name}`], ['workstr_muscle_map', muscleMapUrl]);
 
   // Exact prescription per member, for lossless self re-import (ignored by others).
   tags.push(['workstr_meta', JSON.stringify({
@@ -258,7 +263,7 @@ export async function publishProgram(id) {
 
   let muscleMapUrl = '';
   try {
-    const map = await programMuscleMapDataUrl(sheet);
+    const map = await programMuscleMapPngDataUrl(sheet);
     if (map) muscleMapUrl = await uploadImageToNostrBuild(map, `program-${sheet.slug}-muscle-map`);
   } catch (err) {
     console.warn(`program muscle map upload skipped: ${err.message}`);

@@ -10,7 +10,9 @@ ENV NODE_ENV=production \
 # unprivileged app user.
 RUN apk add --no-cache su-exec
 
-COPY package.json ./
+COPY package*.json ./
+RUN npm ci --omit=dev
+
 COPY src ./src
 COPY public ./public
 COPY docker-entrypoint.sh /usr/local/bin/app-entrypoint.sh
