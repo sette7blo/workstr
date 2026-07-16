@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash, randomUUID } from 'node:crypto';
 import { getSheet, markSheetPublished, getSession, getExercise, markExercisePublished, markSessionSummary, getSetting } from './store.js';
+import { canonMuscle } from '../../public/muscles.js';
 
 const NOSTRBUILD_UPLOAD_URL = 'https://nostr.build/api/v2/nip96/upload';
 
@@ -114,6 +115,56 @@ export async function status() {
 // exact Workstr prescription rides along in a namespaced tag for lossless re-import.
 const PROGRAM_D_PREFIX = 'workstr:program:';
 
+async function recoveryBodySvg() {
+  const html = await readFile(join(root, 'public/index.html'), 'utf8');
+  const match = html.match(/<svg[^>]*id="recovery-body"[\s\S]*?<\/svg>/);
+  if (!match) throw new Error('recovery body SVG not found');
+  return match[0].replace(/\s+id="recovery-body"/, '');
+}
+
+function programMuscleSets(sheet) {
+  const primary = new Set();
+  const secondary = new Set();
+  for (const item of sheet.exercises || []) {
+    const ex = getExercise(item.exerciseSlug);
+    const main = canonMuscle(ex?.muscleGroup || item.muscleGroup || '');
+    if (main) primary.add(main);
+    for (const raw of ex?.muscles || []) {
+      const muscle = canonMuscle(raw);
+      if (muscle) secondary.add(muscle);
+    }
+  }
+  primary.forEach((muscle) => secondary.delete(muscle));
+  return { primary, secondary };
+}
+
+function paintBodyMapSvg(svg, primary, secondary) {
+  if (!primary.size && !secondary.size) return '';
+  return svg.replace(/<polygon([^>]*data-muscle="([^"]+)"[^>]*)>/g, (_match, attrs, muscle) => {
+    const clean = attrs.replace(/\s*\/$/, '');
+    if (primary.has(muscle)) return `<polygon${clean} style="fill:#4f2b7f;opacity:.95"/>`;
+    if (secondary.has(muscle)) return `<polygon${clean} style="fill:#8c5bd6;opacity:.5"/>`;
+    return `<polygon${clean} style="fill:#2a1d40"/>`;
+  }).replace(/<polygon((?:(?!data-muscle)[^>])*)>/g, (_match, attrs) => {
+    const clean = attrs.replace(/\s*\/$/, '');
+    return `<polygon${clean} style="fill:#1a1228"/>`;
+  });
+}
+
+async function programMuscleMapDataUrl(sheet) {
+  const { primary, secondary } = programMuscleSets(sheet);
+  if (!primary.size && !secondary.size) return '';
+  const inner = paintBodyMapSvg(await recoveryBodySvg(), primary, secondary)
+    .replace(/^<svg[^>]*>/, '')
+    .replace(/<\/svg>\s*$/, '');
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" rx="72" fill="#120b1f"/><g transform="translate(120 56) scale(4.2)">${inner}</g><text x="600" y="1125" text-anchor="middle" fill="#cbb8ff" font-family="Inter, system-ui, sans-serif" font-size="44" font-weight="700">${escapeXml(sheet.name || 'Workstr program')}</text></svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg, 'utf8').toString('base64')}`;
+}
+
+function escapeXml(value) {
+  return String(value).replace(/[&<>"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+}
+
 // A prescription logs duration when the exercise is timed (cardio or a "30s" rep
 // scheme); otherwise it logs the standard strength quartet, mirroring nip101eFormat.
 function isTimedPrescription(ex, reps) {
@@ -130,7 +181,7 @@ function prescriptionDurationSec(reps) {
 // Build the unsigned kind:33402 event. Pure (no I/O) so it can be unit-tested.
 // `members` are the resolved, already-published member exercises (each carrying its
 // 33401 `address` and the program's prescribed sets/reps/weight).
-export function buildWorkoutTemplateEvent(sheet, members, relayHint = '') {
+export function buildWorkoutTemplateEvent(sheet, members, relayHint = '', muscleMapUrl = '') {
   const dTag = `${PROGRAM_D_PREFIX}${sheet.slug}`;
   const tags = [
     ['d', dTag],
@@ -153,11 +204,13 @@ export function buildWorkoutTemplateEvent(sheet, members, relayHint = '') {
 
   // Workstr identity — lets Workstr filter its own shared programs out of the pool.
   tags.push(['t', 'workstr'], ['client', 'workstr']);
+  if (muscleMapUrl) tags.push(['imeta', `url ${muscleMapUrl}`, 'm image/svg+xml', `alt Muscle map for ${sheet.name}`], ['workstr_muscle_map', muscleMapUrl]);
 
   // Exact prescription per member, for lossless self re-import (ignored by others).
   tags.push(['workstr_meta', JSON.stringify({
     v: 1,
     description: sheet.description || '',
+    muscleMapUrl,
     exercises: members.map((m) => ({
       address: m.address, slug: m.slug, name: m.name,
       sets: m.sets, reps: m.reps, restSec: m.restSec, weight: m.weightKg, notes: m.notes, position: m.position
@@ -203,7 +256,15 @@ export async function publishProgram(id) {
   const missing = members.find((m) => !m.address);
   if (missing) throw new Error(`exercise "${missing.name}" has no published address`);
 
-  const unsigned = buildWorkoutTemplateEvent(sheet, members, relayHint);
+  let muscleMapUrl = '';
+  try {
+    const map = await programMuscleMapDataUrl(sheet);
+    if (map) muscleMapUrl = await uploadImageToNostrBuild(map, `program-${sheet.slug}-muscle-map`);
+  } catch (err) {
+    console.warn(`program muscle map upload skipped: ${err.message}`);
+  }
+
+  const unsigned = buildWorkoutTemplateEvent(sheet, members, relayHint, muscleMapUrl);
   const dTag = unsigned.tags[0][1];
   const res = await idenstrFetch('/api/v1/events/publish', { method: 'POST', body: unsigned });
   if (!res.ok) throw new Error(res.body?.error ? `${res.body.error}${res.body.required ? `: ${res.body.required}` : ''}` : `idenstr ${res.status}`);
@@ -211,7 +272,7 @@ export async function publishProgram(id) {
   const pubkey = event?.pubkey || '';
   const address = pubkey ? `33402:${pubkey}:${dTag}` : `33402:${dTag}`;
   if (event?.id) markSheetPublished(sheet.id, { eventId: event.id, pubkey, address });
-  return { event, address, relayResults: res.body?.relayResults ?? [], members: members.map((m) => ({ slug: m.slug, name: m.name, address: m.address })) };
+  return { event, address, relayResults: res.body?.relayResults ?? [], muscleMapUrl, members: members.map((m) => ({ slug: m.slug, name: m.name, address: m.address })) };
 }
 
 // The public relays to read from for discovery. Idenstr owns the relay list

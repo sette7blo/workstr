@@ -37,6 +37,12 @@ const slugify = (name) => String(name || '').toLowerCase().trim().replace(/[^a-z
 const tagValue = (tags, key) => (tags.find((t) => t[0] === key) || [])[1] || '';
 const tagValues = (tags, key) => tags.filter((t) => t[0] === key && t.length >= 2).map((t) => t[1]);
 const tagRow = (tags, key) => tags.find((t) => t[0] === key) || [];
+function imetaUrl(tags) {
+  for (const row of tags.filter((t) => t[0] === 'imeta')) {
+    for (const part of row.slice(1)) if (String(part).startsWith('url ')) return String(part).slice(4).trim();
+  }
+  return '';
+}
 const uniq = (values) => [...new Set(values.map((v) => String(v || '').trim()).filter(Boolean))];
 
 function isNip101eExerciseEvent(ev) {
@@ -398,8 +404,6 @@ export async function importExercise(data) {
 // ---------- Programs (NIP-101e workout templates, kind:33402) ----------
 const PROGRAM_D_PREFIX = 'workstr:program:';
 
-// Group `exercise` tags (one per set) back into members, deriving the prescription
-// from the first set of each. Used for foreign 33402s with no workstr_meta.
 function parseExerciseTags(tags) {
   const order = [];
   const byAddr = new Map();
@@ -447,6 +451,7 @@ function toNip101eProgram(ev) {
     slug,
     name,
     description,
+    muscleMapUrl: String(meta?.muscleMapUrl || tagValue(tags, 'workstr_muscle_map') || imetaUrl(tags) || ''),
     exercises: members,
     exerciseCount: members.length,
     eventId: ev.id,

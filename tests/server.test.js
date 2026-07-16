@@ -234,12 +234,22 @@ test('publishing an exercise broadcasts an addressable NIP-101e kind:33401 event
   });
 });
 
-test('publishing a program auto-publishes its members then broadcasts a 33402 workout template', async () => {
+test('publishing a program uploads and attaches its Workstr muscle-map image to the 33402', async () => {
   await withServer(async (base) => {
     const captured = [];
     const iden = fakeIdenstr((b) => captured.push(b));
     await new Promise((r) => iden.listen(0, '127.0.0.1', r));
     const idenstrUrl = `http://127.0.0.1:${iden.address().port}`;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, opts = {}) => {
+      if (String(url).startsWith('https://nostr.build/api/v2/nip96/upload')) {
+        assert.equal(opts.method, 'POST');
+        assert.match(opts.headers.Authorization, /^Nostr /);
+        assert.match(opts.headers['Content-Type'], /multipart\/form-data/);
+        return new Response(JSON.stringify({ data: { url: 'https://nostr.build/i/program-leg-day-map.svg' } }), { status: 200, headers: { 'content-type': 'application/json' } });
+      }
+      return originalFetch(url, opts);
+    };
     try {
       await get(base, '/api/v1/connect', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ idenstrUrl, idenstrToken: 'test-token' }) });
       await post(base, '/api/v1/exercises', { name: 'Air Squat', muscleGroup: 'Legs' });
@@ -255,6 +265,11 @@ test('publishing a program auto-publishes its members then broadcasts a 33402 wo
       assert.ok(tmpl.tags.some((t) => t[0] === 'd' && t[1] === 'workstr:program:leg-day'));
       assert.ok(tmpl.tags.some((t) => t[0] === 'exercise' && /^33401:a{64}:workstr:exercise:air-squat$/.test(t[1])));
       assert.equal(tmpl.tags.filter((t) => t[0] === 'exercise').length, 3, 'one exercise tag per prescribed set');
+      assert.ok(tmpl.tags.some((t) => t[0] === 'imeta' && t.some((v) => String(v).includes('program-leg-day-map.svg'))));
+      assert.ok(tmpl.tags.some((t) => t[0] === 'workstr_muscle_map' && t[1] === 'https://nostr.build/i/program-leg-day-map.svg'));
+      const meta = JSON.parse(tmpl.tags.find((t) => t[0] === 'workstr_meta')[1]);
+      assert.equal(meta.muscleMapUrl, 'https://nostr.build/i/program-leg-day-map.svg');
+      assert.equal(pub.muscleMapUrl, 'https://nostr.build/i/program-leg-day-map.svg');
       assert.match(pub.address, /^33402:a{64}:workstr:program:leg-day$/);
 
       // The coordinates are persisted on the program row.
@@ -262,6 +277,7 @@ test('publishing a program auto-publishes its members then broadcasts a 33402 wo
       assert.ok(after.nostrEventId, 'program records its published event id');
       assert.equal(after.nostrAddress, pub.address);
     } finally {
+      globalThis.fetch = originalFetch;
       await new Promise((r) => iden.close(r));
     }
   });
