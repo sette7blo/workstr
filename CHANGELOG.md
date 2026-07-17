@@ -11,7 +11,7 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 
 ## [Unreleased]
 ### Fixed
-- Program muscle-map publishing now rasterizes the generated SVG to a real PNG before uploading to nostr.build, avoiding the upstream 500 errors seen with SVG uploads and tagging the published `kind:33402` image metadata as `image/png`.
+- Program muscle-map publishing now rasterizes the generated SVG to a real PNG before uploading to nostr.build, avoiding the upstream 500 errors seen with SVG uploads and tagging the published `kind:33402` image metadata as `image/png`. The generated PNG strips text labels so minimal server font sets cannot render missing-glyph square artifacts into the image.
 
 ## [v0.4.0] — 2026-07-10
 ### Changed

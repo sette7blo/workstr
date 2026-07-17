@@ -156,9 +156,10 @@ async function programMuscleMapPngDataUrl(sheet) {
   const { primary, secondary } = programMuscleSets(sheet);
   if (!primary.size && !secondary.size) return '';
   const inner = paintBodyMapSvg(await recoveryBodySvg(), primary, secondary)
+    .replace(/<text[\s\S]*?<\/text>/g, '')
     .replace(/^<svg[^>]*>/, '')
     .replace(/<\/svg>\s*$/, '');
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" rx="72" fill="#120b1f"/><g transform="translate(120 56) scale(4.2)">${inner}</g><text x="600" y="1125" text-anchor="middle" fill="#cbb8ff" font-family="Inter, system-ui, sans-serif" font-size="44" font-weight="700">${escapeXml(sheet.name || 'Workstr program')}</text></svg>`;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200"><rect width="1200" height="1200" rx="72" fill="#120b1f"/><g transform="translate(120 56) scale(4.2)">${inner}</g></svg>`;
   const png = await sharp(Buffer.from(svg, 'utf8'), { density: 144 })
     .resize(1200, 1200, { fit: 'contain', background: '#120b1f' })
     .png()
