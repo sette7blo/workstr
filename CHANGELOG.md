@@ -10,6 +10,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 ---
 
 ## [Unreleased]
+
+## [v0.4.1] — 2026-07-20
 ### Fixed
 - Program muscle-map publishing now rasterizes the generated SVG to a real PNG before uploading to nostr.build, avoiding the upstream 500 errors seen with SVG uploads and tagging the published `kind:33402` image metadata as `image/png`. The generated PNG strips text labels so minimal server font sets cannot render missing-glyph square artifacts into the image.
 
@@ -104,7 +106,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 - Weight unit (kg/lbs) is a display label in this version; stored values are not converted when the unit is switched.
 - AI features (exercise/image/vision generation) are deferred to a later phase.
 
-[Unreleased]: https://github.com/sette7blo/workstr/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/sette7blo/workstr/compare/v0.4.1...HEAD
+[v0.4.1]: https://github.com/sette7blo/workstr/compare/v0.4.0...v0.4.1
 [v0.4.0]: https://github.com/sette7blo/workstr/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/sette7blo/workstr/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/sette7blo/workstr/compare/v0.1.1...v0.2.0
