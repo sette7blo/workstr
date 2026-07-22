@@ -23,8 +23,21 @@ Requires a running [Idenstr](../idenstr) for signing and publishing.
 
 ```bash
 cp .env.example .env   # set your Idenstr URL + token and a dashboard user/password
-docker compose up -d --build
+docker compose pull
+docker compose up -d
 ```
+
+The default compose uses the published image:
+
+```text
+dockersette/workstr:latest
+```
+
+If you are developing Workstr locally and intentionally want to rebuild from the
+repository checkout, either temporarily change `image:` to `build: .` or run a
+small local override file with `build: .`. Production/self-hosted installs should
+use the published image so the deployment folder only needs `compose.yaml`, `.env`,
+and the persistent `data/` volume.
 
 Open `http://<host>:3003`. Workstr has no login of its own — it relies on the
 network boundary (keep it on a trusted LAN/tailnet, or behind an HTTPS reverse

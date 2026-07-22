@@ -6,7 +6,7 @@
 
 services:
   workstr:
-    build: .
+    image: dockersette/workstr:latest
     container_name: workstr
     restart: unless-stopped
     env_file: .env
