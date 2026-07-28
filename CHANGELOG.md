@@ -17,7 +17,7 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 - Exercise editor images now support a hosted public URL field for manually uploaded nostr.build media. Pasted hosted image URLs are preserved in the library and used exactly as-is in published NIP-101e exercise `imeta`, avoiding duplicate Workstr uploads.
 
 ### Changed
-- Local self-hosted compose now builds the Workstr image from source before starting, keeping vmapps deployments aligned with the checked-out code instead of relying on a prebuilt `latest` image.
+- Local self-hosted compose now builds the Workstr image from source before starting, keeping self-hosted deployments aligned with the checked-out code instead of relying on a prebuilt `latest` image.
 
 ## [v0.4.1] — 2026-07-20
 ### Fixed
