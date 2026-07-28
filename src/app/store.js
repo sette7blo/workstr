@@ -22,6 +22,7 @@ function rowToExercise(row) {
     tags: arr(row.tags),
     instructions: arr(row.instructions),
     imageUrl: row.image_url,
+    imagePublishUrl: row.image_publish_url || '',
     favourite: Boolean(row.favourite),
     defaultSets: row.default_sets,
     defaultReps: row.default_reps,
@@ -50,12 +51,12 @@ export function createExercise(body) {
   let slug = slugify(body.slug || name);
   if (getExercise(slug)) slug = `${slug}-${Date.now().toString(36)}`;
   prep(`
-    INSERT INTO exercises (slug, name, description, category, muscle_group, muscles, equipment, difficulty, tags, instructions, image_url, default_sets, default_reps, default_rest, source_type, status, updated_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
+    INSERT INTO exercises (slug, name, description, category, muscle_group, muscles, equipment, difficulty, tags, instructions, image_url, image_publish_url, default_sets, default_reps, default_rest, source_type, status, updated_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)
   `).run(
     slug, name, String(body.description || ''), String(body.category || ''), String(body.muscleGroup || ''),
     JSON.stringify(body.muscles || []), JSON.stringify(body.equipment || []), String(body.difficulty || ''),
-    JSON.stringify(body.tags || []), JSON.stringify(body.instructions || []), String(body.imageUrl || ''),
+    JSON.stringify(body.tags || []), JSON.stringify(body.instructions || []), String(body.imageUrl || ''), String(body.imagePublishUrl || ''),
     Number(body.defaultSets) || 3, String(body.defaultReps || '8-12'), Number(body.defaultRest) || 90,
     String(body.sourceType || 'manual'), now()
   );
@@ -66,13 +67,13 @@ export function updateExercise(slug, body) {
   const existing = getExercise(slug);
   if (!existing) return null;
   prep(`
-    UPDATE exercises SET name=?, description=?, category=?, muscle_group=?, muscles=?, equipment=?, difficulty=?, tags=?, instructions=?, image_url=?, default_sets=?, default_reps=?, default_rest=?, updated_at=?
+    UPDATE exercises SET name=?, description=?, category=?, muscle_group=?, muscles=?, equipment=?, difficulty=?, tags=?, instructions=?, image_url=?, image_publish_url=?, default_sets=?, default_reps=?, default_rest=?, updated_at=?
     WHERE slug=?
   `).run(
     String(body.name ?? existing.name), String(body.description ?? existing.description), String(body.category ?? existing.category),
     String(body.muscleGroup ?? existing.muscleGroup), JSON.stringify(body.muscles ?? existing.muscles), JSON.stringify(body.equipment ?? existing.equipment),
     String(body.difficulty ?? existing.difficulty), JSON.stringify(body.tags ?? existing.tags), JSON.stringify(body.instructions ?? existing.instructions),
-    String(body.imageUrl ?? existing.imageUrl), Number(body.defaultSets ?? existing.defaultSets), String(body.defaultReps ?? existing.defaultReps),
+    String(body.imageUrl ?? existing.imageUrl), String(body.imagePublishUrl ?? existing.imagePublishUrl), Number(body.defaultSets ?? existing.defaultSets), String(body.defaultReps ?? existing.defaultReps),
     Number(body.defaultRest ?? existing.defaultRest), now(), slug
   );
   return getExercise(slug);

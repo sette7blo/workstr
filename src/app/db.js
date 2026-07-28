@@ -63,6 +63,7 @@ function migrate(db) {
   if (!exCols.includes('nostr_pubkey')) db.exec('ALTER TABLE exercises ADD COLUMN nostr_pubkey TEXT');
   if (!exCols.includes('nostr_address')) db.exec('ALTER TABLE exercises ADD COLUMN nostr_address TEXT');
   if (!exCols.includes('nostr_published_at')) db.exec('ALTER TABLE exercises ADD COLUMN nostr_published_at TEXT');
+  if (!exCols.includes('image_publish_url')) db.exec("ALTER TABLE exercises ADD COLUMN image_publish_url TEXT DEFAULT ''");
   const sessionCols = db.prepare('PRAGMA table_info(sessions)').all().map((c) => c.name);
   if (!sessionCols.includes('summary_image_url')) db.exec('ALTER TABLE sessions ADD COLUMN summary_image_url TEXT');
 }
@@ -84,6 +85,7 @@ CREATE TABLE IF NOT EXISTS exercises (
   tags          TEXT NOT NULL DEFAULT '[]',
   instructions  TEXT NOT NULL DEFAULT '[]',
   image_url     TEXT DEFAULT '',
+  image_publish_url TEXT DEFAULT '',
   favourite     INTEGER NOT NULL DEFAULT 0,
   default_sets  INTEGER NOT NULL DEFAULT 3,
   default_reps  TEXT NOT NULL DEFAULT '8-12',

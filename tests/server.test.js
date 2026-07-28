@@ -10,6 +10,7 @@ process.env.WORKSTR_DB_STORE = join(tmp, 'workstr.db');
 process.env.WORKSTR_ENV_FILE = join(tmp, '.env');
 
 const { createServer, authConfigured } = await import('../src/server.js');
+const { __test: seedTest } = await import('../src/app/seed.js');
 const { __test: discoverTest } = await import('../src/app/discover.js');
 const { buildExerciseTemplateEvent, buildWorkoutTemplateEvent } = await import('../src/app/idenstr.js');
 
@@ -52,6 +53,62 @@ test('exercise library starts empty and serves manually created exercises', asyn
     assert.equal(body.exercises.length, 1);
     assert.equal(body.exercises[0].slug, 'dumbbell-bicep-curl');
   });
+});
+
+test('imports exercises from the same free database source as Liftme', async () => {
+  const seedRows = [
+    {
+      id: 'barbell-squat', name: 'Barbell Squat', category: 'strength', equipment: 'barbell', level: 'intermediate',
+      primaryMuscles: ['quadriceps'], secondaryMuscles: ['glutes', 'hamstrings'], force: 'push', mechanic: 'compound',
+      instructions: ['Stand with the bar on your upper back.', 'Squat down, then stand up.'], images: ['barbell-squat/0.jpg']
+    },
+    {
+      id: 'push-up', name: 'Push-Up', category: 'strength', equipment: 'body only', level: 'beginner',
+      primaryMuscles: ['chest'], secondaryMuscles: ['triceps'], force: 'push', mechanic: 'compound', instructions: [], images: []
+    }
+  ];
+  const originalFetch = globalThis.fetch;
+  const fakeFetch = async (url, opts) => {
+    const textUrl = String(url);
+    if (textUrl.startsWith('http://127.0.0.1:')) return originalFetch(url, opts);
+    if (textUrl.endsWith('/dist/exercises.json')) return new Response(JSON.stringify(seedRows), { status: 200, headers: { 'content-type': 'application/json' } });
+    if (textUrl.endsWith('/barbell-squat/0.jpg')) return new Response(Buffer.from('fakejpg'), { status: 200, headers: { 'content-type': 'image/jpeg' } });
+    return new Response('', { status: 404 });
+  };
+  seedTest.setFetch(fakeFetch);
+  globalThis.fetch = fakeFetch;
+  try {
+    await withServer(async (base) => {
+      const [filtersStatus, filters] = await get(base, '/api/v1/seed/filters');
+      assert.equal(filtersStatus, 200);
+      assert.deepEqual(filters.categories, ['strength']);
+      assert.ok(filters.muscles.includes('quadriceps'));
+      assert.ok(filters.equipment.includes('barbell'));
+
+      const [browseStatus, browse] = await get(base, '/api/v1/seed/browse?muscle=quadriceps&equipment=barbell');
+      assert.equal(browseStatus, 200);
+      assert.equal(browse.total, 1);
+      assert.equal(browse.results[0].seedId, 'barbell-squat');
+      assert.equal(browse.results[0].muscleGroup, 'Quadriceps');
+      assert.deepEqual(browse.results[0].equipment, ['Barbell']);
+      assert.equal(browse.results[0].difficulty, 'intermediate');
+
+      const [importStatus, imported] = await post(base, '/api/v1/seed/import', { seed_id: 'barbell-squat' });
+      assert.equal(importStatus, 201);
+      assert.equal(imported.slug, 'barbell-squat');
+      assert.equal(imported.sourceType, 'seed');
+      assert.match(imported.imageUrl, /^data:image\/jpeg;base64,/);
+
+      const [, list] = await get(base, '/api/v1/exercises');
+      const ex = list.exercises.find((e) => e.slug === 'barbell-squat');
+      assert.equal(ex.name, 'Barbell Squat');
+      assert.equal(ex.sourceType, 'seed');
+      assert.deepEqual(ex.muscles, ['Quadriceps', 'Glutes', 'Hamstrings']);
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+    seedTest.reset();
+  }
 });
 
 test('smart delete: unreferenced exercise is purged, referenced one is kept for history', async () => {
@@ -229,6 +286,37 @@ test('publishing an exercise broadcasts an addressable NIP-101e kind:33401 event
       assert.ok(ex.nostrEventId, 'exercise records its published event id');
       assert.equal(ex.nostrAddress, pub.address);
     } finally {
+      await new Promise((r) => iden.close(r));
+    }
+  });
+});
+
+test('hosted exercise image URLs are preserved and published without re-uploading', async () => {
+  await withServer(async (base) => {
+    let captured = null;
+    const iden = fakeIdenstr((b) => { captured = b; });
+    await new Promise((r) => iden.listen(0, '127.0.0.1', r));
+    const idenstrUrl = `http://127.0.0.1:${iden.address().port}`;
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (url, opts = {}) => {
+      assert.ok(!String(url).startsWith('https://nostr.build/api/v2/nip96/upload'), 'hosted URL should not be uploaded again');
+      return originalFetch(url, opts);
+    };
+    try {
+      await get(base, '/api/v1/connect', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ idenstrUrl, idenstrToken: 'test-token' }) });
+      const hosted = 'https://nostr.build/i/workstr/air-squat.jpg';
+      const [createStatus, created] = await post(base, '/api/v1/exercises', { name: 'Hosted Squat', muscleGroup: 'Legs', imagePublishUrl: hosted });
+      assert.equal(createStatus, 201);
+      assert.equal(created.imageUrl, hosted);
+      assert.equal(created.imagePublishUrl, hosted);
+
+      const [pubStatus] = await post(base, '/api/v1/exercises/hosted-squat/publish', {});
+      assert.equal(pubStatus, 200);
+      assert.ok(captured.tags.some((t) => t[0] === 'imeta' && t.includes(`url ${hosted}`)));
+      const meta = JSON.parse(captured.tags.find((t) => t[0] === 'workstr_meta')[1]);
+      assert.equal(meta.imagePublishUrl, hosted);
+    } finally {
+      globalThis.fetch = originalFetch;
       await new Promise((r) => iden.close(r));
     }
   });

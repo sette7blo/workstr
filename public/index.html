@@ -19,7 +19,7 @@
     .topbar, .sidebar, .content { opacity: 1; }
     .topbar { min-height: 64px; }
   </style>
-  <link rel="stylesheet" href="./styles.css?v=23" />
+  <link rel="stylesheet" href="./styles.css?v=26" />
 </head>
 <body>
   <div class="noise"></div>
@@ -71,6 +71,7 @@
       <div class="page-title">Exercises</div>
       <div class="sub-tabs">
         <div class="sub-tab active" data-parent="exercises" data-subtab="library">Library</div>
+        <div class="sub-tab" data-parent="exercises" data-subtab="database">Database</div>
         <div class="sub-tab" data-parent="exercises" data-subtab="discover">Discover</div>
       </div>
 
@@ -85,6 +86,28 @@
           </div>
           <div id="ex-grid" class="ex-grid"></div>
           <div id="ex-empty" class="empty" style="display:none">No exercises match.</div>
+        </div>
+      </div>
+
+      <div class="sub-panel" id="sub-exercises-database">
+        <div class="panel">
+          <div class="panel-head"><span>Exercise Database</span></div>
+          <p class="section-help">Browse the free exercise database used by Liftme. Selecting exercises imports a local copy into your Workstr library so they can be edited, used in programs, and kept independent from the upstream database.</p>
+          <div class="filter-bar">
+            <input class="grow" id="seed-q" placeholder="Search exercises..." autocomplete="off" />
+            <select id="seed-category"><option value="">All categories</option></select>
+            <select id="seed-muscle"><option value="">All muscles</option></select>
+            <select id="seed-equipment"><option value="">All equipment</option></select>
+            <select id="seed-level"><option value="">All levels</option><option>beginner</option><option>intermediate</option><option>expert</option></select>
+          </div>
+          <div id="seed-status" class="discover-status"></div>
+          <div id="seed-grid" class="ex-grid"></div>
+          <div id="seed-load-more" class="seed-load-more" hidden><button class="button ghost" id="seed-load-more-btn">Load more</button></div>
+          <div class="seed-import-bar" id="seed-import-bar" hidden>
+            <span class="seed-selected-count" id="seed-selected-count"></span>
+            <button class="button primary" id="seed-import-selected">Import selected to library</button>
+            <button class="button ghost" id="seed-clear-selected">Clear</button>
+          </div>
         </div>
       </div>
 
@@ -425,6 +448,6 @@
     <button class="button ghost small" id="ex-bulk-cancel">Cancel</button>
   </div>
 
-  <script type="module" src="./app.js?v=36"></script>
+  <script type="module" src="./app.js?v=38"></script>
 </body>
 </html>

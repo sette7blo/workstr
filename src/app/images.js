@@ -18,3 +18,19 @@ export async function localizeImage(imageUrl) {
     return '';
   }
 }
+
+export function isPublicHttpsImageUrl(imageUrl) {
+  const raw = String(imageUrl || '').trim();
+  if (!raw) return false;
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== 'https:') return false;
+    const host = url.hostname.toLowerCase();
+    if (!host || host === 'localhost') return false;
+    if (/^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(host)) return false;
+    const path = `${url.pathname}${url.search}`;
+    return /\.(avif|gif|jpe?g|png|webp)(\?.*)?$/i.test(path) || host === 'nostr.build' || host.endsWith('.nostr.build');
+  } catch {
+    return false;
+  }
+}

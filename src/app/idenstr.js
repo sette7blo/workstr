@@ -425,6 +425,7 @@ export function buildExerciseTemplateEvent(ex, imageUrl = '') {
     difficulty: ex.difficulty || '',
     tags: ex.tags || [],
     instructions: ex.instructions || [],
+    imagePublishUrl: imageUrl || '',
     defaultSets: ex.defaultSets,
     defaultReps: ex.defaultReps,
     defaultRest: ex.defaultRest
@@ -441,7 +442,9 @@ export async function publishExercise(slug) {
   if (!config.idenstrToken) throw new Error('Idenstr is not connected');
 
   let imageUrl = '';
-  if (ex.imageUrl) {
+  if (ex.imagePublishUrl) {
+    imageUrl = ex.imagePublishUrl;
+  } else if (ex.imageUrl) {
     if (ex.imageUrl.startsWith('data:')) imageUrl = await uploadImageToNostrBuild(ex.imageUrl);
     else if (/^https?:\/\//i.test(ex.imageUrl)) imageUrl = ex.imageUrl;
   }

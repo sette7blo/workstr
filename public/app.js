@@ -112,7 +112,10 @@ function goTo(tab, sub) { if (sub) subState[tab] = sub; switchTab(tab); }
 
 async function loadTab(tab, sub) {
   try {
-    if (tab === 'exercises') return sub === 'discover' ? loadDiscover() : loadExercises();
+    if (tab === 'exercises') {
+      if (sub === 'database') return loadSeedDatabase();
+      return sub === 'discover' ? loadDiscover() : loadExercises();
+    }
     if (tab === 'workouts') {
       if (sub === 'recovery') return loadRecovery();
       if (sub === 'history') return loadHistory();
@@ -241,8 +244,8 @@ function exerciseCardHtml(e) {
   const src = exerciseImageSrc(e.imageUrl);
   // Placeholder icon sits behind the photo; if the photo is absent or 404s it shows through.
   const img = `${EX_PLACEHOLDER}${src ? `<img class="card-photo" src="${escapeHtml(src)}" alt="" loading="lazy" onerror="this.remove()">` : ''}`;
-  const source = e.sourceType === 'ai' ? 'ai' : e.sourceType === 'nostr' ? 'nostr' : 'manual';
-  const sourceCls = source === 'ai' ? 'badge-ai' : source === 'nostr' ? 'badge-nostr' : 'badge-manual';
+  const source = e.sourceType === 'ai' ? 'ai' : e.sourceType === 'nostr' ? 'nostr' : e.sourceType === 'seed' ? 'database' : 'manual';
+  const sourceCls = source === 'ai' ? 'badge-ai' : source === 'nostr' ? 'badge-nostr' : source === 'database' ? 'badge-seed' : 'badge-manual';
   const diffCls = difficultyBadgeClass(e.difficulty);
   const selCheck = '<span class="sel-check"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>';
   return `
@@ -282,6 +285,8 @@ function exerciseFormHtml(e = {}) {
             <input type="file" id="ex-image-file" accept="image/*" hidden />
             <button type="button" class="button ghost" id="ex-image-remove"${e.imageUrl ? '' : ' hidden'}>Remove</button>
           </div>
+          <label class="hosted-image-url">Hosted image URL for Nostr<input name="imagePublishUrl" value="${escapeHtml(e.imagePublishUrl || (/^https:\/\//i.test(e.imageUrl || '') ? e.imageUrl : ''))}" placeholder="https://nostr.build/..." /></label>
+          <small class="field-help">Paste a public nostr.build image URL to keep that exact URL in published Nostr events.</small>
         </div>
         <input type="hidden" name="imageUrl" value="${escapeHtml(e.imageUrl || '')}" />
       </div>
@@ -302,7 +307,7 @@ function exerciseFormPayload(form) {
     equipment: form.equipment.value.split(',').map((s) => s.trim()).filter(Boolean),
     muscles: form.muscleGroup.value ? [form.muscleGroup.value] : [],
     defaultSets: Number(form.defaultSets.value) || 3, defaultReps: form.defaultReps.value, defaultRest: Number(form.defaultRest.value) || 90,
-    imageUrl: form.imageUrl.value.trim(),
+    imageUrl: form.imageUrl.value.trim(), imagePublishUrl: form.imagePublishUrl.value.trim(),
     instructions: form.instructions.value.split('\n').map((s) => s.trim()).filter(Boolean)
   };
 }
@@ -313,21 +318,32 @@ function openExerciseModal(existing = null) {
   const fileInput = $('#ex-image-file');
   const preview = $('#ex-image-preview');
   const removeBtn = $('#ex-image-remove');
+  const hostedInput = form.imagePublishUrl;
   fileInput.addEventListener('change', async () => {
     const file = fileInput.files[0];
     if (!file) return;
     try {
       const dataUrl = await fileToDataUrl(file);
       form.imageUrl.value = dataUrl;
+      hostedInput.value = '';
       preview.innerHTML = `<img src="${dataUrl}" alt="">`;
       removeBtn.hidden = false;
     } catch { toast('Could not read that image'); }
   });
   removeBtn.addEventListener('click', () => {
     form.imageUrl.value = '';
+    hostedInput.value = '';
     fileInput.value = '';
     preview.innerHTML = '<span>No image</span>';
     removeBtn.hidden = true;
+  });
+  hostedInput.addEventListener('input', () => {
+    const url = hostedInput.value.trim();
+    if (!url) return;
+    form.imageUrl.value = url;
+    fileInput.value = '';
+    preview.innerHTML = `<img src="${escapeHtml(url)}" alt="" onerror="this.parentElement.innerHTML='<span>Could not preview URL</span>'">`;
+    removeBtn.hidden = false;
   });
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -382,7 +398,7 @@ function openExerciseDetail(slug) {
     <div class="detail-badges">
       ${e.difficulty ? `<span class="badge diff">${escapeHtml(e.difficulty)}</span>` : ''}
       ${e.category ? `<span class="badge cat">${escapeHtml(e.category)}</span>` : ''}
-      <span class="badge">${escapeHtml(e.sourceType === 'ai' ? 'ai' : e.sourceType === 'nostr' ? 'nostr' : 'manual')}</span>
+      <span class="badge">${escapeHtml(e.sourceType === 'ai' ? 'ai' : e.sourceType === 'nostr' ? 'nostr' : e.sourceType === 'seed' ? 'database' : 'manual')}</span>
       ${e.nostrEventId ? '<span class="badge published">published</span>' : ''}
     </div>
     ${e.nostrAddress ? `<p class="detail-nostr" title="${escapeHtml(e.nostrAddress)}">Shared on relays · <code>${escapeHtml(e.nostrAddress)}</code></p>` : ''}
@@ -480,6 +496,157 @@ async function copyText(text, message) {
     toast('Could not copy', 'bad');
   }
 }
+
+// ---------- exercise database (free-exercise-db, same source as Liftme) ----------
+let seedResults = [];
+let seedSelected = new Set();
+let seedOffset = 0;
+let seedTotal = 0;
+let seedFiltersLoaded = false;
+let seedDebounceTimer = null;
+
+async function loadSeedDatabase() {
+  if (!seedFiltersLoaded) await loadSeedFilters();
+  if (!$('#seed-grid')?.dataset.loaded) await loadSeed();
+}
+
+async function loadSeedFilters() {
+  const data = await api('seed/filters');
+  fillSelect($('#seed-category'), data.categories || [], 'All categories');
+  fillSelect($('#seed-muscle'), data.muscles || [], 'All muscles');
+  fillSelect($('#seed-equipment'), data.equipment || [], 'All equipment');
+  seedFiltersLoaded = true;
+}
+
+function seedParams(offset = 0) {
+  return new URLSearchParams({
+    q: $('#seed-q')?.value || '',
+    category: $('#seed-category')?.value || '',
+    muscle: $('#seed-muscle')?.value || '',
+    equipment: $('#seed-equipment')?.value || '',
+    level: $('#seed-level')?.value || '',
+    limit: 60,
+    offset
+  });
+}
+
+async function loadSeed() {
+  const grid = $('#seed-grid'); const status = $('#seed-status');
+  if (!grid) return;
+  seedOffset = 0;
+  status.textContent = 'Loading...';
+  grid.innerHTML = '';
+  try {
+    const data = await api(`seed/browse?${seedParams(0)}`);
+    seedResults = data.results || [];
+    seedTotal = Number(data.total) || 0;
+    seedOffset = seedResults.length;
+    grid.dataset.loaded = '1';
+    renderSeedGrid(false);
+  } catch (err) {
+    status.textContent = 'Failed to load exercise database.';
+  }
+}
+
+async function loadMoreSeed() {
+  const btn = $('#seed-load-more-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading...'; }
+  try {
+    const data = await api(`seed/browse?${seedParams(seedOffset)}`);
+    const more = data.results || [];
+    seedResults.push(...more);
+    seedOffset += more.length;
+    renderSeedGrid(false);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Load more'; }
+  }
+}
+
+function renderSeedGrid() {
+  const grid = $('#seed-grid'); const status = $('#seed-status'); const more = $('#seed-load-more');
+  if (!grid) return;
+  if (!seedResults.length) {
+    grid.innerHTML = '<div class="empty">No exercises found. Try different filters.</div>';
+    status.textContent = '0 exercises found';
+    more.hidden = true;
+    updateSeedBar();
+    return;
+  }
+  grid.innerHTML = seedResults.map(seedCardHtml).join('');
+  status.textContent = seedOffset < seedTotal ? `Showing ${seedOffset} of ${seedTotal} exercises` : `${seedTotal} exercises found`;
+  more.hidden = seedOffset >= seedTotal;
+  updateSeedBar();
+}
+
+function seedCardHtml(ex) {
+  const src = exerciseImageSrc(ex.image || ex.imageUrl);
+  const img = `${EX_PLACEHOLDER}${src ? `<img class="card-photo" src="${escapeHtml(src)}" alt="" loading="lazy" onerror="this.remove()">` : ''}`;
+  const id = ex.seedId || ex.seed_id;
+  const selected = seedSelected.has(id);
+  const diffCls = difficultyBadgeClass(ex.difficulty);
+  return `<div class="ex-card${selected ? ' selected' : ''}" data-seed-id="${escapeHtml(id)}">
+    <div class="card-img">
+      ${img}
+      <span class="source-badge badge-seed">database</span>
+      <span class="seed-check"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+      ${ex.difficulty ? `<span class="diff-badge ${diffCls}">${escapeHtml(ex.difficulty)}</span>` : ''}
+    </div>
+    <div class="card-body">
+      <div class="card-name">${escapeHtml(ex.name)}</div>
+      <div class="card-meta">${ex.muscleGroup || ex.muscle_group ? `<span class="muscle">${escapeHtml(ex.muscleGroup || ex.muscle_group)}</span>` : ''}${ex.level ? ` · ${escapeHtml(ex.level)}` : ''}</div>
+    </div>
+  </div>`;
+}
+
+function toggleSeedSelect(seedId) {
+  if (seedSelected.has(seedId)) seedSelected.delete(seedId);
+  else seedSelected.add(seedId);
+  const card = document.querySelector(`[data-seed-id="${CSS.escape(seedId)}"]`);
+  if (card) card.classList.toggle('selected', seedSelected.has(seedId));
+  updateSeedBar();
+}
+
+function clearSeedSelection() {
+  seedSelected = new Set();
+  document.querySelectorAll('[data-seed-id].selected').forEach((card) => card.classList.remove('selected'));
+  updateSeedBar();
+}
+
+function updateSeedBar() {
+  const bar = $('#seed-import-bar'); const count = $('#seed-selected-count');
+  if (!bar || !count) return;
+  bar.hidden = seedSelected.size === 0;
+  count.textContent = `${seedSelected.size} exercise${seedSelected.size === 1 ? '' : 's'} selected`;
+}
+
+async function importSelectedSeed() {
+  const ids = [...seedSelected];
+  const status = $('#seed-status');
+  status.textContent = `Importing ${ids.length} exercise${ids.length === 1 ? '' : 's'}...`;
+  let imported = 0;
+  for (const seed_id of ids) {
+    try { await api('seed/import', { method: 'POST', body: JSON.stringify({ seed_id }) }); imported += 1; }
+    catch {}
+  }
+  status.textContent = `${imported} exercise${imported === 1 ? '' : 's'} imported to library.`;
+  clearSeedSelection();
+  await loadExercises();
+}
+
+function debounceSeedSearch() {
+  clearTimeout(seedDebounceTimer);
+  seedDebounceTimer = setTimeout(loadSeed, 400);
+}
+
+$('#seed-q')?.addEventListener('input', debounceSeedSearch);
+['#seed-category', '#seed-muscle', '#seed-equipment', '#seed-level'].forEach((sel) => $(sel)?.addEventListener('change', loadSeed));
+$('#seed-load-more-btn')?.addEventListener('click', loadMoreSeed);
+$('#seed-import-selected')?.addEventListener('click', importSelectedSeed);
+$('#seed-clear-selected')?.addEventListener('click', clearSeedSelection);
+$('#seed-grid')?.addEventListener('click', (ev) => {
+  const card = ev.target.closest('[data-seed-id]');
+  if (card) toggleSeedSelect(card.dataset.seedId);
+});
 
 // ---------- discover (exercises shared on the public relays) ----------
 let discoverResults = [];

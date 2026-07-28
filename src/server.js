@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 import * as store from './app/store.js';
 import * as idenstr from './app/idenstr.js';
 import * as discover from './app/discover.js';
-import { localizeImage } from './app/images.js';
+import * as seed from './app/seed.js';
+import { isPublicHttpsImageUrl, localizeImage } from './app/images.js';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const publicDir = join(root, 'public');
@@ -58,7 +59,7 @@ async function route(req, res) {
   if (resource === 'exercises') {
     if (m === 'GET' && !id) return sendJson(res, 200, { exercises: store.listExercises().map(exerciseListShape) });
     if (m === 'GET' && id === 'filters') return sendJson(res, 200, store.exerciseFilters());
-    if (m === 'POST' && !id) { if (body) body.imageUrl = await localizeImage(body.imageUrl); return sendJson(res, 201, store.createExercise(body)); }
+    if (m === 'POST' && !id) { await prepareExerciseImageBody(body); return sendJson(res, 201, store.createExercise(body)); }
     if (m === 'GET' && id && sub === 'image') return sendExerciseImage(res, id);
     if (m === 'GET' && id && sub === 'last-sets') return sendJson(res, 200, { sets: store.lastSetsForExercise(id, Number(url.searchParams.get('beforeSessionId')) || null) });
     if (m === 'GET' && id && sub === 'event') {
@@ -68,7 +69,7 @@ async function route(req, res) {
       return sendJson(res, 200, await discover.fetchRawEvent(ex.nostrAddress));
     }
     if (m === 'GET' && id) return sendOrNull(res, store.getExercise(id));
-    if (m === 'PUT' && id) { if (body && 'imageUrl' in body) body.imageUrl = await localizeImage(body.imageUrl); return sendOrNull(res, store.updateExercise(id, body)); }
+    if (m === 'PUT' && id) { await prepareExerciseImageBody(body); return sendOrNull(res, store.updateExercise(id, body)); }
     if (m === 'POST' && id && sub === 'favourite') return sendJson(res, 200, store.setFavourite(id, body?.favourite !== false));
     if (m === 'POST' && id && sub === 'publish') return sendJson(res, 200, await idenstr.publishExercise(id));
     if (m === 'DELETE' && id) return sendJson(res, store.deleteExercise(id) ? 200 : 404, { deleted: true });
@@ -87,6 +88,29 @@ async function route(req, res) {
       return sendJson(res, 200, await discover.discoverPrograms({ limit: Number(url.searchParams.get('limit')) || 80 }));
     }
     if (m === 'POST' && id === 'import-program') return sendJson(res, 201, await discover.importProgram(body));
+  }
+
+  // Free exercise database (same source/filters as Liftme)
+  if (resource === 'seed') {
+    if (m === 'GET' && id === 'browse') {
+      return sendJson(res, 200, await seed.browse({
+        q: url.searchParams.get('q') || '',
+        category: url.searchParams.get('category') || '',
+        muscle: url.searchParams.get('muscle') || '',
+        equipment: url.searchParams.get('equipment') || '',
+        level: url.searchParams.get('level') || '',
+        limit: Number(url.searchParams.get('limit')) || 60,
+        offset: Number(url.searchParams.get('offset')) || 0
+      }));
+    }
+    if (m === 'GET' && id === 'filters') return sendJson(res, 200, await seed.filters());
+    if (m === 'POST' && id === 'import') {
+      const seedId = body?.seed_id || body?.seedId;
+      if (!seedId) return sendJson(res, 400, { error: 'seed_id_required' });
+      const imported = await seed.importExercise(seedId);
+      if (!imported) return sendJson(res, 404, { error: 'exercise_not_found' });
+      return sendJson(res, 201, imported);
+    }
   }
 
   // Sheets (workout templates)
@@ -169,6 +193,19 @@ async function route(req, res) {
   }
 
   return sendJson(res, 404, { error: 'not_found' });
+}
+
+async function prepareExerciseImageBody(body) {
+  if (!body) return;
+  const hosted = String(body.imagePublishUrl || '').trim();
+  if (hosted) {
+    if (!isPublicHttpsImageUrl(hosted)) throw new Error('hosted image URL must be a public https:// image URL');
+    body.imagePublishUrl = hosted;
+    body.imageUrl = hosted;
+    return;
+  }
+  if ('imagePublishUrl' in body) body.imagePublishUrl = '';
+  if ('imageUrl' in body) body.imageUrl = await localizeImage(body.imageUrl);
 }
 
 // ---------- Auth (HTTP Basic + bind guard), mirrors Idenstr ----------
