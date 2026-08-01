@@ -10,6 +10,11 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 ---
 
 ## [Unreleased]
+### Fixed
+- A program tag that collides with the noise-tag denylist no longer hides your own published program from the Workouts → Discover tab. The denylist now only filters foreign programs; Workstr-authored programs are identified by their `workstr_meta` tag before the check runs.
+- The hidden temporary sheet behind an in-progress quick workout no longer shows as a card in the Programs list. Filtering moved inside the program renderer, so every caller and the search/level filters agree.
+- Published `kind:33402` templates no longer repeat a `t` tag when a program tag matches one of its exercises' hashtags or Workstr's own identity tag.
+- Program difficulty is stored and compared in one canonical lowercase form and capitalized only for display, so the builder dropdown and level filters read "Beast Mode" instead of mixing cases.
 
 ## [v0.6.0] — 2026-08-01
 ### Added

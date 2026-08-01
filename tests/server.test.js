@@ -375,7 +375,7 @@ test('publishing a program uploads and attaches its Workstr muscle-map image to 
 });
 
 test('Workstr programs publish as valid NIP-101e 33402 workout templates', () => {
-  const sheet = { slug: 'push-day', name: 'Push Day', description: 'Chest and shoulders.', difficulty: 'Beast Mode', tags: ['hypertrophy', 'push'] };
+  const sheet = { slug: 'push-day', name: 'Push Day', description: 'Chest and shoulders.', difficulty: 'Beast Mode', tags: ['hypertrophy', 'push', 'chest', 'workstr'] };
   const members = [{
     slug: 'bench', name: 'Bench Press', address: `33401:${'a'.repeat(64)}:workstr:exercise:bench`,
     sets: 3, reps: '5', restSec: 120, weightKg: 60, notes: '', position: 0, timed: false, hashtags: ['chest', 'strength']
@@ -393,9 +393,13 @@ test('Workstr programs publish as valid NIP-101e 33402 workout templates', () =>
   assert.ok(ev.tags.some((row) => row[0] === 't' && row[1] === 'workstr'));
   assert.ok(ev.tags.some((row) => row[0] === 't' && row[1] === 'hypertrophy'));
   assert.ok(ev.tags.some((row) => row[0] === 't' && row[1] === 'beast-mode'));
+  // A program tag colliding with an exercise hashtag, or with Workstr's own identity tag,
+  // must still emit exactly one `t` row.
+  const topics = ev.tags.filter((row) => row[0] === 't').map((row) => row[1]);
+  assert.deepEqual([...new Set(topics)], topics);
   const meta = JSON.parse(t('workstr_meta')[1]);
   assert.equal(meta.difficulty, 'Beast Mode');
-  assert.deepEqual(meta.tags, ['hypertrophy', 'push']);
+  assert.deepEqual(meta.tags, ['hypertrophy', 'push', 'chest', 'workstr']);
   assert.equal(meta.exercises[0].slug, 'bench');
   assert.equal(meta.exercises[0].weight, 60);
 });
@@ -418,6 +422,24 @@ test('Workstr-origin 33402 programs re-import losslessly', () => {
   assert.equal(program.exercises[0].address, `33401:${'b'.repeat(64)}:workstr:exercise:row`);
   assert.equal(program.exercises[0].sets, 4);
   assert.equal(program.address, `33402:${'b'.repeat(64)}:workstr:program:pull-day`);
+});
+
+test('a Workstr program tagged with a denylisted topic still appears in Discover', () => {
+  const sheet = { slug: 'leg-day', name: 'Leg Day', description: 'Legs.', tags: ['catallax'] };
+  const members = [{
+    slug: 'squat', name: 'Squat', address: `33401:${'d'.repeat(64)}:workstr:exercise:squat`,
+    sets: 3, reps: '5', restSec: 120, weightKg: 80, notes: '', position: 0, timed: false, hashtags: ['legs']
+  }];
+  const built = buildWorkoutTemplateEvent(sheet, members);
+  const ev = { ...built, id: 'evt_leg', pubkey: 'd'.repeat(64), created_at: 1770000000 };
+  const program = discoverTest.toNip101eProgram(ev);
+  assert.ok(program, 'own program must not be filtered out by its own user tag');
+  assert.deepEqual(program.tags, ['catallax']);
+  // Foreign programs carrying the same topic are still rejected as noise.
+  const foreign = { kind: 33402, id: 'evt_foreign', pubkey: 'e'.repeat(64), created_at: 1770000000, content: '',
+    tags: [['d', 'foreign-leg'], ['title', 'Foreign Leg'], ['t', 'catallax'],
+      ['exercise', `33401:${'e'.repeat(64)}:squat`, '', '80', '5', '', 'normal']] };
+  assert.equal(discoverTest.toNip101eProgram(foreign), null);
 });
 
 test('importing a program resolves members already in the library and dedups re-imports', async () => {

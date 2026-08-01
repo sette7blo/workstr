@@ -31,7 +31,9 @@ async function api(path, options = {}) {
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const PROGRAM_DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'Beast Mode'];
+// Stored and compared in lowercase; capitalized only for display.
+const PROGRAM_DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'beast mode'];
+const titleCase = (s) => String(s || '').replace(/\b[a-z]/g, (c) => c.toUpperCase());
 const difficultyBadgeClass = (difficulty) => ({
   beginner: 'diff-beginner',
   intermediate: 'diff-intermediate',
@@ -146,11 +148,17 @@ async function loadExercises() {
   renderExercises();
 }
 
-function fillSelect(select, values, allLabel) {
+function fillSelect(select, values, allLabel, label = (v) => v) {
   const current = select.value;
-  select.innerHTML = `<option value="">${allLabel}</option>` + values.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+  select.innerHTML = `<option value="">${allLabel}</option>` + values.map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(label(v))}</option>`).join('');
   if (values.includes(current)) select.value = current;
 }
+
+// The canonical levels plus any others already in the data, deduped case-insensitively.
+const difficultyOptions = (items) => [...new Set([
+  ...PROGRAM_DIFFICULTIES,
+  ...items.map((i) => String(i.difficulty || '').trim().toLowerCase()).filter(Boolean)
+])];
 
 // Every canonical recovery region an exercise touches (primary group + all listed muscles),
 // so the muscle filter matches exactly what the Recovery map attributes to that exercise.
@@ -841,7 +849,7 @@ async function runProgramDiscover() {
     programDiscoverResults = res.programs || [];
     const n = res.relays.length;
     if (!programDiscoverResults.length) { status.textContent = `No shared programs found on ${n} relay${n === 1 ? '' : 's'}.`; programDiscoverBaseStatus = ''; return; }
-    fillSelect($('#program-discover-diff'), [...new Set([...PROGRAM_DIFFICULTIES, ...programDiscoverResults.map((p) => p.difficulty).filter(Boolean)])], 'All levels');
+    fillSelect($('#program-discover-diff'), difficultyOptions(programDiscoverResults), 'All levels', titleCase);
     programDiscoverBaseStatus = `${programDiscoverResults.length} program${programDiscoverResults.length === 1 ? '' : 's'} from ${n} relay${n === 1 ? '' : 's'}.`;
     renderProgramDiscover();
   } catch (err) { status.textContent = err.message; }
@@ -1054,10 +1062,12 @@ function renderResumeSlot(session) {
   </div>`;
 }
 
-function renderPrograms(sheets) {
+function renderPrograms(allSheets) {
   const list = $('#program-list');
+  // A quick-workout session runs on a hidden temp sheet that must never show as a program.
+  const sheets = allSheets.filter((s) => !s.isTemporary);
   const diffSelect = $('#program-diff');
-  if (diffSelect) fillSelect(diffSelect, [...new Set([...PROGRAM_DIFFICULTIES, ...sheets.map((s) => s.difficulty).filter(Boolean)])], 'All levels');
+  if (diffSelect) fillSelect(diffSelect, difficultyOptions(sheets), 'All levels', titleCase);
   const q = ($('#program-search')?.value || '').trim().toLowerCase();
   const diff = diffSelect?.value || '';
   const filtered = sheets.filter((s) => {
@@ -1155,7 +1165,8 @@ function renderProgramBody(sheetId) {
 }
 
 function sheetBuilderHtml(sheet = { name: '', description: '', difficulty: '', tags: [], exercises: [] }) {
-  const diffOptions = [''].concat(PROGRAM_DIFFICULTIES).map((d) => `<option value="${escapeHtml(d)}"${String(sheet.difficulty || '') === d ? ' selected' : ''}>${d ? escapeHtml(d) : 'Choose level'}</option>`).join('');
+  const current = String(sheet.difficulty || '').trim().toLowerCase();
+  const diffOptions = [''].concat(difficultyOptions([sheet])).map((d) => `<option value="${escapeHtml(d)}"${current === d ? ' selected' : ''}>${d ? escapeHtml(titleCase(d)) : 'Choose level'}</option>`).join('');
   return `
     <h3>${sheet.id ? 'Edit program' : 'New program'}</h3>
     <div class="form-grid">
@@ -2280,8 +2291,8 @@ $('#ex-bulk-delete').addEventListener('click', async (e) => {
 });
 
 $('#new-program').addEventListener('click', async () => { if (!state.exercises.length) await loadExercises(); openSheetBuilder(); });
-$('#program-search')?.addEventListener('input', () => renderPrograms(state.sheets.filter((s) => !s.isTemporary)));
-$('#program-diff')?.addEventListener('change', () => renderPrograms(state.sheets.filter((s) => !s.isTemporary)));
+$('#program-search')?.addEventListener('input', () => renderPrograms(state.sheets));
+$('#program-diff')?.addEventListener('change', () => renderPrograms(state.sheets));
 $('#program-list').addEventListener('click', async (e) => {
   const head = e.target.closest('[data-toggle-program]');
   if (head) {

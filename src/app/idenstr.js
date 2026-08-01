@@ -209,9 +209,12 @@ export function buildWorkoutTemplateEvent(sheet, members, relayHint = '', muscle
     }
     for (const t of m.hashtags || []) if (t) hashtags.add(String(t).toLowerCase());
   }
+  // Program tags and the difficulty slug share the exercise hashtag set so a program tagged
+  // the same as one of its exercises emits one `t` tag, not two.
+  for (const t of sheetTags) hashtags.add(t.toLowerCase());
+  if (sheetDifficulty) hashtags.add(sheetDifficulty.toLowerCase().replace(/\s+/g, '-'));
+  hashtags.delete('workstr'); // pushed below as Workstr's own identity tag
   for (const t of hashtags) tags.push(['t', t]);
-  for (const t of sheetTags) tags.push(['t', t.toLowerCase()]);
-  if (sheetDifficulty) tags.push(['t', sheetDifficulty.toLowerCase().replace(/\s+/g, '-')]);
 
   // Workstr identity — lets Workstr filter its own shared programs out of the pool.
   tags.push(['t', 'workstr'], ['client', 'workstr']);

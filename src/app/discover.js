@@ -429,8 +429,11 @@ function toNip101eProgram(ev) {
   const dTag = tagValue(tags, 'd');
   if (!name || !dTag) return null;
   const topics = uniq(tagValues(tags, 't').map((t) => String(t).toLowerCase()));
-  if (topics.some((t) => NIP101E_NOISE_TAGS.has(t))) return null;
   const meta = workstrMeta(tags);
+  // Noise-tag rejection only applies to foreign programs: a Workstr program publishes its
+  // own free-text tags as `t` tags, so a user tag colliding with the denylist must not
+  // make their own program vanish from Discover.
+  if (!meta && topics.some((t) => NIP101E_NOISE_TAGS.has(t))) return null;
   const isWorkstr = Boolean(meta && Array.isArray(meta.exercises)) || topics.includes('workstr');
   let members;
   let description;
