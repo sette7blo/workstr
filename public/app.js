@@ -31,11 +31,16 @@ async function api(path, options = {}) {
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const PROGRAM_DIFFICULTIES = ['beginner', 'intermediate', 'advanced', 'Beast Mode'];
 const difficultyBadgeClass = (difficulty) => ({
   beginner: 'diff-beginner',
   intermediate: 'diff-intermediate',
-  advanced: 'diff-advanced'
+  advanced: 'diff-advanced',
+  'beast mode': 'diff-beast',
+  'beast-mode': 'diff-beast'
 }[String(difficulty || '').trim().toLowerCase()] || 'diff-unknown');
+const tagsFromCsv = (value) => [...new Set(String(value || '').split(',').map((t) => t.trim()).filter(Boolean))];
+const tagsMarkup = (tags = []) => tags.length ? `<div class="program-tags">${tags.map((t) => `<span class="tag-pill">${escapeHtml(t)}</span>`).join('')}</div>` : '';
 // Weights are stored canonically in kg; these convert to/from the chosen display unit.
 const KG_TO_LB = 2.20462;
 const unitLabel = () => state.unit;
@@ -836,6 +841,7 @@ async function runProgramDiscover() {
     programDiscoverResults = res.programs || [];
     const n = res.relays.length;
     if (!programDiscoverResults.length) { status.textContent = `No shared programs found on ${n} relay${n === 1 ? '' : 's'}.`; programDiscoverBaseStatus = ''; return; }
+    fillSelect($('#program-discover-diff'), [...new Set([...PROGRAM_DIFFICULTIES, ...programDiscoverResults.map((p) => p.difficulty).filter(Boolean)])], 'All levels');
     programDiscoverBaseStatus = `${programDiscoverResults.length} program${programDiscoverResults.length === 1 ? '' : 's'} from ${n} relay${n === 1 ? '' : 's'}.`;
     renderProgramDiscover();
   } catch (err) { status.textContent = err.message; }
@@ -845,8 +851,12 @@ function renderProgramDiscover() {
   const grid = $('#program-discover-grid'); const status = $('#program-discover-status');
   if (!grid || !programDiscoverResults.length) return;
   const q = $('#program-discover-search').value.trim().toLowerCase();
-  const list = programDiscoverResults.filter((p) => !q || p.name.toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q));
-  status.textContent = q ? `Showing ${list.length} of ${programDiscoverBaseStatus}` : programDiscoverBaseStatus;
+  const diff = $('#program-discover-diff')?.value || '';
+  const list = programDiscoverResults.filter((p) => {
+    const hay = [p.name, p.description, p.difficulty, ...(p.tags || [])].join(' ').toLowerCase();
+    return (!q || hay.includes(q)) && (!diff || String(p.difficulty || '').toLowerCase() === diff.toLowerCase());
+  });
+  status.textContent = (q || diff) ? `Showing ${list.length} of ${programDiscoverBaseStatus}` : programDiscoverBaseStatus;
   grid.className = 'program-list'; // discovered programs render as library-style workout cards, not image tiles
   grid.innerHTML = list.length ? list.map(programDiscoverCardHtml).join('') : '<div class="empty">No shared programs match.</div>';
   list.forEach(paintDiscoverProgramMap);
@@ -886,10 +896,11 @@ function programDiscoverCardHtml(p) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
       </div>
       <div class="workout-card-info">
-        <div class="workout-card-name">${escapeHtml(p.name)}<span class="program-status ${st.cls}">${escapeHtml(st.label)}</span></div>
+        <div class="workout-card-name">${escapeHtml(p.name)}<span class="program-status ${st.cls}">${escapeHtml(st.label)}</span>${p.difficulty ? `<span class="diff-badge inline ${difficultyBadgeClass(p.difficulty)}">${escapeHtml(p.difficulty)}</span>` : ''}</div>
         <div class="workout-card-meta">${meta}</div>
         <div class="workout-card-author">${authorPill(p.author, p.pubkey, { compact: true })}</div>
         ${groups.length ? `<div class="workout-card-muscles">${escapeHtml(groups.join(', '))}</div>` : ''}
+        ${tagsMarkup(p.tags || [])}
       </div>
       <svg class="workout-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
@@ -971,6 +982,7 @@ async function importDiscoveredProgram(data, btn) {
 
 $('#program-discover-refresh')?.addEventListener('click', () => runProgramDiscover());
 $('#program-discover-search')?.addEventListener('input', renderProgramDiscover);
+$('#program-discover-diff')?.addEventListener('change', renderProgramDiscover);
 $('#program-discover-grid')?.addEventListener('click', async (ev) => {
   const btn = ev.target.closest('.program-discover-import');
   if (btn) {
@@ -1044,9 +1056,18 @@ function renderResumeSlot(session) {
 
 function renderPrograms(sheets) {
   const list = $('#program-list');
+  const diffSelect = $('#program-diff');
+  if (diffSelect) fillSelect(diffSelect, [...new Set([...PROGRAM_DIFFICULTIES, ...sheets.map((s) => s.difficulty).filter(Boolean)])], 'All levels');
+  const q = ($('#program-search')?.value || '').trim().toLowerCase();
+  const diff = diffSelect?.value || '';
+  const filtered = sheets.filter((s) => {
+    const hay = [s.name, s.description, s.difficulty, ...(s.tags || [])].join(' ').toLowerCase();
+    return (!q || hay.includes(q)) && (!diff || String(s.difficulty || '').toLowerCase() === diff.toLowerCase());
+  });
   if (!sheets.length) { list.className = 'list empty'; list.textContent = 'No programs yet. Build your first routine.'; return; }
+  if (!filtered.length) { list.className = 'list empty'; list.textContent = 'No programs match.'; return; }
   list.className = 'program-list';
-  list.innerHTML = sheets.map((s) => {
+  list.innerHTML = filtered.map((s) => {
     const count = s.exercises.length;
     const time = formatMinutes(estimateProgramMin(s.exercises));
     const groups = [...new Set(s.exercises.map((e) => e.muscleGroup).filter(Boolean))];
@@ -1058,16 +1079,17 @@ function renderPrograms(sheets) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 4v16M18 4v16M6 12h12M2 8h4M18 8h4M2 16h4M18 16h4"/></svg>
         </div>
         <div class="workout-card-info">
-          <div class="workout-card-name">${escapeHtml(s.name)}<span class="program-status ${st.cls}">${st.label}</span></div>
+          <div class="workout-card-name">${escapeHtml(s.name)}<span class="program-status ${st.cls}">${st.label}</span>${s.difficulty ? `<span class="diff-badge inline ${difficultyBadgeClass(s.difficulty)}">${escapeHtml(s.difficulty)}</span>` : ''}</div>
           <div class="workout-card-meta">${meta}</div>
           ${groups.length ? `<div class="workout-card-muscles">${escapeHtml(groups.join(', '))}</div>` : ''}
+          ${tagsMarkup(s.tags || [])}
         </div>
         <svg class="workout-card-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="workout-card-body" data-body="${s.id}"></div>
     </div>`;
   }).join('');
-  sheets.forEach(paintProgramMap);
+  filtered.forEach(paintProgramMap);
 }
 
 function muscleSetsForSlugs(slugs = [], fallbackGroups = []) {
@@ -1132,12 +1154,15 @@ function renderProgramBody(sheetId) {
     </div>`;
 }
 
-function sheetBuilderHtml(sheet = { name: '', description: '', exercises: [] }) {
+function sheetBuilderHtml(sheet = { name: '', description: '', difficulty: '', tags: [], exercises: [] }) {
+  const diffOptions = [''].concat(PROGRAM_DIFFICULTIES).map((d) => `<option value="${escapeHtml(d)}"${String(sheet.difficulty || '') === d ? ' selected' : ''}>${d ? escapeHtml(d) : 'Choose level'}</option>`).join('');
   return `
     <h3>${sheet.id ? 'Edit program' : 'New program'}</h3>
     <div class="form-grid">
       <label class="span-2">Name<input id="sheet-name" value="${escapeHtml(sheet.name)}" placeholder="Push Day" /></label>
       <label class="span-2">Description<input id="sheet-desc" value="${escapeHtml(sheet.description)}" placeholder="optional" /></label>
+      <label>Difficulty<select id="sheet-difficulty">${diffOptions}</select></label>
+      <label>Tags (comma)<input id="sheet-tags" value="${escapeHtml((sheet.tags || []).join(', '))}" placeholder="strength, hypertrophy" /></label>
     </div>
     <div class="subsection-head"><span>Exercises</span></div>
     <div class="builder-search-wrap">
@@ -1224,7 +1249,13 @@ function openSheetBuilder(sheet = null) {
   });
   $('#sheet-save').addEventListener('click', async (e) => {
     await withButtonState(e.currentTarget, async () => {
-      const payload = { name: $('#sheet-name').value.trim(), description: $('#sheet-desc').value.trim(), exercises: builderRows.map((r, i) => ({ ...r, position: i })) };
+      const payload = {
+        name: $('#sheet-name').value.trim(),
+        description: $('#sheet-desc').value.trim(),
+        difficulty: $('#sheet-difficulty').value,
+        tags: tagsFromCsv($('#sheet-tags').value),
+        exercises: builderRows.map((r, i) => ({ ...r, position: i }))
+      };
       if (!payload.name) throw new Error('name is required');
       if (sheet) await api(`sheets/${sheet.id}`, { method: 'PUT', body: JSON.stringify(payload) });
       else await api('sheets', { method: 'POST', body: JSON.stringify(payload) });
@@ -2249,6 +2280,8 @@ $('#ex-bulk-delete').addEventListener('click', async (e) => {
 });
 
 $('#new-program').addEventListener('click', async () => { if (!state.exercises.length) await loadExercises(); openSheetBuilder(); });
+$('#program-search')?.addEventListener('input', () => renderPrograms(state.sheets.filter((s) => !s.isTemporary)));
+$('#program-diff')?.addEventListener('change', () => renderPrograms(state.sheets.filter((s) => !s.isTemporary)));
 $('#program-list').addEventListener('click', async (e) => {
   const head = e.target.closest('[data-toggle-program]');
   if (head) {

@@ -58,6 +58,8 @@ function migrate(db) {
     db.exec('ALTER TABLE sheets ADD COLUMN slug TEXT');
     db.exec("UPDATE sheets SET slug = 'program-' || id WHERE slug IS NULL OR slug = ''");
   }
+  if (!sheetCols.includes('difficulty')) db.exec("ALTER TABLE sheets ADD COLUMN difficulty TEXT DEFAULT ''");
+  if (!sheetCols.includes('tags')) db.exec("ALTER TABLE sheets ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'");
   const exCols = db.prepare('PRAGMA table_info(exercises)').all().map((c) => c.name);
   if (!exCols.includes('nostr_event_id')) db.exec('ALTER TABLE exercises ADD COLUMN nostr_event_id TEXT');
   if (!exCols.includes('nostr_pubkey')) db.exec('ALTER TABLE exercises ADD COLUMN nostr_pubkey TEXT');
@@ -107,6 +109,8 @@ CREATE TABLE IF NOT EXISTS sheets (
   slug                TEXT,
   name                TEXT NOT NULL,
   description         TEXT DEFAULT '',
+  difficulty          TEXT DEFAULT '',
+  tags                TEXT NOT NULL DEFAULT '[]',
   is_temporary        INTEGER NOT NULL DEFAULT 0,
   created_at          TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at          TEXT NOT NULL DEFAULT (datetime('now')),

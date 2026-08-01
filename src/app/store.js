@@ -4,6 +4,9 @@ import { canonMuscle } from '../../public/muscles.js';
 const arr = (value) => { try { const v = JSON.parse(value || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } };
 const slugify = (name) => String(name || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || `ex-${Date.now()}`;
 const now = () => new Date().toISOString().replace('T', ' ').slice(0, 19);
+const cleanTags = (value) => Array.isArray(value)
+  ? [...new Set(value.map((t) => String(t || '').trim()).filter(Boolean))]
+  : String(value || '').split(',').map((t) => t.trim()).filter(Boolean);
 
 // ---------- Exercises ----------
 
@@ -140,7 +143,8 @@ export function listSheets() {
 
 function sheetRow(s) {
   return {
-    id: s.id, slug: s.slug, name: s.name, description: s.description, isTemporary: Boolean(s.is_temporary),
+    id: s.id, slug: s.slug, name: s.name, description: s.description,
+    difficulty: s.difficulty || '', tags: arr(s.tags), isTemporary: Boolean(s.is_temporary),
     createdAt: s.created_at, updatedAt: s.updated_at,
     nostrEventId: s.nostr_event_id, nostrPubkey: s.nostr_pubkey, nostrAddress: s.nostr_address, nostrPublishedAt: s.nostr_published_at
   };
@@ -178,7 +182,8 @@ export function createSheet(body) {
   // on edit so the published coordinate stays put. Imports carry their own slug.
   let slug = slugify(body.slug || name);
   if (prep('SELECT 1 FROM sheets WHERE slug = ?').get(slug)) slug = `${slug}-${Date.now().toString(36)}`;
-  const info = prep('INSERT INTO sheets (slug, name, description, is_temporary, updated_at) VALUES (?, ?, ?, ?, ?)').run(slug, name, String(body.description || ''), body.isTemporary ? 1 : 0, now());
+  const info = prep('INSERT INTO sheets (slug, name, description, difficulty, tags, is_temporary, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+    .run(slug, name, String(body.description || ''), String(body.difficulty || ''), JSON.stringify(cleanTags(body.tags)), body.isTemporary ? 1 : 0, now());
   const id = Number(info.lastInsertRowid);
   if (Array.isArray(body.exercises)) replaceSheetExercises(id, body.exercises);
   return getSheet(id);
@@ -187,8 +192,8 @@ export function createSheet(body) {
 export function updateSheet(id, body) {
   const sheet = getSheet(id);
   if (!sheet) return null;
-  prep('UPDATE sheets SET name=?, description=?, updated_at=? WHERE id=?')
-    .run(String(body.name ?? sheet.name), String(body.description ?? sheet.description), now(), id);
+  prep('UPDATE sheets SET name=?, description=?, difficulty=?, tags=?, updated_at=? WHERE id=?')
+    .run(String(body.name ?? sheet.name), String(body.description ?? sheet.description), String(body.difficulty ?? sheet.difficulty), JSON.stringify(cleanTags(body.tags ?? sheet.tags)), now(), id);
   if (Array.isArray(body.exercises)) replaceSheetExercises(id, body.exercises);
   // editing invalidates the published copy until re-published
   prep('UPDATE sheets SET nostr_published_at = NULL WHERE id = ? AND nostr_event_id IS NOT NULL').run(id);

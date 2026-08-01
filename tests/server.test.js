@@ -138,8 +138,10 @@ test('sheet build, session logging and stats flow', async () => {
   await withServer(async (base) => {
     await post(base, '/api/v1/exercises', { name: 'Dumbbell Bicep Curl', muscleGroup: 'Biceps' });
 
-    const [, sheet] = await post(base, '/api/v1/sheets', { name: 'Push', exercises: [{ exerciseSlug: 'dumbbell-bicep-curl', sets: 3, reps: '5' }] });
+    const [, sheet] = await post(base, '/api/v1/sheets', { name: 'Push', difficulty: 'Beast Mode', tags: ['hypertrophy', 'arms'], exercises: [{ exerciseSlug: 'dumbbell-bicep-curl', sets: 3, reps: '5' }] });
     assert.equal(sheet.name, 'Push');
+    assert.equal(sheet.difficulty, 'Beast Mode');
+    assert.deepEqual(sheet.tags, ['hypertrophy', 'arms']);
     assert.equal(sheet.exercises.length, 1);
 
     const [, session] = await post(base, '/api/v1/sessions', { sheetId: sheet.id });
@@ -373,7 +375,7 @@ test('publishing a program uploads and attaches its Workstr muscle-map image to 
 });
 
 test('Workstr programs publish as valid NIP-101e 33402 workout templates', () => {
-  const sheet = { slug: 'push-day', name: 'Push Day', description: 'Chest and shoulders.' };
+  const sheet = { slug: 'push-day', name: 'Push Day', description: 'Chest and shoulders.', difficulty: 'Beast Mode', tags: ['hypertrophy', 'push'] };
   const members = [{
     slug: 'bench', name: 'Bench Press', address: `33401:${'a'.repeat(64)}:workstr:exercise:bench`,
     sets: 3, reps: '5', restSec: 120, weightKg: 60, notes: '', position: 0, timed: false, hashtags: ['chest', 'strength']
@@ -383,18 +385,23 @@ test('Workstr programs publish as valid NIP-101e 33402 workout templates', () =>
   const t = (k) => ev.tags.find((row) => row[0] === k);
   assert.equal(t('d')[1], 'workstr:program:push-day');
   assert.equal(t('title')[1], 'Push Day');
+  assert.equal(t('difficulty')[1], 'Beast Mode');
   const exTags = ev.tags.filter((row) => row[0] === 'exercise');
   assert.equal(exTags.length, 3);
   assert.equal(exTags[0][1], `33401:${'a'.repeat(64)}:workstr:exercise:bench`);
   assert.equal(exTags[0][2], 'wss://relay.test');
   assert.ok(ev.tags.some((row) => row[0] === 't' && row[1] === 'workstr'));
+  assert.ok(ev.tags.some((row) => row[0] === 't' && row[1] === 'hypertrophy'));
+  assert.ok(ev.tags.some((row) => row[0] === 't' && row[1] === 'beast-mode'));
   const meta = JSON.parse(t('workstr_meta')[1]);
+  assert.equal(meta.difficulty, 'Beast Mode');
+  assert.deepEqual(meta.tags, ['hypertrophy', 'push']);
   assert.equal(meta.exercises[0].slug, 'bench');
   assert.equal(meta.exercises[0].weight, 60);
 });
 
 test('Workstr-origin 33402 programs re-import losslessly', () => {
-  const sheet = { slug: 'pull-day', name: 'Pull Day', description: 'Back day.' };
+  const sheet = { slug: 'pull-day', name: 'Pull Day', description: 'Back day.', difficulty: 'advanced', tags: ['strength', 'pull'] };
   const members = [{
     slug: 'row', name: 'Row', address: `33401:${'b'.repeat(64)}:workstr:exercise:row`,
     sets: 4, reps: '8', restSec: 90, weightKg: 40, notes: 'tempo', position: 0, timed: false, hashtags: ['back']
@@ -405,6 +412,8 @@ test('Workstr-origin 33402 programs re-import losslessly', () => {
   assert.equal(program.protocol, 'workstr');
   assert.equal(program.slug, 'pull-day');
   assert.equal(program.name, 'Pull Day');
+  assert.equal(program.difficulty, 'advanced');
+  assert.deepEqual(program.tags, ['strength', 'pull']);
   assert.equal(program.exercises.length, 1);
   assert.equal(program.exercises[0].address, `33401:${'b'.repeat(64)}:workstr:exercise:row`);
   assert.equal(program.exercises[0].sets, 4);
@@ -421,7 +430,7 @@ test('importing a program resolves members already in the library and dedups re-
     await post(base, '/api/v1/discover/import', shared);
 
     const program = {
-      name: 'Imported Leg Day', slug: 'imported-leg-day', description: 'Legs.',
+      name: 'Imported Leg Day', slug: 'imported-leg-day', description: 'Legs.', difficulty: 'intermediate', tags: ['legs', 'volume'],
       eventId: 'evt_prog', pubkey: 'c'.repeat(64), address: `33402:${'c'.repeat(64)}:workstr:program:imported-leg-day`,
       exercises: [{ address: shared.address, name: 'Goblet Squat', sets: 4, reps: '10', restSec: 120, weight: 24, notes: '' }]
     };
@@ -429,6 +438,8 @@ test('importing a program resolves members already in the library and dedups re-
     assert.equal(s1, 201);
     assert.equal(r1.duplicate, false);
     assert.equal(r1.program.exercises.length, 1);
+    assert.equal(r1.program.difficulty, 'intermediate');
+    assert.deepEqual(r1.program.tags, ['legs', 'volume']);
     assert.equal(r1.program.exercises[0].exerciseSlug, 'goblet-squat');
     assert.equal(r1.program.nostrAddress, program.address);
 

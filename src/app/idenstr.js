@@ -193,6 +193,9 @@ export function buildWorkoutTemplateEvent(sheet, members, relayHint = '', muscle
     ['d', dTag],
     ['title', sheet.name]
   ];
+  const sheetDifficulty = String(sheet.difficulty || '').trim();
+  const sheetTags = Array.isArray(sheet.tags) ? sheet.tags.map((t) => String(t || '').trim()).filter(Boolean) : [];
+  if (sheetDifficulty) tags.push(['difficulty', sheetDifficulty]);
 
   // One `exercise` tag per prescribed set, referencing the member's 33401 coordinate.
   const hashtags = new Set();
@@ -207,6 +210,8 @@ export function buildWorkoutTemplateEvent(sheet, members, relayHint = '', muscle
     for (const t of m.hashtags || []) if (t) hashtags.add(String(t).toLowerCase());
   }
   for (const t of hashtags) tags.push(['t', t]);
+  for (const t of sheetTags) tags.push(['t', t.toLowerCase()]);
+  if (sheetDifficulty) tags.push(['t', sheetDifficulty.toLowerCase().replace(/\s+/g, '-')]);
 
   // Workstr identity — lets Workstr filter its own shared programs out of the pool.
   tags.push(['t', 'workstr'], ['client', 'workstr']);
@@ -216,6 +221,8 @@ export function buildWorkoutTemplateEvent(sheet, members, relayHint = '', muscle
   tags.push(['workstr_meta', JSON.stringify({
     v: 1,
     description: sheet.description || '',
+    difficulty: sheetDifficulty,
+    tags: sheetTags,
     muscleMapUrl,
     exercises: members.map((m) => ({
       address: m.address, slug: m.slug, name: m.name,

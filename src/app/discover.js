@@ -434,14 +434,20 @@ function toNip101eProgram(ev) {
   const isWorkstr = Boolean(meta && Array.isArray(meta.exercises)) || topics.includes('workstr');
   let members;
   let description;
+  let difficulty = '';
+  let programTags = [];
   if (meta && Array.isArray(meta.exercises)) {
     description = meta.description || String(ev.content || '').trim();
+    difficulty = String(meta.difficulty || tagValue(tags, 'difficulty') || '').trim();
+    programTags = Array.isArray(meta.tags) ? meta.tags.map((t) => String(t || '').trim()).filter(Boolean) : [];
     members = meta.exercises.map((m) => ({
       address: m.address, name: m.name || '', sets: m.sets ?? 3, reps: m.reps ?? '8-12',
       restSec: m.restSec ?? 90, weight: m.weight ?? null, notes: m.notes || ''
     }));
   } else {
     description = String(ev.content || '').trim();
+    difficulty = String(tagValue(tags, 'difficulty') || '').trim();
+    programTags = topics.filter((t) => t !== 'workstr' && t !== difficulty.toLowerCase().replace(/\s+/g, '-'));
     members = parseExerciseTags(tags);
   }
   if (!members.length) return null;
@@ -453,6 +459,8 @@ function toNip101eProgram(ev) {
     slug,
     name,
     description,
+    difficulty,
+    tags: programTags,
     muscleMapUrl: String(meta?.muscleMapUrl || tagValue(tags, 'workstr_muscle_map') || imetaUrl(tags) || ''),
     exercises: members,
     exerciseCount: members.length,
@@ -566,7 +574,7 @@ export async function importProgram(data) {
     });
   }
 
-  const sheet = createSheet({ name: data.name, slug: data.slug, description: data.description || '', exercises: resolved });
+  const sheet = createSheet({ name: data.name, slug: data.slug, description: data.description || '', difficulty: data.difficulty || '', tags: data.tags || [], exercises: resolved });
   markSheetPublished(sheet.id, { eventId: data.eventId, pubkey: data.pubkey, address: data.address });
   return { program: getSheetByNostrAddress(data.address) || sheet, duplicate: false };
 }

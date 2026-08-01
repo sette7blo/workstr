@@ -19,7 +19,7 @@
     .topbar, .sidebar, .content { opacity: 1; }
     .topbar { min-height: 64px; }
   </style>
-  <link rel="stylesheet" href="./styles.css?v=26" />
+  <link rel="stylesheet" href="./styles.css?v=27" />
 </head>
 <body>
   <div class="noise"></div>
@@ -142,6 +142,10 @@
           <div class="panel-head"><span>Programs</span><button class="button primary small" id="new-program">+ New program</button></div>
           <p class="section-help">A program is the routine you take to the gym. Expand one to review its exercises, then hit Start to open the live logger. Publish a program as a public NIP-101e workout template (kind 33402) on your relays — publishing also publishes its exercises so other clients can run it.</p>
           <div id="resume-slot"></div>
+          <div class="filter-bar">
+            <input class="grow" id="program-search" placeholder="Search programs..." autocomplete="off" />
+            <select id="program-diff"><option value="">All levels</option></select>
+          </div>
           <div id="program-list" class="list empty">No programs yet.</div>
         </div>
       </div>
@@ -152,6 +156,7 @@
           <p class="section-help">Browse workout programs shared on your relays. Importing a program saves it into your library, fetching and importing any of its exercises you don't have yet.</p>
           <div class="filter-bar">
             <input class="grow" id="program-discover-search" placeholder="Search programs..." autocomplete="off" />
+            <select id="program-discover-diff"><option value="">All levels</option></select>
           </div>
           <div id="program-discover-status" class="discover-status"></div>
           <div id="program-discover-grid" class="program-list"></div>
@@ -448,6 +453,6 @@
     <button class="button ghost small" id="ex-bulk-cancel">Cancel</button>
   </div>
 
-  <script type="module" src="./app.js?v=38"></script>
+  <script type="module" src="./app.js?v=39"></script>
 </body>
 </html>
