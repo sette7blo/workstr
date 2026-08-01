@@ -10,6 +10,8 @@ Versions follow [Semantic Versioning](https://semver.org): `MAJOR.MINOR.PATCH`
 ---
 
 ## [Unreleased]
+
+## [v0.6.0] — 2026-08-01
 ### Added
 - Programs now support difficulty (`beginner`, `intermediate`, `advanced`, `Beast Mode`) and tags in the local library, builder UI, relay discovery/import, and published NIP-101e `kind:33402` Workstr metadata.
 
